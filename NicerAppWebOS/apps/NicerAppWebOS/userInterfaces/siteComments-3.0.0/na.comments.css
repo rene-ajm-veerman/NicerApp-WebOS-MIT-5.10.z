@@ -1,0 +1,9 @@
+ .naComments_header {
+    margin : 20px;
+    padding : 8px;
+    background : rgba(0,0,100,0.5);
+    border : 1px solid grey;
+    border-radius : 20px;
+    box-shadow : -1px -1px 3px 2px rgba(100,255,255,0.8),2px 2px 3px 2px rgba(100,255,255,0.8),2px 2px 5px 2px rgba(0,0,0,0.8);
+    text-shadow : 2px 2px 3px rgba(0,0,0,0.7);
+ }

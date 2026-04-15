@@ -1,0 +1,92 @@
+{
+    "na_uDB-2.0.0_thisFileIsAbout" : {
+        "what" : "na_uDB_humanReadable($this->configFile)"
+    },
+    "na_uDB_entries" : {
+        "machines" : [ {
+            "domain" : "{$naWebOS->domain}",
+            "dbs" : [
+                { "connectorName" : "CouchDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" },
+                { "connectorName" : "filesystemDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" }
+            ],
+            "PHP:class_NicerAppWebOS_uDB_2_0_0" : [ {
+                    "domains" : {
+                        "nicer.app" : [
+                            { "db" : { "connectorName" : "CouchDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" } },
+                            { "db" : { "connectorName" : "filesystemDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" } }
+                        ],
+                        "backup1.nicer.app" : [
+                            { "db" : { "connectorName" : "filesystemDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" } }
+                        ],
+                        "nicerapp.drive.google.com" : [
+                            { "db" : { "connectorName" : "filesystemDB", "plainUserName" : "Rene AJM Veerman", "plainRoleName" : "Users" } }
+                        ]
+                    },
+                    "functions" : {
+                        "dataFolder" : [ { "params" : {
+                            "folder" : {
+                                "path" : "{$path}/NicerAppWebOS/documentation",
+                                "content" : {}
+                            }
+                        } } ],
+                        "commentsFor" : [{ "content" : {} }]
+                    }
+                }, {
+                    "domains" : {
+                        "nicer.app" : [ ],
+                        "backup1.nicer.app" : [  ],
+                        "nicerapp.drive.google.com" : [ ]
+                    },
+                    "functions" : {
+                        "jsonFiles" : [ { "params" : {
+                            "file" : {
+                                "path" : "{$domainPath}/siteData/uDB-2.y.z/manualMemos.html.json.php",
+                                "functions" : { "getContent" : { "params" : {}, "content" : {} } },
+                                "content" : {}
+                            }
+                        } } ],
+                        "commentsFor" : [{ "content" : {} }]
+                    }
+                }, {
+                    "domains" : { "nicer.app" : [{}], "backup1.nicer.app" : [{}], "nicerapp.drive.google.com" : [{}] },
+                    "functions" : {
+                        "loadSave_diaries" : [ { "params" : [
+                            { "name" : "Rene AJM Veerman", "content" : {} },
+                            { "name" : "NicerAppWebOS-5.y.z", "content" : {} }
+                        ] } ],
+                        "commentsFor" : []
+                    }
+                }, {
+                    "domains" : { "nicer.app" : [{}], "backup1.nicer.app" : [{}], "nicerapp.drive.google.com" : [{}] },
+                    "functions" : {
+                        "cmsFolders" : [
+                            {
+                                "params" : {
+                                    "dbName" : "cms_documents___user___rene__ajm__veerman",
+                                    "id" : "d8sd"
+                                },
+                                "content":{}
+                            }
+                        ],
+                        "loadSave_commentsFor" : [{"content":{}}]
+                    },
+                    "comment" : "# {$domainPath}/siteData/Groups/Guests/Media Albums/Backgrounds/Tiled/Grey",
+                }, {
+                    "domains" : { "nicer.app" : [{}], "backup1.nicer.app" : [{}], "nicerapp.drive.google.com" : [{}] },
+                    "functions" : {
+                        "cmsBlogArticles" : [
+                            {
+                                "params" : {
+                                    "dbName" : "cms_documents___user___rene__ajm__veerman",
+                                    "id" : "c0"
+                                },
+                                "content":{}
+                            }
+                        ],
+                        "commentsFor" : [{"content":{}}]
+                    },
+                    "comment" : "# may be out of date : /Users/Guest/Blog/2026-01/frontpage",
+            } ]
+        } ]
+    }
+}

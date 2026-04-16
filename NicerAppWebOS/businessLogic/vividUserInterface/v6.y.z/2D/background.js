@@ -256,6 +256,7 @@ na.backgrounds = na.background = na.bg = {
             img.onclick = () => {
                 na.backgrounds.next("#siteBackground", null, '/siteMedia/backgrounds/Landscape/' + rfp);
                 $('#siteBackgrounds').fadeOut('normal');
+                $('#btnSiteBackground')[0].vividUserInterface_2D_button.deselect();
             };
             img.alt = rfp;
             img.style.cssText = 'width:23%; cursor: pointer; height:auto; display:inline-block; margin:0.4em;';

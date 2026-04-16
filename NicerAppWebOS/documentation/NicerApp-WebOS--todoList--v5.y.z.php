@@ -13,9 +13,7 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 <ol class="todoList" style="width:50%; width:content-width;">
     <li class="todoList"><div>(2026) Fix the vividMenu for news menu items bug.</li>
 
-    <li class="todoList"><div>(2026) Fix the auto-resizing for backgrounds, then use those 300xSomeHeight thumbnails in #btnSiteBackground's dialog #siteBackgrounds.</li>
-
-    <li class="todoList"><div>(2026) Build pagination for #siteBackgrounds.</li>
+    <li class="todoList"><div>(2027) Possibly build pagination for #siteBackgrounds.</li>
 
     <li class="todoList"><div>(2026-2027) Build /forums/ with 'geo-politics', 'national politics/country ABC', 'referendum' and 'court opinion' sub-forums.</li>
 
@@ -28,8 +26,9 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
             <li class="todoList_l1"><div>Add FilesystemDB (by Rene AJM Veerman) MySQL and PostgreSQL to the list of supported database architectures (via .../NicerAppWebOS/3rd-party/adodb5), currently only couchdb is supported.</div></li>
             <li class="todoList_l1"><div>Add query routines in uDB to translate couchdb index names to index ids.</div></li>
             <li class="todoList_l1"><div>Add and test MySQL, PostgreSQL and 'filesystemDB' (fsDB) sub-modules to uDB <b>(also on Window 11)</b>, as well as their interactions with the CouchDB part of uDB.</div></li>
-            <li class="todoList_l1"><div>(2027) Start on .../businessLogic/filePhoenix.</div></li>
-        </ol>
+            <li class="todoList_l1"><div>Start on .../businessLogic/filePhoenix.</div></li>
+            <li class="todoList_l1"><div>Start on .../businessLogic/regionalCloud.</div></li>
+            </ol>
     </div></li>
 
     <li class="todoList"><div>(2026) Complete a <a href="/3D">3D folder structure viewer</a>, which will be linked to all sorts of 2D user interface components/widgets.</div></li>

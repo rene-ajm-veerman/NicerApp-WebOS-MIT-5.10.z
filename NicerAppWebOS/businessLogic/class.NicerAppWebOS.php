@@ -2691,7 +2691,7 @@ class NicerAppWebOS {
         //}
         if ($hasRecord) {
             return [
-                'sel' => $selector, //sel, // doesn't get used. for logging purposes only - and probably not set correctly.
+                'sel' => $selector, //sel, // doesn't get used. for logging purposes only - and (TODO) probably not set correctly.
                 'themes' => $rets
             ];
         }

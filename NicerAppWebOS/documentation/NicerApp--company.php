@@ -35,39 +35,28 @@
     <div>
         <p class="backdropped naComments_onTheSide">
             <a href="https://nicer.app" target="naHP">https://nicer.app</a>, <a href="https://said.by" target="sbHP">https://said.by</a>, <a href="https://zoned.at" target="zAt">https://zoned.at</a>, <a href="https://github.com/Rene-AJM-Veerman" target="githubNicerEnterprises">https://github.com/Rene-AJM-Veerman</a>, <br/>in addition to ALL of the content listed at the social media URLs below, <br/>are ENTIRELY
-            Copyrighted (C) 2002-2025 and are 100% Owned by <a href="mailto:rene.veerman.netherlands@gmail.com" target="_new" class="nomod noPushState">Rene A.J.M. Veerman &lt;rene.veerman.netherlands@gmail.com&gt;</a>.
-        </p>
-
-        <h2>Going commercial</h2>
-
-        <p class="backdropped naComments_onTheSide">
-        The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain names said.by, zoned.at and nicer.app are on sale for 75 million euro.<br/>
-        Email me for more details. I'd be willing to become a remote working employee of the buyer too. :-)
+            Copyrighted (C) 2002-2026 and are 100% Owned by All of Humanity.
         </p>
 
         <h2>Business plan</h2>
 
         <p class="backdropped naComments_onTheSide">
-        I will keep NicerApp WebOS (https://nicer.app) MIT-licensed open source that can even be used commercially for free for at least 2026 too, but without warranty and you'll need your own full stack http://kubuntu.com web-development team to work with it.
+        I will keep NicerApp WebOS (https://nicer.app) MIT-licensed open source that can even be used commercially for free for the rest of my life, but without warranty and you'll need your own full stack http://kubuntu.com web-development team to work with it.
         </p>
 
 
         <h2>Executives</h2>
 
         <div class="backdropped naComments_onTheSide">
-            <div class="backdropped naComments_onTheSide">Owner, Founder, Senior Coder : <a href="https://www.youtube.com/watch?v=nO5KNu-Qwcs" target="naReneMemoires" class="nomod noPushState">Rene A.J.M. Veerman</a><br/>[ rene.veerman.netherlands@gmail.com ]<br/>
+            <div class="backdropped naComments_onTheSide">Owner, Founder, Senior Coder : <!--<a href="https://www.youtube.com/watch?v=nO5KNu-Qwcs" target="naReneMemoires" class="nomod noPushState">-->Rene A.J.M. Veerman</a><br/>[ rene.veerman.netherlands@gmail.com ]<br/>
 
 
             That's a 70W speaker for my smartphone draped around my shoulder,<br/>not a 'gay bag'. :p<br/>
-            i'm straight, but i can not date any military or intelligence women.<br/>
-            Both of my parents are Leos in the western zodiac, and therefore i can't be with an overly assertive woman.<br/>
-            Sorry, but that's just the way it is.</div>
+            i'm straight.</div>
         <img src="https://nicer.app/NicerAppWebOS/documentation/selfies/rene-ajm-veerman/IMG_20251109_145323_1.jpg" style="width:95%;"/><br/>
         </div>
         <p class="backdropped naComments_onTheSide">
         Should I unexpectedly die for some strange reason, for instance by long standing <!--<a href="https://said.by/Refirenda?pw=inS3rvice0fHumanity">-->"dissident" disputes</a> (In addition to a software and graphics developer, i'm also an assertive peace activist who is not without the ability to look at his own ranks with criticism) suddenly becoming lethal in some way, I want my belongings donated to my parents initially, and to the Amsterdam.NL stedelijk museum after their eventual death, who may all do with it all as they please, on condition of keeping copies of https://nicer.app plus https://said.by up and running.<br/>
-        After my death, I'd also like my one creditor re-imbursed : 730 Euro to GVB.NL.<br/>
-        My protective custody agent's details are well engraved in medical records at https://mentrum.nl<br/>
         </p>
 
         <!--
@@ -100,13 +89,6 @@
 
 
         <h2>Political views</h2>
-        <p class="backdropped naComments_onTheSide" style="background:rgba(0,255,255,0.4) !important;">
-        I admit my political views are tainted by my time in psychiatry and analyzing mass media news output, which does seem to clearly indicate there is a class-justice system in play in the western world, which I sometimes find disheartening, frustrating and a valid reason for verbal anger.<br/>
-        </p>
-
-        <p class="backdropped naComments_onTheSide">
-        But the road ahead seems clear; use that same class justice system and existing elites' bureaucracies, along with persistent and smart but also strictly peaceful forms of demonstrations, to <b>install online-referendums-about-everything style governments</b> in most or all western countries, and possibly some tag-along countries as well.<br/>
-        </p>
 
         <p class="backdropped naComments_onTheSide">
         It is my firm belief that humanity should not allow itself to be ever again goaded into conventional war after conventional war by the ruling classes.

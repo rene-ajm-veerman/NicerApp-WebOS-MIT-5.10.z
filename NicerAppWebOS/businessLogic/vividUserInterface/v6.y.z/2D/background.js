@@ -242,8 +242,17 @@ na.backgrounds = na.background = na.bg = {
         const fragment = document.createDocumentFragment();
 
         files.forEach(rfp => {
+            if (rfp.indexOf('/')!==-1) {
+                var fn = rfp.match(/\/(.*?)$/)[1];
+                var f = rfp.replace(fn,'');
+                var rfp2 = f+'thumbs/300/'+fn;
+            } else {
+                var rfp2 = 'thumbs/300/'+rfp;
+            }
             const img = document.createElement('img');
-            img.src = '/siteMedia/backgrounds/Landscape/' + rfp; // adjust path
+            img.src = '/siteMedia/backgrounds/Landscape/' + rfp2; // adjust path
+            img.loading = 'lazy';
+            img.decoding = 'async';
             img.onclick = () => {
                 na.backgrounds.next("#siteBackground", null, '/siteMedia/backgrounds/Landscape/' + rfp);
             };

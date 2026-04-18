@@ -547,7 +547,7 @@ class NicerAppWebOS {
             $filename = str_replace ($fileRoot, '', $filepath['realPath']);
             $dialogID = str_replace ('app.dialog.', '', $filename);
             $dialogID = str_replace ('.php', '', $dialogID);
-            $arr = array ( $dialogID => execPHP($filepath) );
+            $arr = array ( $dialogID => execPHP($filepath['realPath']) );
             //var_dump (file_exists($filepath)); echo PHP_EOL;
             //var_dump ($dialogID); echo PHP_EOL;
             //$arr = array ( $dialogID => $filepath );

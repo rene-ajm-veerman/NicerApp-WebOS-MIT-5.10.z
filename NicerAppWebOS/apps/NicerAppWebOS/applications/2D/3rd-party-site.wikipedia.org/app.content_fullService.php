@@ -42,6 +42,8 @@ $output2 = join ("\n", $output);
 //$output2 = preg_replace('/<body.*content<\/a>/','',$output2);
 //$output2 = preg_replace('/<\/body>/','', $output2);
 //$output2 = preg_replace('/<\/html>/','', $output2);
+$output2 = str_replace('url(portal/', 'url(https://www.wikipedia.org/wiki/portal/', $output2);
+$output2 = str_replace('"www.wikipedia.org/wiki/', '"/wiki/', $output2);
 
 preg_match_all('/<form (.*?)action="(.*?)"/', $output2, $m, PREG_PATTERN_ORDER);
 //var_dump ($m); die();
@@ -87,6 +89,7 @@ foreach ($m[0] as $idx => $str) {
 }
 //die();
 
+
 //$output2 = preg_replace('|<a(.*?)href="(.*?)"(.*?)</a>|U', '<a $1 href="http://192.168.178.29/wiki/$2"$3</a>', $output2);
 preg_match_all('/<a (.*?)href="(.*?)"(.*?)>/', $output2, $m, PREG_PATTERN_ORDER);
 //echo '<pre>';
@@ -101,6 +104,7 @@ foreach ($m[0] as $idx => $str) {
     if (strpos($rf,'#')===false) {
         $rf = preg_replace('/https:\/\/nicer.app\/wiki\/.*?/','',$rf);
         $rf = preg_replace('/https:\/\/said.by\/wiki\/.*?/','',$rf);
+        $rf = str_replace ("www.wikipedia.org/wiki/", '', $rf);
         $replaceFinal = 'javascript:window.top.na.site.loadContent(event, \'/wiki/'.$rf.'\');';
     } else {
         $replaceFinal = 'javascript:window.top.na.site.scrollContent(event, \''.$rf.'\');';
@@ -166,7 +170,8 @@ function mangleURL ($replace, $mangleMe1=true) {
     global $wiki_url;
     //echo $wiki_url; die();
     //var_dump($_SERVER); die();
-    $wiki_url_1 = str_replace('https://','',$wiki_url);
+    $wiki_url_1 = str_replace('portal/','https:://www.wikipedia.org/wiki/portal/',$wiki_url);
+    $wiki_url_1 = str_replace('https://','',$wiki_url_1);
     $wiki_url_1 = preg_replace('/\/.*/','',$wiki_url_1);
     if (substr($replace,0,2)=='//' && $mangleMe1) $rf = str_replace('//','',$replace);
     elseif (substr($replace,0,2)=='//' && !$mangleMe1) $rf = $replace;//str_replace('//','',$replace);

@@ -11,9 +11,11 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 </p>
 
 <ol class="todoList" style="width:50%; width:content-width;">
-    <li class="todoList"><div>(2027) If needed (probably not), build pagination for #siteBackgrounds.</li>
+    <li class="todoList"><div>(2027) If needed (probably not), build pagination for #siteBackgrounds.</div></li>
 
-    <li class="todoList"><div>(2026-April) Fix /wiki on nicer.app.</li>
+    <li class="todoList"><div>(2026) Add database based caching of wikipedia.org output for /wiki on nicer.app (fairly easy to implement these days actually).</div></li>
+
+    <li class="todoList"><div>(2026) Add a seperate, PHP based, database integrity check script, for the entire WebOS.</li>
 
     <li class="todoList"><div>(2026-April&amp;May) Fix the very few remaining bugs in said.by/me document handling.</div></li>
 

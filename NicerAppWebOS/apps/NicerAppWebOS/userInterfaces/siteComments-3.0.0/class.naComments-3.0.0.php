@@ -347,7 +347,7 @@ class class_naComments {
         $cdb->setDatabase ($dbName);
         $cdb->post ($rec);
         $results = [$rec];
-        $rec['resultHTML'] = $this->formatResults($results);
+        $rec['resultHTML'] = $this->formatResults($results, $rec);
         echo json_encode($rec);
     }
 

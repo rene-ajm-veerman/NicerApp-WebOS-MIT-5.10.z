@@ -34,6 +34,7 @@ class vividUserInterface_2D_dialog {
 
         var html = '';
         if (!$(t.el).find('.vdBackground')[0]) html += '<div class="vdBackground"></div>';
+        $(t.el).css({background:'none'});
 
         var idx = false;
         if (na.site.globals.themesDBkeys)

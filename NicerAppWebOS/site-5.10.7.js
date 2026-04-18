@@ -23,7 +23,11 @@ import { naVividMenu__behavior_rainbowPanels as naVividMenu } from '/NicerAppWeb
 na.site = {
     about : {
         firstCreated : '10 January 2002',
-        copyright : '<table style="height:100%;"><tr><td>Copyright (C) 2002-2026 by <a href="mailto:rene.veerman.netherlands@gmail.com" class ="contentSectionTitle3_a"><span class="contentSectionTitle3_span">Rene A.J.M. Veerman</span></a></td><td style="width:40px;"><div class="vividButton" theme="dark" style="position:relative;color:white;height:20px;width:40px;" onclick="na.dismissCopyrightMessage();">Ok</div></td></table>'
+        copyright : '<table style="height:100%;"><tr><td>Copyright (C) 2002-2026 by <a href="mailto:rene.veerman.netherlands@gmail.com" class ="contentSectionTitle3_a"><span class="contentSectionTitle3_span">Rene A.J.M. Veerman</span></a></td><td style="width:40px;"><div class="vividButton" theme="dark" style="position:relative;color:white;height:20px;width:40px;" onclick="na.dismissCopyrightMessage();">Ok</div></td></table>',
+        easterEggs : {
+            '2023-12(Dec)-13(Tue) 11:34CET (Amsterdam.NL\'s timezone)' : '<p>at a certain point in a soul\'s career,<br/>that soul (learns to) trancend(s) judgement of IQ and EQ of others.<br/>this is usually only once enough kung-fu has been practiced though.<br/><a class="noPushState nomod" href="https://youtube.com/@cheetahKungFu" target="ckf">https://youtube.com/@cheetahKungFu</a></p>',
+            '2026-04(April)-18(Saturday) 19:41CET (Amsterdam.NL\'s timezone)' : '<p>Rene AJM Veerman : i realized something just now.<br/>it only takes Time for me to reach Wealthy status.</p>'
+        }
     },
 
     globals : {
@@ -1143,6 +1147,12 @@ na.site = {
 
         if (evt) evt.preventDefault();
 
+        na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs, '#siteToolbarLeft');
+        na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs, '#siteToolbarThemeEditor');
+        na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs, '#siteToolbarTop');
+        na.d.resize();
+
+
         if (!lcc.ec) {
             var
             dateObj = new Date(),
@@ -1381,7 +1391,6 @@ na.site = {
         lc = c.loadContent,
         lcc = lc.current;
 
-        /*
         // stage 001 : call the .ondestroy() handler for all running apps
         for (var appID in na.apps.loaded) {
             var app = na.apps.loaded[appID];
@@ -1397,16 +1406,13 @@ na.site = {
             }, 500, appID);
         }
         na.apps.loaded = {};
-        */
 
-/*
         // stage 002 : hide all the toolbar DIVs (apps loaded in this loadContent() call will have to make them visible again themselves during their onload() code call
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteToolbarTop'); $.cookie('visible_siteToolbarTop','', na.m.cookieOptions());
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteErrors'); $.cookie('visible_siteErrors','', na.m.cookieOptions());
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteToolbarLeft'); $.cookie('visible_siteToolbarLeft','', na.m.cookieOptions());
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteToolbarRight'); $.cookie('visible_siteToolbarRight','', na.m.cookieOptions());
         na.desktop.resize();
-*/
         //na.desktop.setConfig('content');
 
 

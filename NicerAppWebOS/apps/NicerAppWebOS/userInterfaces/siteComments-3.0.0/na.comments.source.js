@@ -232,13 +232,14 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
     },
 
     onclick_btnPostComment_afterDataTransfer(data) {
-        try {
-            var json = JSON.parse(data);
-            $('.naComment_results').prepend(json.resultHTML);
-            na.site.startUIvisuals();
-        } catch (err) {
-            na.site.ajaxFail (err.message);
-        };
+        // try {
+        //     var json = JSON.parse(data);
+        //     $('.naComment_results').prepend(json.resultHTML);
+        //     na.site.startUIvisuals();
+        // } catch (err) {
+        //     na.site.ajaxFail (err.message);
+        // };
+        na.comments.onreload();
 
         $('#siteCommentsEditor').animate({
             top : ($(window).height()/2)-5,
@@ -261,7 +262,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
                     $('#siteCommentsEditor')[0]
                 );
             }
-        })
+        }).fadeOut('normal');
     },
 
     onclick_btnRemoveComment : function (event) {

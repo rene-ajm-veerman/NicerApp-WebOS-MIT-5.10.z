@@ -80,7 +80,7 @@ na.desktop = na.d = {
                     opacity : 0.0001
                 },
                 '#siteToolbarRight' : {
-                    top : $('#siteDateTime').height()+20,
+                    top : 20,
                     left : $(window).width()+100,
                     height : $(window).height()-120,
                     width : 600,//!na.m.userDevice.isPhone ? 300 : $(window).width() - 50,
@@ -283,7 +283,6 @@ na.desktop = na.d = {
                                 else divs[divID].left = na.d.g.margin;
                                 break;
                             case 'right':
-                                debugger;
                                 if (sn.element=='body') {
                                     divs[divID].left = $(window).width() - $(divID).width() - na.d.g.margin+ offsetX;
                                 } else {
@@ -501,7 +500,7 @@ na.desktop = na.d = {
             }
 
             na.m.log (10010, fncn+' : calculated divs', false);
-//debugger;
+debugger;
 
 
             /*
@@ -523,6 +522,7 @@ na.desktop = na.d = {
 
 
             // reset all DIVs to their defaultPos
+            if (!na.site.s.booted)
             for (var divIDx in na.d.g.defaultPos) {
                 if (!divs[divIDx]) {
                     var css = na.d.g.defaultPos[divIDx];
@@ -612,25 +612,13 @@ na.desktop = na.d = {
                                         }
                                 };
 
-                                if (false && na.site.s.c.booted)
-                                    if (na.d.s.animate) {
-                                        $(divID).stop(true,true,false).animate ({
-                                            top : divs[divID].top,
-                                            left : divs[divID].left,
-                                            width : divs[divID].width,
-                                            height : divs[divID].height,
-                                            opacity : 1
-                                        },options);
-                                    } else {
-                                        na.d.s.animatingDivs[divID] = false;
-                                        $(divID).stop(true,true,false).css({
-                                            top : divs[divID].top,
-                                            left : divs[divID].left,
-                                            width : divs[divID].width,
-                                            height : divs[divID].height,
-                                            opacity : 1
-                                        });
-                                    }
+                                var css = na.d.g.defaultPos[divIDx];
+                                if (na.d.s.animate) {
+                                    $(divID).animate (css,options);
+                                } else {
+                                    na.d.s.animatingDivs[divID] = false;
+                                    $(divID).css(css);
+                                }
 
                             } else {
                                 // for mobile phones, use plain $(...).css() calls, for desktops, use $(...).animate() calls,

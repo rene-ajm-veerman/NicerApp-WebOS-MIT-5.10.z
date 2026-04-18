@@ -187,6 +187,8 @@ class naVividMenu__behavior_defaultColors {
             //var html2 = '<div id="'+t.el.id+'__'+idx+'" class="vividButton '+btnType+' vividMenu_item backdropped"  theme="dark" style="opacity:0.0001;"><div class="vividDialogBackground1" style="z-index:-1"></div>'+$(li).children('a')[0].outerHTML.replace('<a ', '<a style="z-index:-1" ').replace($(li).children('a')[0].innerHTML+'</a>', '<span class="contentSectionTitle3_span" style="z-index:-1">'+$(li).children('a')[0].innerText+'</span></a>').replace('class="', 'class="linkToNewPage contentSectionTitle3_a ')+'</div>';
             var html2 = '<div id="'+t.el.id+'__'+idx+'" class="vividButton '+btnType+' vividMenu_item"><div class="vividDialogBackground1" style="z-index:-1"></div>'+$(li).children('a')[0].outerHTML.replace('class="', 'class="linkToNewPage ')+'</div>';
             html += html2;
+            debugger;
+
 
             t.items[idx] = {
                 idx : idx,

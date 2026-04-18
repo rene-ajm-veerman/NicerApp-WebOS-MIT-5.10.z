@@ -5,11 +5,11 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
 		copyright : 'Copyright (C) 2011-2025 by Rene AJM Veerman [rene.veerman.netherlands@gmail.com], Amsterdam, Netherlands',
 		license : 'https://nicer.app/license [MIT]',
 		firstCreated : '2018',
-		lastModified : '2025-10-19(Sunday)',
-        version : '3.2.1'
+		lastModified : '2026-04-18(Saturday)',
+        version : '3.3.0'
 	},
 	globals : {
-        readHistory_numHours : 8
+        readHistory_numHours : 1
     },
 	settings : {
         idx : 0,
@@ -142,7 +142,6 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
             locked : false,
             countDown : 100,
             countDownStr : '',
-            readHistory_numHours__multiplier : 1,
             readHistory_numHours__numberOfRecentlyFailedContentLoadAttempts : 0
         }
 	},
@@ -306,11 +305,15 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
         // get newest news items
         if (
             !s.lastCurrentGet
-            || s.lastCurrentGet.getTime() < dtBegin.getTime() - (1000 * 60 * g.readHistory_numHours)
+            || s.lastCurrentGet.getTime() < dtBegin.getTime() - (1000 * 60 * 60 * g.readHistory_numHours)
         ) {
             s.lastCurrentGet = dtBegin;
-            na1.loadNews_searchResults_loop (new Date(dtBegin.getTime() - (1000 * 60 * g.readHistory_numHours)), dtBegin, settings);
-        };        
+            s.dtEnd = new Date(s.dtCurrent.getTime());
+            s.dtCurrent = new Date(dtEnd.getTime() - (1000 * 60 * 60 * g.readHistory_numHours)), dtEnd
+            settings.dateBegin = s.dtCurrent;
+            settings.dateEnd = s.dtEnd;
+            na1.loadNews_searchResults_loop (s.dtCurrent, s.dtEnd, settings);
+        };
         na.m.waitForCondition ('news app not loading?', function () {
             return !s.loading
         }, function() {
@@ -322,7 +325,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
             data = {
                 loads : s.loads,
                 direction : 'past',
-                section :   s.url.section.replace(/-/g,'/'.replace(/ /g, '_')),
+                section :   s.section.replace(/-/g,'/'.replace(/ /g, '_')),
                 dateBegin : dtBeginURL,
                 dateEnd : dtEndURL,
                 q : $('#newsApp_searchbar').val().replace(' ', '%20')
@@ -361,32 +364,33 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
 
                     var idxStart = s.idx;
                     na.m.walkArray (data, data, undefined, na1.loadNews_get_forDateTimeRange_walkValue);
-                    var itemsLoadedCount = s.idx - idxStart;
+                    var itemsLoadedCount = data.length;
+
                     //na.analytics.logMetaEvent ('newsApp : loadNews_searchResults() data fetched sucessfully for itemsLoadedCount='+itemsLoadedCount+' and url='+url);
 
                     na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'].settings.current.db = na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'].settings.current.db.concat(data);
 
-                    s.dtEnd = s.dtCurrent;
-                    s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * s.read_loop_minutesIntoPast));
+                    // s.dtEnd = s.dtCurrent;
+                    // s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * s.read_loop_minutesIntoPast));
 
 
-                    if (parseInt(s.dtCurrent.getFullYear())<2023) {
+                    if (parseInt(s.dtCurrent.getFullYear())<2025) {
                         clearInterval (s.intervalMailLogCountdown);
                         clearTimeout (s.timerDisplayNews_loop);
                         $('#newsAppInfo').html('Loaded all the news available by now. Press F5 to start over.');
-                    } else /*if (itemsLoadedCount < 50)*/ {
+                    } else if (itemsLoadedCount < 50) {
                         s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours;
-                        s.read_loop_millisecondsToDoNext = 5 * 60 * 1000;
-                    } /*else if (itemsLoadedCount < 100) {
-                        s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours * s.readHistory_numHours__multiplier;
+                        s.read_loop_millisecondsToDoNext = 300;
+                    } else if (itemsLoadedCount < 100) {
+                        s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours;
                         s.read_loop_millisecondsToDoNext = 2 * 1000;
-                    } /*else {
-                        s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours * s.readHistory_numHours__multiplier;
-                        s.read_loop_millisecondsToDoNext = 2 * 1000;
-                    };*/
+                    } else {
+                        s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours;
+                        s.read_loop_millisecondsToDoNext = 10 * 1000;
+                    };
 
 
-                    if (data.trim && data.trim() === '') {
+                    if ((data.trim && data.trim() === '') || (data.length && data.length===0)) {
                         na1.loadNews_searchResults_loop (s.dtCurrent, s.dtEnd, settings);
                     } else {
                         clearInterval (s.intervalMailLogCountdown);
@@ -402,6 +406,8 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
                             di : di
                         };
 
+                        db = $.extend (db, data);
+
                         na.m.walkArray (db, db, undefined, na1.displayNews_getDisplayCounts, false, params);
 
                         var
@@ -411,15 +417,19 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
 
                         ks = ks.sort(function(a,b){ b - a });
                         s.displayCounts = '';
+                        s.displayCountInt = 0;
                         for (k in ks) {
                             if (s.displayCounts!=='') s.displayCounts +=', ';
-                            s.displayCounts += Math.abs(dc[ks[k]]/2);
+                            s.displayCounts += Math.abs(dc[ks[k]]);
+                            s.displayCountInt += Math.abs(dc[ks[k]]);
                         };
-                        s.displayCountInt = parseInt(s.displayCounts);//- g.numItemsThatFitScreen;
+                        s.unread = s.displayCountInt;
+                        //s.displayCountInt = parseInt(s.displayCounts);//- g.numItemsThatFitScreen;
                         $('.newsApp__header__dateRange').html(na1.formatDateForHeader());
                         $('.newsApp__header__displayCounts').html (s.displayCountInt);
                         //$('.newsApp__header__timer').html(s.countDownStr);
-                        if (s.displayCountInt > 2) {
+                        debugger;
+                        if (s.displayCountInt > 0) {
                             s.tries = 0;
                             s.loading = false;
                             na.m.settings.locked_displayNewNewsItems = false;
@@ -551,17 +561,31 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
         var
         ks = Object.keys(dc),
         total = 0;
-        
+
         //ks = ks.sort(function(a,b){ return b - a }); // BAD IDEA!
+
         
         var
         unread = parseInt(dc[ks[0]]);
         s.unread = unread;
-        if (!s.dtEnd || unread < 100) {
-            if (!s.dtCurrent) s.dtCurrent = new Date();
-            s.dtEnd = s.dtCurrent;
-            s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * 60 * 2));//s.read_loop_minutesIntoPast));
+        if (s.firstRun) {
             s.firstRun = false;
+            settings.dateBegin = s.dtCurrent;
+            settings.dateEnd = s.dtEnd;
+            if (s.searchQuery) na1.loadNews_searchResults_loop (s.dtCurrent, s.dtEnd, settings); else
+            setTimeout (function() {
+                na1.loadNews_get_forDateTimeRange (s.dtCurrent, s.dtEnd, settings);
+            }, 20);
+            return false;
+        } else if (!s.dtEnd || unread < 10) {
+            if (!s.dtCurrent) s.dtCurrent = new Date();
+            s.dtEnd = new Date(s.dtCurrent.getTime());
+            s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * 60 * g.readHistory_numHours));//s.read_loop_minutesIntoPast));
+            settings.dateBegin = s.dtCurrent;
+            settings.dateEnd = s.dtEnd;
+            s.firstRun = false;
+            debugger;
+            if (s.searchQuery) na1.loadNews_searchResults_loop (s.dtCurrent, s.dtEnd, settings); else
             setTimeout (function() {
                 na1.loadNews_get_forDateTimeRange (s.dtCurrent, s.dtEnd, settings);
             }, 20);
@@ -640,17 +664,16 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
             return r;
         }, function() {
             s.loading = true;
-            s.dtBegin = dtBegin;
-            s.dtEnd = dtEnd?dtEnd:new Date();
-            s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * settings.read_loop_minutesIntoPast));
-            s.dtBegin = s.dtCurrent;
+            // s.dtBegin = dtBegin;
+            // s.dtEnd = dtEnd?dtEnd:new Date();
+            // s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * settings.read_loop_minutesIntoPast));
+            // // s.dtBegin = new Date(s.dtCurrent.getTime());
             s.lastCurrentGet = dtEnd;
 
             var
             dtBeginURL = na1.formatDateForLoading(dtBegin),//('' + dtBegin).replace('+', '%2B'),
             dtEndURL = na1.formatDateForLoading(dtEnd),//('' + dtEnd).replace('+', '%2B'),
             url = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news/ajax_get_items.php';//?loads='+s.loads+'&section='+settings.section.replace(/-/g,'/').replace(/ /g, '_')+'&dateBegin='+dtBeginURL+'&dateEnd='+dtEndURL;
-
 
             //s.url = settings.section;
 
@@ -730,21 +753,23 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
                             itemsLoadedCount = 0;
                         };
 
-                        //if (itemsLoadedCount < 50) {
+                        if (itemsLoadedCount < 50) {
+                            s.read_loop_minutesIntoPast = 30 * g.readHistory_numHours;
+                            s.read_loop_millisecondsToDoNext = 250;
+                        } else if (itemsLoadedCount < 200) {
                             s.read_loop_minutesIntoPast = 60 * g.readHistory_numHours;
+                            s.read_loop_millisecondsToDoNext = 60 * 1000;
+                        } else {
+                            s.read_loop_minutesIntoPast = 60;
                             s.read_loop_millisecondsToDoNext = 5 * 60 * 1000;
-                        //} /*else {//if (itemsLoadedCount < 200) {
-                            //s.read_loop_minutesIntoPast = 60 * (g.readHistory_numHours/2);
-                            //s.read_loop_millisecondsToDoNext = 1000;
-                        //} /*else {
-                            //s.read_loop_minutesIntoPast = 60;
-                            //s.read_loop_millisecondsToDoNext = 2 * 60 * 1000;
-                        //};
+                        };
 
                         na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'].settings.current.db = na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'].settings.current.db.concat(data);
 
+                        debugger;
+                        clearTimeout (s.timerLoadNews_read_loop);
+                        s.timerLoadNews_read_loop = setTimeout (na1.loadNews_read_loop, s.read_loop_millisecondsToDoNext);
                         if (itemsLoadedCount===0) {
-                            s.timerLoadNews_read_loop = setTimeout (na1.loadNews_read_loop, s.read_loop_millisecondsToDoNext);
                             return false;
                         } else {
                             clearInterval (s.intervalMailLogCountdown);
@@ -814,10 +839,10 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
                         $('.newsApp__header__displayCounts').html (s.displayCountInt);
                         $('.newsApp__header__timer').html(s.countDownStr);
 
-                        if (!s.dtCurrent || !s.dtCurrent.getTime) s.dtCurrent = new Date();
-                        s.dtEnd = s.dtCurrent;
-                        s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * 60 * 1.5));//s.read_loop_minutesIntoPast));
-                        if (s.unread < 100) {
+                        // if (!s.dtCurrent || !s.dtCurrent.getTime) s.dtCurrent = new Date();
+                        // s.dtEnd = s.dtCurrent;
+                        // s.dtCurrent = new Date(s.dtEnd.getTime() - (1000 * 60 * 60 * 1.5));//s.read_loop_minutesIntoPast));
+                        if (s.unread <= 10) {
                             na1.loadNews_read_loop();
                         } //else {
                             //clearTimeout (s.timerLoadNews_read_loop);
@@ -1389,10 +1414,10 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
                         $(container).animate({opacity:1}, 'normal');
                         na1.displayNewNewsItems();
 
-                        //$('.newsApp__header__countDownStr').animate({opacity:1});
+                        $('.newsApp__header__countDownStr').animate({opacity:1});
                         na1.onresize();
                         na1.loadNews_read_loop();
-                        //na1.countDown();
+                        na1.countDown();
                     }, 100);
                 });
             }
@@ -1717,7 +1742,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
         $('#newsApp__item__'+it.idx).fadeIn('normal');
 
         return {
-            // beware : algorithm sub-concious code owned by Nicer Enterprises.
+            // beware : algorithm subconcious code owned by Nicer.App.
             id : '#newsApp__item__'+it.idx,
             html : html,
             html2 : html2
@@ -2034,7 +2059,6 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'] = {
                                 na1 = na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'],
                                 g = na1.globals, s = na1.settings, c = s.current, db = c.db,
                                 r = s.unread > 0;
-                                debugger;
                                 return r;
                             },
                             function () {

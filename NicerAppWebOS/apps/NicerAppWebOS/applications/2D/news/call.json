@@ -1,14 +1,16 @@
-nicer_app___app__app_2d_news__rss_items
+nicer_app___app_2d_news__rss_items
 {
     "selector": {
         "pd": {
-            "$gt": 1656768566,
-            "$lt": 1656775766
+            "$gt": 1776222719,
+            "$lt": 1776226319
         },
         "p": {
-            "$regex": "^\/English News\/Topics\/Business.*"
+            "$regex": "^\/Actualit\u00e9s fran\u00e7aises\/leMonde.fr\/Economie"
         }
     },
+    "limit": 250,
+    "use_index": "_design\/f8296ee26307f4441eaf3723ab3c982e996830a1",
     "fields": [
         "_id",
         "_rev",
@@ -17,11 +19,13 @@ nicer_app___app__app_2d_news__rss_items
         "m",
         "am",
         "pd",
+        "pubDate",
         "da",
         "dd",
         "c",
         "cc"
-    ]
+    ],
+    "bookmark": "g1AAAADzeJw1zrFtwzAQhWHBVRp7hgwQ6iQ6FgJ3KVJmBENgyDN0zpEUjhSE7JA9As_hQbxKyMLd3cNffNw0zWbauGaXspH8jT-ji5acL_vvlPOcjgDruraMPgaH7VmAHGKCUpNlBN3pAbpX6A_gUAWUGJRRWRY_qzKwUXZaMiq3lDcQipLoDZWoDpbLVTOFfiYpWWQ2Mg7DW6f7ftzrvW6n7Lkanx5Gruovum9P1fkC7zYvhinfrun5LCbc_gylYmT8fKA_bAzRE14u__shUhg"
 }
 {
     "headers": {
@@ -32,15 +36,17 @@ nicer_app___app__app_2d_news__rss_items
         },
         "cache-control": "must-revalidate",
         "content-type": "application\/json",
-        "date": "Thu, 21 Jul 2022 15:34:01 GMT",
-        "server": "CouchDB\/3.2.2 (Erlang OTP\/24)",
+        "date": "Sat, 18 Apr 2026 04:13:32 GMT",
+        "server": "CouchDB\/3.5.1 (Erlang OTP\/26)",
         "transfer-encoding": "chunked",
-        "x-couch-request-id": "9d6c3157be",
+        "x-couch-request-id": "ee8884eda9",
         "x-couchdb-body-time": "0"
     },
     "body": {
         "docs": [],
-        "bookmark": "nil"
+        "bookmark": "g1AAAADzeJw1zrFtwzAQhWHBVRp7hgwQ6iQ6FgJ3KVJmBENgyDN0zpEUjhSE7JA9As_hQbxKyMLd3cNffNw0zWbauGaXspH8jT-ji5acL_vvlPOcjgDruraMPgaH7VmAHGKCUpNlBN3pAbpX6A_gUAWUGJRRWRY_qzKwUXZaMiq3lDcQipLoDZWoDpbLVTOFfiYpWWQ2Mg7DW6f7ftzrvW6n7Lkanx5Gruovum9P1fkC7zYvhinfrun5LCbc_gylYmT8fKA_bAzRE14u__shUhg",
+        "warning": "The number of documents examined is high in proportion to the number of results returned. Consider adding a more specific index to improve this."
     },
     "status": "200"
 }
+0.0401

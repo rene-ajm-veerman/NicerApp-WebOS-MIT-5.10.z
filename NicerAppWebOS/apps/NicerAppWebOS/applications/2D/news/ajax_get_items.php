@@ -62,6 +62,7 @@ global $naWebOS;
     ];
     $bookmark = null;
     $done = false;
+    startDuration ('calls');
     
     $arr2 = [];
     while (!$done) {
@@ -69,10 +70,10 @@ global $naWebOS;
             'selector' => array (
                 'pd' => $searchPubDate,
                 'p' => [
-                    '$regex' => '^/'.str_replace('_',' ',str_replace('__','/',$_REQUEST['section'])).'.*'
+                    '$regex' => '^/'.str_replace('_',' ',str_replace('__','/',$_REQUEST['section']))
                 ]
             ),
-            'limit' => 10*1000,
+            'limit' => 250,
             'use_index' => '_design/f8296ee26307f4441eaf3723ab3c982e996830a1',
             'fields' => array ('_id', '_rev', 't', 'de', 'm', 'am', 'pd', 'pubDate', 'da', 'dd', 'c', 'cc' )
         );
@@ -82,7 +83,7 @@ global $naWebOS;
             $dbName = $naWebOS->dbs->findConnection('couchdb')->dataSetName('app_2D_news__rss_items');
             $naWebOS->dbs->findConnection('couchdb')->cdb->setDatabase ($dbName, false);
             $call = $naWebOS->dbs->findConnection('couchdb')->cdb->find ($findCommand);
-            //file_put_contents(dirname(__FILE__).'/call.json', $dbName.PHP_EOL.json_encode($findCommand,JSON_PRETTY_PRINT).PHP_EOL.json_encode($call, JSON_PRETTY_PRINT));
+            file_put_contents(dirname(__FILE__).'/call.json', $dbName.PHP_EOL.json_encode($findCommand,JSON_PRETTY_PRINT).PHP_EOL.json_encode($call, JSON_PRETTY_PRINT).PHP_EOL.json_encode(getDuration('calls')));
             if ($debug) { echo '$findCommand='; var_dump ($findCommand); echo PHP_EOL.'$call='; var_dump ($call); echo PHP_EOL.PHP_EOL; }
         } catch (Exception $e) {
             global $naErr;

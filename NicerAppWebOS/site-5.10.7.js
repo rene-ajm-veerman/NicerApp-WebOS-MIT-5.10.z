@@ -1374,6 +1374,7 @@ na.site = {
      */
 
         $('.lds-facebook').fadeOut('normal');
+        $('.vividDialog > .vividDialogContent').css({overflow:'auto'});
 
         var
         c = na.site.settings,
@@ -2357,7 +2358,7 @@ na.site = {
 
                     na.site.settings.siteInitialized = true;
 
-                    na.site.reloadMenu();
+                    //na.site.reloadMenu();
 
                     na.site.onresize_doContent(settings);
                     na.site.resizeApps();
@@ -2474,6 +2475,7 @@ na.site = {
                 }, 50);
             };
 
+            debugger;
             na.site.reloadMenu_reOrganise (callback2b);
         }, 50);
     },

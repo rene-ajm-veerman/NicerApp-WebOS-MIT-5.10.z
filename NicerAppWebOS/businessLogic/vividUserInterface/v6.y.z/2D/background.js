@@ -63,7 +63,7 @@ na.backgrounds = na.background = na.bg = {
         ac = {
             type : 'GET',
             url : url,
-            success : function (data, ts, xhr) {
+            success : async function (data, ts, xhr) {
                 try {
                     if (typeof data=='string') {
                         data = data.replace(/\</g,'');

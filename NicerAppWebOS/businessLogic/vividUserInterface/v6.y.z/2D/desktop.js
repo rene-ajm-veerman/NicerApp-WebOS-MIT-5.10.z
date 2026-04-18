@@ -159,6 +159,13 @@ na.desktop = na.d = {
     },
 
     resize : function (callback, animate, reset) {
+        if (na.desktop.settings.timeout_resize) clearTimeout (na.desktop.settings.timeout_resize);
+        na.desktop.settings.timeout_resize = setTimeout (async function (callback, animate, reset) {
+            na.desktop.resize_do (callback, animate, reset)
+        }, 310, callback, animate, reset)
+    },
+
+    resize_do : async function (callback, animate, reset) {
         var
         currentTime = performance.timeOrigin + performance.now(),
         fncn = 'na.desktop.resize()',
@@ -494,7 +501,7 @@ na.desktop = na.d = {
             }
 
             na.m.log (10010, fncn+' : calculated divs', false);
-debugger;
+//debugger;
 
 
             /*

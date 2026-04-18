@@ -198,8 +198,6 @@ class naThemeEditor {
             type : 'GET',
             url : url,
             success  (data, ts, xhr) {
-                data = data.replace(/\</g,'');
-                debugger;
                 let dat = JSON.parse(data);
                 na.te.s.c.db = dat;
                 

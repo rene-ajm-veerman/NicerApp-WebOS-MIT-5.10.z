@@ -2,11 +2,11 @@ nicer_app___app_2d_news__rss_items
 {
     "selector": {
         "pd": {
-            "$gt": 1776222719,
-            "$lt": 1776226319
+            "$gt": 1776455304,
+            "$lt": 1776458904
         },
         "p": {
-            "$regex": "^\/Actualit\u00e9s fran\u00e7aises\/leMonde.fr\/Economie"
+            "$regex": "^\/Deutsche nachrichten"
         }
     },
     "limit": 250,
@@ -25,7 +25,7 @@ nicer_app___app_2d_news__rss_items
         "c",
         "cc"
     ],
-    "bookmark": "g1AAAADzeJw1zrFtwzAQhWHBVRp7hgwQ6iQ6FgJ3KVJmBENgyDN0zpEUjhSE7JA9As_hQbxKyMLd3cNffNw0zWbauGaXspH8jT-ji5acL_vvlPOcjgDruraMPgaH7VmAHGKCUpNlBN3pAbpX6A_gUAWUGJRRWRY_qzKwUXZaMiq3lDcQipLoDZWoDpbLVTOFfiYpWWQ2Mg7DW6f7ftzrvW6n7Lkanx5Gruovum9P1fkC7zYvhinfrun5LCbc_gylYmT8fKA_bAzRE14u__shUhg"
+    "bookmark": "g1AAAACPeJw1zTEOwjAMQNGoUyc2di7QBBYGFhbuUZnYqlPcgmJHEWfhdpyEZmD9w_vinOu4Q7dTg2wPeo_4jAmXrV_Z7KWXEGqt3mAi1chQPFKAogIrhqQZSAZNhEJ5ogpiw-l49myLNLb_s9JG9_T99I3ehxsV2zg6rBA5p8hG6zz_ABvjL78"
 }
 {
     "headers": {
@@ -36,17 +36,17 @@ nicer_app___app_2d_news__rss_items
         },
         "cache-control": "must-revalidate",
         "content-type": "application\/json",
-        "date": "Sat, 18 Apr 2026 04:13:32 GMT",
+        "date": "Sat, 18 Apr 2026 04:49:24 GMT",
         "server": "CouchDB\/3.5.1 (Erlang OTP\/26)",
         "transfer-encoding": "chunked",
-        "x-couch-request-id": "ee8884eda9",
+        "x-couch-request-id": "6aa44073c6",
         "x-couchdb-body-time": "0"
     },
     "body": {
         "docs": [],
-        "bookmark": "g1AAAADzeJw1zrFtwzAQhWHBVRp7hgwQ6iQ6FgJ3KVJmBENgyDN0zpEUjhSE7JA9As_hQbxKyMLd3cNffNw0zWbauGaXspH8jT-ji5acL_vvlPOcjgDruraMPgaH7VmAHGKCUpNlBN3pAbpX6A_gUAWUGJRRWRY_qzKwUXZaMiq3lDcQipLoDZWoDpbLVTOFfiYpWWQ2Mg7DW6f7ftzrvW6n7Lkanx5Gruovum9P1fkC7zYvhinfrun5LCbc_gylYmT8fKA_bAzRE14u__shUhg",
+        "bookmark": "g1AAAACPeJw1zTEOwjAMQNGoUyc2di7QBBYGFhbuUZnYqlPcgmJHEWfhdpyEZmD9w_vinOu4Q7dTg2wPeo_4jAmXrV_Z7KWXEGqt3mAi1chQPFKAogIrhqQZSAZNhEJ5ogpiw-l49myLNLb_s9JG9_T99I3ehxsV2zg6rBA5p8hG6zz_ABvjL78",
         "warning": "The number of documents examined is high in proportion to the number of results returned. Consider adding a more specific index to improve this."
     },
     "status": "200"
 }
-0.0401
+0.0378

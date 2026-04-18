@@ -513,7 +513,7 @@ class NicerAppWebOS {
             $filename = str_replace ($fileRoot, '', $filepath['realPath']);
             $dialogID = str_replace ('app.dialog.', '', $filename);
             $dialogID = str_replace ('.php', '', $dialogID);
-            $arr = array ( $dialogID => execPHP($filepath) );
+            $arr = array ( $dialogID => execPHP($filepath['realPath']) );
             //var_dump (file_exists($filepath)); echo PHP_EOL;
             //var_dump ($dialogID); echo PHP_EOL;
             //$arr = array ( $dialogID => $filepath );
@@ -1647,17 +1647,17 @@ class NicerAppWebOS {
                 $r .= '// debug1'.PHP_EOL;
                 $useVividTexts = !array_key_exists('uvt',$_GET) || $_GET['uvt']=='y' ? 'true' : 'false';
                 $useLoadContent = !array_key_exists('lc',$_GET) || $_GET['lc']=='y' ? 'true' : 'false';
-                $reloadVersionInfo = !array_key_exists('vi',$_GET) || $_GET['vi']=='n' ? false:true;
+                $reloadVersionInfo = !array_key_exists('vi',$_GET) || $_GET['vi']=='y' ? false:true;
 
                 $fn = __DIR__.'/../version.json.php';
                 $fn2 = __DIR__.'/../version.json';
                 if ($reloadVersionInfo || !file_exists($fn2)) {
                     $json = execPHP($fn);
                     $this->about = json_decode($json,true);
+                    file_put_contents ($fn2, $json);
                 }
 
-                //echo '<pre style="color:green">'; var_dump ($css); echo '</pre>'; exit();
-
+                // //echo '<pre style="color:green">'; var_dump ($css); echo '</pre>'; exit();
                 $_SESSION['themeName'] = $themeName;
                 $_SESSION['specificityName'] = $selector['specificityName'];
                 if ($debug) { echo '<pre style="color:green">'; var_dump ($selectors2); echo '</pre>'; exit(); }

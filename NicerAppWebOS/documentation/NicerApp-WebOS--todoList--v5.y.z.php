@@ -11,22 +11,21 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 </p>
 
 <ol class="todoList" style="width:50%; width:content-width;">
-    <li class="todoList"><div>(2026) Fix the vividMenu for news menu items bug.</li>
+    <li class="todoList"><div>(2027) If needed (probably not), build pagination for #siteBackgrounds.</li>
 
-    <li class="todoList"><div>(2027) Possibly build pagination for #siteBackgrounds.</li>
+    <li class="todoList"><div>(2026-April) Fix /wiki on nicer.app.</li>
 
-    <li class="todoList"><div>(2026-2027) Build /forums/ with 'geo-politics', 'national politics/country ABC', 'referendum' and 'court opinion' sub-forums.</li>
+    <li class="todoList"><div>(2026-April&amp;May) Fix the very few remaining bugs in said.by/me document handling.</div></li>
 
-    <li class="todoList"><div>(2026) Fix the very few remaining bugs in said.by/me document handling.</div></li>
-
-    <li class="todoList"><div>(2026) Start on .../logic.databases/uDB-2.0.0, to be based on .../logic.databases/generalizedDatabasesAPI-1.0.0
+    <li class="todoList"><div>(2026) Start on .../logic.databases/uDB-2.0.0, to be based on .../logic.databases/generalizedDatabasesAPI-1.0.0<br/>
         <a href="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-uDB.png" class="nomod noPushState" target="tl-udb-1"><img src="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-uDB.png" style="width:320px"/></a>
         <a href="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-taskManager.png" class="nomod noPushState" target="tl-udb-1"><img src="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-taskManager.png" style="width:320px"/></a>
         <ol class="todoList_l1">
-            <li class="todoList_l1"><div>Add FilesystemDB (by Rene AJM Veerman) MySQL and PostgreSQL to the list of supported database architectures (via .../NicerAppWebOS/3rd-party/adodb5), currently only couchdb is supported.</div></li>
+            <li class="todoList_l1"><div>Add FilesystemDB (by Rene AJM Veerman), MySQL, and PostgreSQL to the list of supported database architectures (via .../NicerAppWebOS/3rd-party/adodb5), currently only couchdb is supported.</div></li>
             <li class="todoList_l1"><div>Add query routines in uDB to translate couchdb index names to index ids.</div></li>
             <li class="todoList_l1"><div>Add and test MySQL, PostgreSQL and 'filesystemDB' (fsDB) sub-modules to uDB <b>(also on Window 11)</b>, as well as their interactions with the CouchDB part of uDB.</div></li>
             <li class="todoList_l1"><div>Start on .../businessLogic/filePhoenix.</div></li>
+            <li class="todoList_l1"><div>Start on .../businessLogic/class.diaries.2.y.z.php.</div></li>
             <li class="todoList_l1"><div>Start on .../businessLogic/regionalCloud.</div></li>
             </ol>
     </div></li>

@@ -115,7 +115,7 @@ $view = $naWebOS->view;
                 $idx = 0;
                 foreach ($filez as $idx=>$fn) {
                     $id = 'mp3_'.$idx;
-                    echo "\t\t".'<div id="'.$id.'" file="'.$filez2[$idx].'" class="mp3 vividButton" theme="dark" style="" onclick="na.mp.selectMP3(\''.$id.'\', \''.str_replace("'", "\\'", $view[$appFolder]['webRelPath'].$filez2[$idx]).'\');" style="width:220px"><div class="vdBackground"></div><span style="opacity:1">'.$fn.'</span></div>'.PHP_EOL;
+                    echo "\t\t".'<div id="'.$id.'" file="'.$filez2[$idx].'" class="mp3 vividButton" theme="dark" style="" onclick="na.mp.selectMP3(\''.$id.'\', \''.str_replace("'", "\\'", $view[$appFolder]['webRelPath'].$filez2[$idx]).'\');" style="width:220px"><span style="opacity:1">'.$fn.'</span></div>'.PHP_EOL;
                     $idx++;
                 }
     ?>
@@ -235,7 +235,7 @@ $view = $naWebOS->view;
             </div>
 
             <!-- 4. Progress bar -->
-            <div class="progress-container">
+            <div class="progress-container" style="width:100%;">
                 <div class="audioSeekBar" style="width:100%" onclick="na.musicPlayer.seek(event);">
                     <div class="audioSeekBar_setting" style="width:0px;"></div>
                 </div>
@@ -249,8 +249,8 @@ $view = $naWebOS->view;
             </div>
 
             <!-- 6. Volume -->
-            <div class="volume-container">
-                <div class="audioVolumeBar" onclick="na.musicPlayer.setVolume(event);">
+            <div class="volume-container" style="width:100%;">
+                <div class="audioVolumeBar" style="width:100%" onclick="na.musicPlayer.setVolume(event);">
                     <div class="audioVolumeBar_setting""></div>
                 </div>
             </div>

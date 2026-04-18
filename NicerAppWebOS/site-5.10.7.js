@@ -1572,7 +1572,7 @@ na.site = {
                                 width : '100%', height : '100%'
                             });
                             na.desktop.resize (function() {
-                                //na.site.resizeApps(f);
+                                na.site.resizeApps(f);
                                 na.site.onresize(); //calls na.site.resizeApps too.
                             })
                         }, null, f);
@@ -2056,6 +2056,7 @@ na.site = {
             na.site.settings.appsResizing = {};
 
             var called = 0;
+            debugger;
             for (var appID in na.apps.loaded) {
                 var appSettings = na.apps.loaded[appID];
                 if (typeof appSettings.onresize=='function') {

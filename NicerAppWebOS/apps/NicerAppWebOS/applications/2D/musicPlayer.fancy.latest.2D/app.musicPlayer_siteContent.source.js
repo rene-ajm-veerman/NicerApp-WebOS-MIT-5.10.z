@@ -638,8 +638,6 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fa
 	playlistCount : 0,
 
 	onresize : function (div) {
-        if (div && div.id!=='siteContent') return false;
-        if (!window.top || !$(window.top.document.getElementById('siteContent'))[0]) return false;
 		var 
 		contentMargin = 20,
 		myWidth = $('#siteContent > .vividDialogContent').width() - (contentMargin*2),

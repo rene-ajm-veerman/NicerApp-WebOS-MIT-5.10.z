@@ -1820,61 +1820,69 @@ na.site = {
 
                     var vdc = $('#'+divID2+' .vividDialogContent');
                     if (dat[divID2]) {
-                        vdc.html(dat[divID2]).delay(50);
-                        $('.vividButton4, .vividButton, .vividButton_icon_50x50_siteTop, .vividButton_icon_50x50', vdc).each(function(idx,el) {
-                            delete na.site.c.buttons['#'+el.id];
-                        });
-                        na.site.startUIvisuals();
-                        na.site.settings.running_loadContent = false;
-                        vdc.show();
-                        if (na.site.settings.url.match('/wiki/')) {
-                            $('#siteContent > .vividDialogContent > div').css({background:'none'});
-                            $('#bodyContent div').css({background:'none'});
-                            //$('#bodyContent li').css({color:'yellow'});
-                        };
-                        na.m.log (1501,fncn+' : "'+divID2+'" filled with HTML.', false);
-                        na.site.transformLinks($('#'+divID2)[0]);
-                        na.site.renderAllCustomHeadingsAndLinks();
-
-                        /* handled by vdc.html() above here in this code block instead
-                        var inlineScripts = $('script:not([src])', vdc);
-                        for (var i=0; i<inlineScripts.length; i++) {
-                            eval (inlineScripts[i].innerText);
-                        }
-                        */
-
-                        var
-                        scripts = dat[divID2].match(/\/NicerAppWebOS\/.*?\.js.*?"/g),
-                        scriptIdx = 0;
-
-                        na.m.log (1502, divID2, scripts);
-                        if (scripts) {
-                            c.scriptsLoaded = 0;
-                            while (scriptIdx < scripts.length) {
-                                var src = scripts[scriptIdx].replace(/"/g,'');
-                                if ($('head script[src="'+src+'"]').length===0) {
-                                    var script = document.createElement('script');
-                                    script.onload = function () {
-                                        var c = na.site.settings;
-                                        c.scriptsLoaded++;
-                                        if (c.scriptsLoaded === c.scriptsToLoadTotal) {
-                                            c.scriptsLoaded = true;
-                                            c.startingApps = false;
-                                            f.completed = true;
-                                            f.runningNow = false;
-                                        }
-
-                                    };
-                                    script.src = src;
-                                    scriptIdx++;
-                                    $('head')[0].appendChild(script);
-                                } else scriptIdx++;
+                        if (vdc.html().replace(/\s+/g,' ').trim()!==dat[divID2].replace(/\s+/g,' ').trim()) {
+                            vdc.html(dat[divID2].replace(/\s+/g,' ')).delay(50);
+                            $('.vividButton4, .vividButton, .vividButton_icon_50x50_siteTop, .vividButton_icon_50x50', vdc).each(function(idx,el) {
+                                delete na.site.c.buttons['#'+el.id];
+                            });
+                            na.site.startUIvisuals();
+                            na.site.settings.running_loadContent = false;
+                            vdc.show();
+                            if (na.site.settings.url.match('/wiki/')) {
+                                $('#siteContent > .vividDialogContent > div').css({background:'none'});
+                                $('#bodyContent div').css({background:'none'});
+                                //$('#bodyContent li').css({color:'yellow'});
                             };
+                            na.m.log (1501,fncn+' : "'+divID2+'" filled with HTML.', false);
+                            na.site.transformLinks($('#'+divID2)[0]);
+                            na.site.renderAllCustomHeadingsAndLinks();
+
+                            /* handled by vdc.html() above here in this code block instead
+                            var inlineScripts = $('script:not([src])', vdc);
+                            for (var i=0; i<inlineScripts.length; i++) {
+                                eval (inlineScripts[i].innerText);
+                            }
+                            */
+
+                            var
+                            scripts = dat[divID2].match(/\/NicerAppWebOS\/.*?\.js.*?"/g),
+                            scriptIdx = 0;
+
+                            na.m.log (1502, divID2, scripts);
+                            if (scripts) {
+                                c.scriptsLoaded = 0;
+                                while (scriptIdx < scripts.length) {
+                                    var src = scripts[scriptIdx].replace(/"/g,'');
+                                    if ($('head script[src="'+src+'"]').length===0) {
+                                        var script = document.createElement('script');
+                                        script.onload = function () {
+                                            var c = na.site.settings;
+                                            c.scriptsLoaded++;
+                                            if (c.scriptsLoaded === c.scriptsToLoadTotal) {
+                                                c.scriptsLoaded = true;
+                                                c.startingApps = false;
+                                                f.completed = true;
+                                                f.runningNow = false;
+                                            }
+
+                                        };
+                                        script.src = src;
+                                        scriptIdx++;
+                                        $('head')[0].appendChild(script);
+                                    } else scriptIdx++;
+                                };
+                            } else {
+                                f.completed = true;
+                                f.fnc.completed = true;
+                                c.scriptsLoaded = true;
+                                c.startingApps = false;
+                            }
                         } else {
-                            f.completed = true;
-                            f.fnc.completed = true;
-                            c.scriptsLoaded = true;
-                            c.startingApps = false;
+                            na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs, divID2);
+                            na.d.s.visibleDivs.push ('#'+divID2);
+                            debugger;
+                            $('.vividDialogContent', $('#'+divID2)).show('normal');
+                            na.d.resize();
                         }
                     }
 
@@ -2056,7 +2064,6 @@ na.site = {
             na.site.settings.appsResizing = {};
 
             var called = 0;
-            debugger;
             for (var appID in na.apps.loaded) {
                 var appSettings = na.apps.loaded[appID];
                 if (typeof appSettings.onresize=='function') {

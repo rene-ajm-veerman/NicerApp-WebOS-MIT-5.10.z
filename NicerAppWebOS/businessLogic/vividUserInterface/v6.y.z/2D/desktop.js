@@ -293,7 +293,6 @@ na.desktop = na.d = {
                                 }
                                 break;
                             case 'rightNegative':
-
                                 divs[divID].left = divs[sn.element].left - $(divID).width() - na.d.g.margin + offsetX;
                                 break;
                         }
@@ -500,7 +499,7 @@ na.desktop = na.d = {
             }
 
             na.m.log (10010, fncn+' : calculated divs', false);
-debugger;
+//debugger;
 
 
             /*

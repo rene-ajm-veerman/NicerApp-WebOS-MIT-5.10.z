@@ -26,7 +26,11 @@ na.site = {
         copyright : '<table style="height:100%;"><tr><td>Copyright (C) 2002-2026 by <a href="mailto:rene.veerman.netherlands@gmail.com" class ="contentSectionTitle3_a"><span class="contentSectionTitle3_span">Rene A.J.M. Veerman</span></a></td><td style="width:40px;"><div class="vividButton" theme="dark" style="position:relative;color:white;height:20px;width:40px;" onclick="na.dismissCopyrightMessage();">Ok</div></td></table>',
         easterEggs : {
             '2023-12(Dec)-13(Tue) 11:34CET (Amsterdam.NL\'s timezone)' : '<p>at a certain point in a soul\'s career,<br/>that soul (learns to) trancend(s) judgement of IQ and EQ of others.<br/>this is usually only once enough kung-fu has been practiced though.<br/><a class="noPushState nomod" href="https://youtube.com/@cheetahKungFu" target="ckf">https://youtube.com/@cheetahKungFu</a></p>',
-            '2026-04(April)-18(Saturday) 19:41CET (Amsterdam.NL\'s timezone)' : '<p>Rene AJM Veerman : i realized something just now.<br/>it only takes Time for me to reach Wealthy status.</p>'
+            '2026-04(April)-18(Saturday) 19:41CET (Amsterdam.NL\'s timezone)' : '<p>Rene AJM Veerman : i realized something just now.<br/>it only takes Time for me to reach Wealthy status.</p>',
+            '2026-04(Apr)-19(Sunday) 12:55CET (Amsterdam.NL\' timezone)' : '<p>women in political groups are like ice breakers; they move slow, but they always reach their goals.</p>',
+            '2026-04(Apr)-19(Sunday) 13:07CET (Amsterdam.NL\' timezone)' : '<p>If you want to be a hero, make sure you\'re not a girl!.</p>',
+            '2026-04(Apr)-19(Sunday) 13:10CET (Amsterdam.NL\' timezone)' : '<p>Whereas it used to be "dont go breaking hearts", it should become "dont go breaking lifeforms at all".</p>'
+
         }
     },
 
@@ -483,6 +487,16 @@ na.site = {
                     if (t.globals.version) {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
                         $('#siteLastModified').html(t.globals.version.version+', last modified : '+t.globals.version.history.lastModified+' CET');
+                    }
+
+                    var numRand = Math.floor(Math. random() * 101);
+                    if (numRand === 1 || numRand === 2) {
+                        setTimeout (function() {
+                            var ks = Object.keys(na.site.about.easterEggs);
+                            var numRand2 = Math.floor(Math. random() * ks.length);
+                            var k = na.site.about.easterEggs[ks[numRand2]];
+                            na.site.setStatusMsg (k)
+                        }, 4500)
                     }
                     //na.site.onresize();
                     //setTimeout (function() {
@@ -1821,7 +1835,7 @@ na.site = {
                     var vdc = $('#'+divID2+' .vividDialogContent');
                     if (dat[divID2]) {
                         if (vdc.html().replace(/\s+/g,' ').trim()!==dat[divID2].replace(/\s+/g,' ').trim()) {
-                            vdc.html(dat[divID2].replace(/\s+/g,' ')).delay(50);
+                            vdc.html(dat[divID2]).delay(50);
                             $('.vividButton4, .vividButton, .vividButton_icon_50x50_siteTop, .vividButton_icon_50x50', vdc).each(function(idx,el) {
                                 delete na.site.c.buttons['#'+el.id];
                             });
@@ -1853,23 +1867,23 @@ na.site = {
                                 c.scriptsLoaded = 0;
                                 while (scriptIdx < scripts.length) {
                                     var src = scripts[scriptIdx].replace(/"/g,'');
-                                    if ($('head script[src="'+src+'"]').length===0) {
-                                        var script = document.createElement('script');
-                                        script.onload = function () {
-                                            var c = na.site.settings;
-                                            c.scriptsLoaded++;
-                                            if (c.scriptsLoaded === c.scriptsToLoadTotal) {
-                                                c.scriptsLoaded = true;
-                                                c.startingApps = false;
-                                                f.completed = true;
-                                                f.runningNow = false;
-                                            }
+                                    $('head script[src="'+src+'"]').remove()
+                                    var script = document.createElement('script');
+                                    script.onload = function () {
+                                        var c = na.site.settings;
+                                        c.scriptsLoaded++;
+                                        if (c.scriptsLoaded === c.scriptsToLoadTotal) {
+                                            c.scriptsLoaded = true;
+                                            c.startingApps = false;
+                                            f.completed = true;
+                                            f.runningNow = false;
+                                        }
 
-                                        };
-                                        script.src = src;
-                                        scriptIdx++;
-                                        $('head')[0].appendChild(script);
-                                    } else scriptIdx++;
+                                    };
+                                    script.src = src;
+                                    scriptIdx++;
+                                    debugger;
+                                    $('head')[0].appendChild(script);
                                 };
                             } else {
                                 f.completed = true;
@@ -2489,7 +2503,6 @@ na.site = {
                 }, 50);
             };
 
-            debugger;
             na.site.reloadMenu_reOrganise (callback2b);
         }, 50);
     },

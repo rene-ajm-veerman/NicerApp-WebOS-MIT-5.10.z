@@ -623,15 +623,17 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                             var r = (
                                 na.m.desktopIdle()
                                 &&  na.cms.settings.current.selectedTreeNode
-                                && (
-                                    (
-                                        na.cms.settings.current.selectedTreeNode.type == 'naDocument'
-                                        && typeof $('#tinymce_ifr')[0] == 'object'
-                                        && $('#tinymce_ifr').css('visibility')!=='hidden'
-                                        && $('#tinymce_ifr').css('display')!=='none'
-                                    )
-                                    || na.cms.settings.current.selectedTreeNode.type == 'naMediaAlbum'
-                                )
+                                // && (
+                                //     (
+                                //         na.cms.settings.current.selectedTreeNode.type == 'naDocument'
+                                //         && typeof $('#tinymce_ifr')[0] == 'object'
+                                //         && $('#tinymce_ifr').css('visibility')!=='hidden'
+                                //         && $('#tinymce_ifr').css('display')!=='none'
+                                //     )
+                                //     || na.cms.settings.current.selectedTreeNode.type == 'naMediaAlbum'
+                                // )
+                                && tinymce.ready
+                                && $('#tinymce1')[0]
                             );
                             //debugger;
                             return r;
@@ -852,8 +854,9 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                     function () {
                         return (
                             tinymce.ready
-                            && tinymce.get('tinymce1')!==null
-                            && typeof tinymce.get('tinymce1')=='object'
+                            //&& tinymce.get('tinymce1')!==null
+                            //&& typeof tinymce.get('tinymce1')=='object'
+                            && $('#tinymce1')[0]
                         );
                     },
                     function () {

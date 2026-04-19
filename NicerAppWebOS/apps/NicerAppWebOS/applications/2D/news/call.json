@@ -2,11 +2,11 @@ nicer_app___app_2d_news__rss_items
 {
     "selector": {
         "pd": {
-            "$gt": 1776426960,
-            "$lt": 1776430560
+            "$gt": 1776562090,
+            "$lt": 1776565690
         },
         "p": {
-            "$regex": "^\/Actualit\u00e9s fran\u00e7aises\/leMonde.fr\/Economie"
+            "$regex": "^\/English News\/World Headlines"
         }
     },
     "limit": 250,
@@ -25,7 +25,7 @@ nicer_app___app_2d_news__rss_items
         "c",
         "cc"
     ],
-    "bookmark": "g1AAAAD-eJw1z0FOwzAQBdCoK1acAbFm4pBWacWuiy45Q-TaYzLt2K48EwVOwhEQ5-gh2HMSEonu_nxppPe5qqrVsPLVvagtesaP3mdHPs7956B6kRdjpmmqGWNOHutQDLqcciQ08wM5RtM2bWeajXnemjzSWwa2EIjJMgLnCVwWBY9LLcmFOQaaLxRwtghE60pOgEkLwsUWEkCFYy4e7fjed92u2W3bft2uN_WgkRfu3Y3Ly4Aj_T7-LOQns3c6Wia9fstDKDZdvywJimF8vfkP__7T6Q9JbFdz"
+    "bookmark": "g1AAAADoeJw1jjFqA0EMRRdXqXwDgy-gjN0GUgZSpU0ZJjOKV16NZpE0mO1zgBwyB_FMYRB8_c_n83iapt28y9PePKovuH3lmiiXnv_N7qu9hEDiqII3S9H8OdUShgmt36KRhKJA1ioI5koLGpD8MCWH8-kEhZip9kYk3oCrGXSnzYxif4lHW_uytuRNEaisMTnJBdbWxQBTlVq2MDifHpw8yL_p__V3sB7Cm1yYbD5-DLTPqpyP7xgzk6Bdr3dBoVKD"
 }
 {
     "headers": {
@@ -36,17 +36,16 @@ nicer_app___app_2d_news__rss_items
         },
         "cache-control": "must-revalidate",
         "content-type": "application\/json",
-        "date": "Sat, 18 Apr 2026 15:56:10 GMT",
+        "date": "Sun, 19 Apr 2026 08:52:14 GMT",
         "server": "CouchDB\/3.5.1 (Erlang OTP\/26)",
         "transfer-encoding": "chunked",
-        "x-couch-request-id": "a869cdea77",
+        "x-couch-request-id": "c098c3c963",
         "x-couchdb-body-time": "0"
     },
     "body": {
         "docs": [],
-        "bookmark": "g1AAAAD-eJw1z0FOwzAQBdCoK1acAbFm4pBWacWuiy45Q-TaYzLt2K48EwVOwhEQ5-gh2HMSEonu_nxppPe5qqrVsPLVvagtesaP3mdHPs7956B6kRdjpmmqGWNOHutQDLqcciQ08wM5RtM2bWeajXnemjzSWwa2EIjJMgLnCVwWBY9LLcmFOQaaLxRwtghE60pOgEkLwsUWEkCFYy4e7fjed92u2W3bft2uN_WgkRfu3Y3Ly4Aj_T7-LOQns3c6Wia9fstDKDZdvywJimF8vfkP__7T6Q9JbFdz",
-        "warning": "The number of documents examined is high in proportion to the number of results returned. Consider adding a more specific index to improve this."
+        "bookmark": "g1AAAADoeJw1jjFqA0EMRRdXqXwDgy-gjN0GUgZSpU0ZJjOKV16NZpE0mO1zgBwyB_FMYRB8_c_n83iapt28y9PePKovuH3lmiiXnv_N7qu9hEDiqII3S9H8OdUShgmt36KRhKJA1ioI5koLGpD8MCWH8-kEhZip9kYk3oCrGXSnzYxif4lHW_uytuRNEaisMTnJBdbWxQBTlVq2MDifHpw8yL_p__V3sB7Cm1yYbD5-DLTPqpyP7xgzk6Bdr3dBoVKD"
     },
     "status": "200"
 }
-0.0717
+0.0312

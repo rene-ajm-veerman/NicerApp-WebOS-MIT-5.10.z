@@ -356,6 +356,7 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
                     //append the button to the group
                     bg.append(button);
 
+                    debugger;
                     tinymce.ready = true;
                 }
             });

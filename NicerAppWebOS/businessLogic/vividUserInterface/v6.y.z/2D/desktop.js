@@ -28,7 +28,8 @@ na.desktop = na.d = {
                 'musicComments' : [ '#siteYoutubePlayer', '#siteComments' ],
                 'contentAndToolbarRight' : [ '#siteContent', '#siteToolbarRight' ]
             },
-            defaultPos : {
+            defaultPos : function() {
+                return {
                 '#siteDateTime' : {
                     top : -100,
                     left : 10,
@@ -100,13 +101,14 @@ na.desktop = na.d = {
                     top : $(window).height() + 250,
                     height : '3em'
                 }
+                };
             },
             margin : 30
         };
 
         for (var divIdx=0; divIdx < t.g.divs.length; divIdx++) {
             var el_id = t.g.divs[divIdx];
-            if (t.g.defaultPos[el_id]) $(el_id).css(t.g.defaultPos[el_id]);
+            if (t.g.defaultPos()[el_id]) $(el_id).css(t.g.defaultPos()[el_id]);
         };
 
         t.s = t.settings = $.extend(t.settings, {
@@ -521,11 +523,10 @@ na.desktop = na.d = {
 
 
             // reset all DIVs to their defaultPos
-            if (!na.site.s.booted)
-            for (var divIDx in na.d.g.defaultPos) {
+            for (var divIDx in na.d.g.defaultPos()) {
                 if (!divs[divIDx]) {
-                    var css = na.d.g.defaultPos[divIDx];
-                    $(divIDx).animate(css,'slow','swing');
+                    var css = na.d.g.defaultPos()[divIDx];
+                    $(divIDx).animate(css,'normal');
                 }
             }
 
@@ -611,7 +612,7 @@ na.desktop = na.d = {
                                         }
                                 };
 
-                                var css = na.d.g.defaultPos[divIDx];
+                                var css = na.d.g.defaultPos()[divIDx];
                                 if (na.d.s.animate) {
                                     $(divID).animate (css,options);
                                 } else {

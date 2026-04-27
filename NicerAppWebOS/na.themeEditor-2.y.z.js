@@ -333,7 +333,7 @@ class naThemeEditor {
         if (na.te.s.c.forDialogID) {
             var
             div = $('#'+na.te.s.c.forDialogID),
-            bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1')[0];
+            bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground')[0];
         } else {
             var
             div = $(na.te.s.c.forElements),
@@ -385,7 +385,7 @@ class naThemeEditor {
             var bgEl = document.createElement('img');
             bgEl.onload = function () {
                 if (na.te.s.c.forDialogID) {
-                    var bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1')[0];
+                    var bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground')[0];
                 } else {
                     var bg = $(na.te.s.c.forElements)[0];
                 }
@@ -419,7 +419,7 @@ class naThemeEditor {
             change  (color) {
                 if (typeof color=='object') color = 'rgba('+color._r+', '+color._g+', '+color._b+', '+color._a+')';
                 if (na.te.s.c.forDialogID) {
-                    var bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1')[0];
+                    var bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground')[0];
                 } else {
                     var bg = $(na.te.s.c.forElements);
                 };
@@ -481,7 +481,7 @@ class naThemeEditor {
             $('.mediaThumb', $('#themeEditor_photoAlbum')[0].contentWindow.document).each(function(idx,el) {
                 //na.m.log (300, 'el.src='+el.src.replace('thumbs/', ''));
                 if (x && x.indexOf(el.src.replace('thumbs/', ''))!==-1) {
-                    var scale = $('#'+forDialogID+' > .vividDialogBackground1').css('backgroundSize').match(/\d+/);
+                    var scale = $('#'+forDialogID+' > .vdBackground').css('backgroundSize').match(/\d+/);
                     if (scale) na.te.s.c.scale = scale[0];
                     na.te.s.c.selectedImage = el;
                     na.m.log (300, 'na.te.s.c.selectedImage = '+el.src);
@@ -602,8 +602,8 @@ class naThemeEditor {
                             '#btnSelectTextSettings', '#btnSelectTextShadowSettings'
                         ]);
                     else if (
-                        rec.text.match(/#site.*\s\>\s\.vividDialogBackground1$/)
-                        || rec.text.match(/#app__.*\s\>\s\.vividDialogBackground1$/)
+                        rec.text.match(/#site.*\s\>\s\.vdBackground$/)
+                        || rec.text.match(/#app__.*\s\>\s\.vdBackground$/)
                     )
                         na.te.enableButtons([
                             '#btnSelectBackgroundFolder' , '#btnSelectBackgroundImage'
@@ -699,7 +699,7 @@ class naThemeEditor {
                     //setTimeout (function () {
 
                         let
-                        bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1'),
+                        bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground'),
                         bg3 = $(rec.text),
                         src = na.te.s.c.elementsCSS[rec.id].background;
 
@@ -709,7 +709,7 @@ class naThemeEditor {
                                 background : src,
                                 opacity : 1
                             });
-                        else if (rec.text.match(/\s+\.newsApp__item__outer\s+>\s+.vividDialogBackground1\s*/)) {
+                        else if (rec.text.match(/\s+\.newsApp__item__outer\s+>\s+.vdBackground\s*/)) {
                             $(bg3).css({
                                 background : src.match(/url\(/)
                                     ? src.match(/url\(.*\).*%/)
@@ -797,7 +797,7 @@ class naThemeEditor {
                 });
                 if ('site'+parentName==na.te.s.c.forDialogID) outputData.did = newID;
                 for (var divSel in value) {
-                    //if (divSel.match(/\> .vividDialogBackground1/)) continue;
+                    //if (divSel.match(/\> .vdBackground/)) continue;
                     var newID2 = na.m.randomString();
                     outputData.dat.push ({
                         id : newID2,
@@ -821,7 +821,7 @@ class naThemeEditor {
                     type : type
                 });
                 for (var cssText in value) {
-                    if (cssText.match(/\> .vividDialogBackground1/)) continue;
+                    if (cssText.match(/\> .vdBackground/)) continue;
                     var vdata = value[cssText].css;
                     var newID2 = na.m.randomString();
                     outputData.dat.push ({
@@ -1593,7 +1593,7 @@ class naThemeEditor {
             //$(bg).css({ border : newBorder, borderRadius : newBorderRadius });
             //$('#'+na.te.s.c.forDialogID).css({borderRadius : Math.round((newBorderRadius/4)*3) });
             //$('.boxShadow', bg).css({ border : newBorder, borderRadius : newBorderRadius });
-            $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1').css({ border:newBorder, borderRadius : newBorderRadius });
+            $('#'+na.te.s.c.forDialogID+' > .vdBackground').css({ border:newBorder, borderRadius : newBorderRadius });
             $(bg).css({borderRadius:newBorderRadius});
         } else {
             var
@@ -1607,7 +1607,7 @@ class naThemeEditor {
             //$('.boxShadow', bg).css({ border : newBorder, borderRadius : newBorderRadius });
             $(na.te.s.c.forElements).css({ border:newBorder, borderRadius : newBorderRadius });
             debugger;
-            $(na.te.s.c.forElements+' > .vividDialogBackground1').css({ borderRadius : newBorderRadius });
+            $(na.te.s.c.forElements+' > .vdBackground').css({ borderRadius : newBorderRadius });
             //$(bg).css({borderRadius:newBorderRadius});
         }
         /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme();
@@ -1631,7 +1631,7 @@ class naThemeEditor {
             if (na.te.s.c.forDialogID) {
                 var
                 div = $('#'+na.te.s.c.forDialogID),
-                bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1');
+                bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground');
             } else {
                 var
                 div = $(na.te.s.c.forElements),
@@ -1811,7 +1811,7 @@ class naThemeEditor {
 
         var
         div = $('#'+na.te.s.c.forDialogID),
-        bg =  $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1'),
+        bg =  $('#'+na.te.s.c.forDialogID+' > .vdBackground'),
         bg1 = bg.css('background').replace(/\'/g, '\\\'').replace(/"/g, '\''),
         opacity = bg1.indexOf('url(')!==-1 ? bg.css('opacity') : 1,
         border = div.css('border'),
@@ -1866,7 +1866,7 @@ class naThemeEditor {
                     $('#themeEditor_backgroundColor .sp-container').fadeIn('slow', 'swing', function() {
                         if (na.te.s.c.forDialogID) {
                             var
-                            bg =  $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1'),
+                            bg =  $('#'+na.te.s.c.forDialogID+' > .vdBackground'),
                             bg1 = bg.css('backgroundColor');
                         } else {
                             var
@@ -1957,7 +1957,7 @@ class naThemeEditor {
         rgbRegEx = /rgb\((\d{1,3})\,\s*(\d{1,3})\,\s*(\d{1,3})\)(.*)/,
         opacity = $(evt.currentTarget).val()/100;
         
-        if (bg && $(bg).children('.vividDialogBackground1')[0]) bg = $(bg).children('.vividDialogBackground1');
+        if (bg && $(bg).children('.vdBackground')[0]) bg = $(bg).children('.vdBackground');
         
         var bg1 = $(bg).css('background');        
         
@@ -1978,8 +1978,8 @@ class naThemeEditor {
         na.te.s.c.selectedImage = el;
 
         let 
-        bg = $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1'),
-        bg2 = $(na.te.s.c.forElements+' > .vividDialogBackground1'),
+        bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground'),
+        bg2 = $(na.te.s.c.forElements+' > .vdBackground'),
         bg3 = $(na.te.s.c.forElements),
         bg4 = bg2.length > 0 ? bg2 : bg3,
         src = el.src.replace('thumbs/','');
@@ -2081,7 +2081,7 @@ debugger;
                     if (na.te.s.c.forDialogID) {
                         var
                         div = $('#'+na.te.s.c.forDialogID),
-                        bg =  $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1');
+                        bg =  $('#'+na.te.s.c.forDialogID+' > .vdBackground');
                     } else {
                         var
                         div = $(na.te.s.c.forElements),
@@ -2235,7 +2235,7 @@ debugger;
         if (na.te.s.c.forDialogID) {
             var
             div = $('#'+na.te.s.c.forDialogID),
-            bg =  $('#'+na.te.s.c.forDialogID+' > .vividDialogBackground1');
+            bg =  $('#'+na.te.s.c.forDialogID+' > .vdBackground');
         } else {
             var div = bg = $(na.te.s.c.forElements);
         };
@@ -2482,29 +2482,27 @@ debugger;
             text : 'New Graphics',
             type : 'naCSS'
         }, 'last');
-        debugger;
         $('#themeEditor_jsTree_selectors').jstree('deselect_all').jstree('select_node', newNodeID);
         $('#themeEditor_jsTree_selectors').jstree(true).edit(na.te.s.c.selectedSelector.node);
     }
 
     onclick_btnAddElement  () {
+        debugger;
         if ($('div, p, span, li, ol, ul, h1, h2, h3, h4').css('cursor').match(/grab/)) {
-            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'inherit'}).each (function(){debugger; this.removeEventListener('click',na.te.btnAddElement_clickElement)});
+            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'inherit'}).each (function(){this.removeEventListener('click',na.te.btnAddElement_clickElement)});
         } else {
             na.te.s.c.addingElements = true;
             $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'url(/siteMedia/btnSettings2.32x32.png) 16 16, grab'}).each (function(idx,el) { this.addEventListener('click',na.te.btnAddElement_clickElement,{capture:true})});
         }
     }
 
-    btnAddElement_clickElement  () {
-        /*
+    btnAddElement_clickElement  (evt) {
         //works just fine :
         na.m.log (100,
             '\n#'+event.target.id+'.'+event.target.className.replace(' ', '.')+'\n'
             +'#'+event.currentTarget.id+'.'+event.currentTarget.className.replace(' ', '.')+'\n',
             false
         );
-        */
 
         if (!na.te.s.c.addingElements) return false;
 
@@ -2523,6 +2521,7 @@ debugger;
                 na.te.s.c.pickedElement = [ { event : $.extend({},event) } ];
                 na.te.s.c.lastPickedElement = event.target;
             } else na.te.s.c.pickedElement.push ({ event : $.extend({},event) });
+            evt.preventDefault();
         } else {
             na.te.s.c.pickedElement.push ({ event : $.extend({},event) });
             na.te.s.c.lastPickedElement = event.target;
@@ -2533,12 +2532,15 @@ debugger;
                 msg +=
                     //'\n#'+ev.target.id+'.'+ev.target.className.replace(' ', '.')+'\n'
                     '\n'+ev.currentTarget.tagName+'#'+ev.currentTarget.id+'.'+ev.currentTarget.className.replace(' ', '.')+'\n';
-                var itemHTML = '<div class="vividButton" style="display:inline-block;width:fit-content;position:relative;z-index:900000">'+ev.currentTarget.tagName+'</div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vividDialogBackground1"></div><span style="opacity:1">#'+ev.currentTarget.id+'</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vividDialogBackground1"></div><span style="opacity:1">.'+ev.currentTarget.className.replace(' ', '</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vividDialogBackground1"></div><span style="opacity:1">.')+'</div>';
+                var itemHTML = '<div class="vividButton" style="display:inline-block;width:fit-content;position:relative;z-index:900000">'+ev.currentTarget.tagName+'</div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">#'+ev.currentTarget.id+'</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">.'+ev.currentTarget.className.replace(' ', '</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">.')+'</div>';
                 var divEl = document.createElement('div');
                 $(divEl).html(itemHTML);
-                $('.vividButton', divEl).each(function(idx,btnEl) {
-                    var jsEl = new naVividButton (btnEl);
-                    btnEl.addEventListener ('click', na.te.btnAddElement_clickSelector, {capture:true});
+                $('.vividButton4, .vividButton, .vividButton_icon_50x50_siteTop, .vividButton_icon_50x50', divEl).each(function(idx,el){
+                    if (na.site.c.buttons['#'+el.id]) delete na.site.c.buttons['#'+el.id];
+                    if (!na.site.c.buttons['#'+el.id]) {
+                        na.site.c.buttons['#'+el.id] = new vividUserInterface_2D_button(el);
+                        el.addEventListener ('click', na.te.btnAddElement_clickSelector, {capture:true});
+                    };
                 });
                 $('#siteToolbarThemeEditor__elementPicker > .vividListSelector').append(divEl);
             }

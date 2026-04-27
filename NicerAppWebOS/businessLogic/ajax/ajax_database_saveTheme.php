@@ -5,7 +5,7 @@ global $naIP;
 global $naWebOS;
 
 $useAdminLogin = false; // bugfix when boolean 'true' (NO LONGER NEEDED)
-$debug = true;
+$debug = false;
 if ($debug) {
     echo 'info : '.__FILE__.' : $debug = true.<br/>'.PHP_EOL;
     ini_set('display_errors', 1);
@@ -211,7 +211,7 @@ if (!isset($_SESSION) || !is_array($_SESSION) || !array_key_exists('selectors',$
             '2' => $_POST['specificityName'],
             'selectors' => $selectors
         ];
-        echo '<pre style="margin:5px;border-radius:10px;padding:5px;background:navy;color:lime">'; var_dump ($dbg2); echo '</pre>';
+        if ($debug) { echo '<pre style="margin:5px;border-radius:10px;padding:5px;background:navy;color:lime">'; var_dump ($dbg2); echo '</pre>'; }
 
         if ($selector['specificityName']===$_POST['specificityName']) $sel = $selector;
     }

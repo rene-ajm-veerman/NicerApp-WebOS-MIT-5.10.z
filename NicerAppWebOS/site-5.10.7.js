@@ -217,7 +217,7 @@ na.site = {
         );
     },
 
-    initialize : function (desktopDefinition) {
+    initialize : async function (desktopDefinition) {
         let t = this;
         t.s = t.settings;
         t.s.c = t.settings.current;
@@ -488,6 +488,9 @@ na.site = {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
                         $('#siteLastModified').html(t.globals.version.version+', last modified : '+t.globals.version.history.lastModified+' CET');
                     }
+                    setTimeout (function() {
+                        window._screenshotReady = true;
+                    }, 6000);
 
                     var numRand = Math.floor(Math. random() * 101);
                     if (numRand === 1 || numRand === 2) {
@@ -502,7 +505,7 @@ na.site = {
                     //setTimeout (function() {
                         //na.desktop.resize(na.site.delayedReloadMenu);
                         //na.site.onresize ({ reloadMenu : true });
-                    //}, 1000);
+                    //}, 5000);
                     //na.site.loadContent_displayContent ($('#siteContent .vividDialogContent').html());
                 });
 
@@ -3292,14 +3295,14 @@ na.site = {
         }
         if (dat.themeSettings && dat.themeSettings['.vividDialog']) {
             $('.vividDialog').css(dat.themeSettings['.vividDialog']);
-            $('.vividDialog > .vividDialogBackground1').css(dat.themeSettings['.vividDialog > .vividDialogBackground1']);
+            $('.vividDialog > .vdBackground').css(dat.themeSettings['.vividDialog > .vdBackground']);
         };
         if (dat.themeSettings)
         for (var category in dat.themeSettings) {
             if (
                 dID=='.vividDialog'
-                || dID=='.vividDialog > .vividDialogBackground1'
-                || dID=='.vividDialogBackground1'
+                || dID=='.vividDialog > .vdBackground'
+                || dID=='.vdBackground'
             ) continue;
             var categoryItems = dat.themeSettings[category];
             switch (category) {
@@ -3310,7 +3313,7 @@ na.site = {
                             var dit2 = dit[divSel];
                             if (divSel=='#siteToolbarThemeEditor') dit2.opacity = 1; // dirty hack
                             $(divSel).css (dit2);
-                            if (dit2.background && dID == '#'+na.te.settings.forDialogID+' > .vividDialogBackground1') {
+                            if (dit2.background && dID == '#'+na.te.settings.forDialogID+' > .vdBackground') {
                                 var
                                 del = $(dID)[0],
                                 rgbaRegEx = /rgba\(\d{1,3}\,\s*\d{1,3}\,\s*\d{1,3}\,\s*([\d\.]+)\).*/,
@@ -3323,7 +3326,7 @@ na.site = {
                                         type:'flat',
                                         clickoutFiresChange : false,
                                         change : function (color) {
-                                            var bg = $('.vividDialogBackground1', $('#'+na.te.settings.forDialogID)[0]);
+                                            var bg = $('.vdBackground', $('#'+na.te.settings.forDialogID)[0]);
                                             $(bg).css({ background : color, opacity : 1 });
                                             na.te.settings.fireSaveTheme = true;
                                             na.saveTheme();
@@ -3353,7 +3356,7 @@ na.site = {
                             $(divSel).css(dit);
 
                             /*
-                            if (dit.background && dID == '#'+na.te.settings.forDialogID+' > .vividDialogBackground1') {
+                            if (dit.background && dID == '#'+na.te.settings.forDialogID+' > .vdBackground') {
                                 var
                                 del = $(dID)[0],
                                 rgbaRegEx = /rgba\(\d{1,3}\,\s*\d{1,3}\,\s*\d{1,3}\,\s*([\d\.]+)\).* /,
@@ -3366,7 +3369,7 @@ na.site = {
                                         type:'flat',
                                         clickoutFiresChange : false,
                                         change : function (color) {
-                                            var bg = $('.vividDialogBackground1', $('#'+na.te.settings.forDialogID)[0]);
+                                            var bg = $('.vdBackground', $('#'+na.te.settings.forDialogID)[0]);
                                             $(bg).css({ background : color, opacity : 1 });
                                             na.te.settings.fireSaveTheme = true;
                                             na.saveTheme();
@@ -3395,7 +3398,7 @@ na.site = {
 
                             $(divSel).css(dit);
                             /*
-                            if (dit.background && dID == '#'+na.te.settings.forDialogID+' > .vividDialogBackground1') {
+                            if (dit.background && dID == '#'+na.te.settings.forDialogID+' > .vdBackground') {
                                 var
                                 del = $(dID)[0],
                                 rgbaRegEx = /rgba\(\d{1,3}\,\s*\d{1,3}\,\s*\d{1,3}\,\s*([\d\.]+)\).* /,
@@ -3408,7 +3411,7 @@ na.site = {
                                         type:'flat',
                                         clickoutFiresChange : false,
                                         change : function (color) {
-                                            var bg = $('.vividDialogBackground1', $('#'+na.te.settings.forDialogID)[0]);
+                                            var bg = $('.vdBackground', $('#'+na.te.settings.forDialogID)[0]);
                                             $(bg).css({ background : color, opacity : 1 });
                                             na.te.settings.fireSaveTheme = true;
                                             na.saveTheme();
@@ -3684,7 +3687,7 @@ na.site = {
 
 
 
-        if (!$(selector+' > .vividDialogBackground1')[0]) {
+        if (!$(selector+' > .vdBackground')[0]) {
             if ($(selector).css('opacity')!=='') {
                 ret[selector].opacity = $(selector).css('opacity');
             };
@@ -3707,39 +3710,39 @@ na.site = {
 
         if (
             !selector.match(/,/)
-            && $(selector+' > .vividDialogBackground1').length>0
+            && $(selector+' > .vdBackground').length>0
         ) { // for vividDialogs only
-            ret[selector+' > .vividDialogBackground1'] = {
-                opacity : $(selector+' > .vividDialogBackground1').css('opacity'),
+            ret[selector+' > .vdBackground'] = {
+                opacity : $(selector+' > .vdBackground').css('opacity'),
                 background :
-                    $(selector+' > .vividDialogBackground1').css('background') && $(selector+' > .vividDialogBackground1').css('background') !==''
-                    ? $(selector+' > .vividDialogBackground1').css('background').match(/url\(.*\).*%/)
-                        ? $(selector+' > .vividDialogBackground1').css('background')
-                        : $(selector+' > .vividDialogBackground1').css('background').replace(')',') 0% 0% / ')
+                    $(selector+' > .vdBackground').css('background') && $(selector+' > .vdBackground').css('background') !==''
+                    ? $(selector+' > .vdBackground').css('background').match(/url\(.*\).*%/)
+                        ? $(selector+' > .vdBackground').css('background')
+                        : $(selector+' > .vdBackground').css('background').replace(')',') 0% 0% / ')
                     : 'none',
                 borderRadius : $(selector).css('borderRadius'),
-                backgroundSize : $(selector+' > .vividDialogBackground1').css('backgroundSize'),
-                boxShadow : $(selector+' > .vividDialogBackground1').css('boxShadow')
+                backgroundSize : $(selector+' > .vdBackground').css('backgroundSize'),
+                boxShadow : $(selector+' > .vdBackground').css('boxShadow')
             };
-            ret[selector+' > .vividDialogBackground1'].borderRadius = ret[selector].borderRadius;
+            ret[selector+' > .vdBackground'].borderRadius = ret[selector].borderRadius;
 
             // bugfix for firefox :
             if (
-                ret[selector+' > .vividDialogBackground1'].background===''
-                && $(selector+' > .vividDialogBackground1').css('backgroundImage') !== ''
-            ) ret[selector+' > .vividDialogBackground1'].background =
-                $(selector+' > .vividDialogBackground1').css('backgroundImage').replace(/http.*?\/\/.*?\//,'')+' '
-                +$(selector+' > .vividDialogBackground1').css('backgroundSize')+' '
-                +$(selector+' > .vividDialogBackground1').css('backgroundRepeat');
+                ret[selector+' > .vdBackground'].background===''
+                && $(selector+' > .vdBackground').css('backgroundImage') !== ''
+            ) ret[selector+' > .vdBackground'].background =
+                $(selector+' > .vdBackground').css('backgroundImage').replace(/http.*?\/\/.*?\//,'')+' '
+                +$(selector+' > .vdBackground').css('backgroundSize')+' '
+                +$(selector+' > .vdBackground').css('backgroundRepeat');
 
             if (
-                ret[selector+' > .vividDialogBackground1'].background
+                ret[selector+' > .vdBackground'].background
                 && (
-                    ret[selector+' > .vividDialogBackground1'].background===''
-                    || ret[selector+' > .vividDialogBackground1'].background.match('none')
+                    ret[selector+' > .vdBackground'].background===''
+                    || ret[selector+' > .vdBackground'].background.match('none')
                 )
-                && $(selector+' > .vividDialogBackground1').css('backgroundColor') !== ''
-            ) ret[selector+' > .vividDialogBackground1'].background = $(selector+' > .vividDialogBackground1').css('backgroundColor');
+                && $(selector+' > .vdBackground').css('backgroundColor') !== ''
+            ) ret[selector+' > .vdBackground'].background = $(selector+' > .vdBackground').css('backgroundColor');
         };
 
         /*

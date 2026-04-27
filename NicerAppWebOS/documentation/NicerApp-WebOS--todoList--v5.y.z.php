@@ -13,28 +13,31 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 <ol class="todoList" style="width:50%; width:content-width;">
     <li class="todoList"><div>(2027) If needed (probably not), build pagination for #siteBackgrounds.</div></li>
 
-    <li class="todoList"><div>(2026) Add database based caching of wikipedia.org output for /wiki on nicer.app (fairly easy to implement these days actually).</div></li>
+    <li class="todoList"><div>(2026) Implement <a href="https://stackoverflow.com/questions/10721884/how-to-render-html-to-an-image" class="nomod noPushState" target="sohrhi">rendering from HTML</a> to an <a href="https://developer.chrome.com/blog/headless-chrome/" class="nomod noPushState" target="hc">image</a>, to facilitate pre-fetches of other websites with image preview, on NicerApp servers.<br/>
+    Update, 2026-04-26 12:46CET : <a href="https://claude.ai/share/628acb06-3dc5-44aa-b27e-87f2fd9ff2d2" target="claude1" class="nomod noPushState">tested it on the commandline</a>, and it works alright!</div></li>
 
-    <li class="todoList"><div>(2026) Add a seperate, PHP based, database integrity check script, for the entire WebOS.</li>
-
-    <li class="todoList"><div>(2026-April&amp;May) Fix the very few remaining bugs in said.by/me document handling.</div></li>
-
-    <li class="todoList"><div>(2026) Start on .../logic.databases/uDB-2.0.0, to be based on .../logic.databases/generalizedDatabasesAPI-1.0.0<br/>
+    <li class="todoList"><div>(2026-2028/2029) Start on .../logic.databases/uDB-2.0.0, to be based on .../logic.databases/generalizedDatabasesAPI-1.0.0<br/>
         <a href="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-uDB.png" class="nomod noPushState" target="tl-udb-1"><img src="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-uDB.png" style="width:320px"/></a>
         <a href="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-taskManager.png" class="nomod noPushState" target="tl-udb-1"><img src="/NicerAppWebOS/documentation/__README__documentation/v5.10.z/v5.10.z-taskManager.png" style="width:320px"/></a>
         <ol class="todoList_l1">
             <li class="todoList_l1"><div>Add FilesystemDB (by Rene AJM Veerman), MySQL, and PostgreSQL to the list of supported database architectures (via .../NicerAppWebOS/3rd-party/adodb5), currently only couchdb is supported.</div></li>
             <li class="todoList_l1"><div>Add query routines in uDB to translate couchdb index names to index ids.</div></li>
             <li class="todoList_l1"><div>Add and test MySQL, PostgreSQL and 'filesystemDB' (fsDB) sub-modules to uDB <b>(also on Window 11)</b>, as well as their interactions with the CouchDB part of uDB.</div></li>
-            <li class="todoList_l1"><div>Start on .../businessLogic/filePhoenix.</div></li>
+            <li class="todoList_l1"><div>Start on .../businessLogic/dataPhoenix.
+                <ol class="todoList_l2">
+                <li class="todoList_l2"><div>(2026) Add a seperate, PHP based, database integrity check script, for the entire WebOS.</div></li>
+                <li class="todoList_l2"><div>(2026-April&amp;May) Fix the very few remaining bugs in said.by/me document handling.</div></li>
+                </ol>
+            </div></li>
+
             <li class="todoList_l1"><div>Start on .../businessLogic/class.diaries.2.y.z.php.</div></li>
             <li class="todoList_l1"><div>Start on .../businessLogic/regionalCloud.</div></li>
             </ol>
     </div></li>
 
-    <li class="todoList"><div>(2026) Complete a <a href="/3D">3D folder structure viewer</a>, which will be linked to all sorts of 2D user interface components/widgets.</div></li>
+    <li class="todoList"><div>(2026) Add database based caching of wikipedia.org output for /wiki on nicer.app (fairly easy to implement these days actually).</div></li>
 
-    <li class="todoList"><div>(2026) Implement <a href="https://stackoverflow.com/questions/10721884/how-to-render-html-to-an-image" class="nomod noPushState" target="sohrhi">rendering from HTML</a> to an <a href="https://developer.chrome.com/blog/headless-chrome/" class="nomod noPushState" target="hc">image</a>, to facilitate pre-fetches with image preview of specific pages on a NicerApp server by other websites.</div></li>
+    <li class="todoList"><div>(2030) Complete a <a href="/3D">3D folder structure viewer</a>, which will be linked to all sorts of 2D user interface components/widgets.</div></li>
 
     <li class="todoList"><div>(2026) Allow log entries (of console.log in the browser, and all database traffic and error messages on the server) to be logged to a different machine on the LAN than the main server.</div></li>
 

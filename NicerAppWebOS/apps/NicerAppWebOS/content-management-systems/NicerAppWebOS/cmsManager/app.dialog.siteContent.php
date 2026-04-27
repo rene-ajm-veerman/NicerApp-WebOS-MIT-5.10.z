@@ -35,6 +35,7 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
     //}, function() {
     $(document).ready(function() {
         na.desktop.settings.visibleDivs.push('#siteToolbarLeft');
+        //if ($(window).width()>800) na.desktop.settings.visibleDivs.push('#siteToolbarRight');
         setTimeout (function () {
             $('#menu__btnAddUser_menu').css({display:'none'});
         }, 20);
@@ -265,6 +266,7 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
     //document.addEventListener('DOMContentLoaded', () => {
     //setTimeout (function() {
         //$(document).ready(function() {
+        debugger;
         na.m.waitForCondition('cmsManager/app.dialog.siteContent.php::waitForCondition() : na.desktop.settings.animating?', function () {
             var r = (
                 na
@@ -276,7 +278,7 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
             );
             return r;
         }, function () {
-
+            debugger;
             $('#btnAddUser_menu').css({display:'none'});
         /*
         TINYMCE BUGREPORT :
@@ -338,11 +340,19 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
                         tooltip : 'Add a semi-transparent background.',
                         icon: false,
                         onclick: function () {
+                            debugger;
                             var newContent =
                                 "<span class='backdropped'>" + editor.selection.getContent() + "</span>";
                             editor.selection.setContent(newContent);
                         }
                     });
+
+                    setTimeout (function() {
+                        $('#mceu_8-open').click (function(evt) {
+                            var x = document.querySelectorAll('.mce-floatpanel, .mce-menu');
+                            debugger;
+                        })
+                    },2000);
 
                     //the button now becomes
                     var button=editor.buttons['mysecondbutton'];

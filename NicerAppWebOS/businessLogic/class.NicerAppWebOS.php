@@ -1427,9 +1427,9 @@ class NicerAppWebOS {
                         if ($debug) { echo 't666b1:<pre style="color:white;background:navy;">'; var_dump ($permissionsRec); echo '</pre>'; };
                         foreach ($accountsList as $idx2 => $userOrGroupID) {
                             if ($accountType == 'users') {
-                                $adjustedUserOrGroupID = $db->translate_plainUserName_to_couchdbUserName($userOrGroupID);
+                                $adjustedUserOrGroupID = $db->translate_plainUserName_to_couchdbUserName($db->translate_couchdbUserName_to_plainUserName($userOrGroupID));
                             } else {
-                                $adjustedUserOrGroupID = $db->translate_plainGroupName_to_couchdbGroupName($userOrGroupID);
+                                $adjustedUserOrGroupID = $db->translate_plainGroupName_to_couchdbGroupName($db->translate_couchdbGroupName_to_plainGroupName($userOrGroupID));
                             }
                             $adjustedUserOrGroupID = $userOrGroupID; // TODO : check if this is necessary
 
@@ -2174,7 +2174,7 @@ class NicerAppWebOS {
                 : 'Guest'
             );
             //var_dump($username100);
-        $username100 = preg_replace ('/.*___(.*)/', '$1', $username100);
+        $username100 = $db->translate_couchdbUserName_to_plainUserName ($username100);
             //var_dump($username100);
         //echo '<pre style="color:blue;">'; var_dump ($_SESSION); echo '</pre>'; exit();
         $username101 = $db->translate_plainUserName_to_couchdbUserName ($username100);

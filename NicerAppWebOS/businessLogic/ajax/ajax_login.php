@@ -4,7 +4,7 @@ global $useRememberMe; $useRememberMe = true;
 $rootPathNA = realpath(dirname(__FILE__).'/../../..').'/NicerAppWebOS';
 require_once ($rootPathNA.'/boot.php');
 
-$debug = true;
+$debug = false;
 if ($debug) {
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
@@ -44,13 +44,19 @@ try {
 
     $xec = 'curl -vD - -X POST http://'.$username.':'.$_POST['pw'].'@127.0.0.1:5984/_session -d \'name='.$username.'&password='.$_POST['pw'].'\'';
     exec ($xec, $output, $result);
-    //echo '<pre>'; var_dump ($xec); echo PHP_EOL; var_dump ($output);
+    if ($debug) { echo '<pre>'; var_dump ($xec); echo PHP_EOL; var_dump ($output); echo '</pre>'; };
     preg_match_all('/=(.*?);/', $output[6], $output2);
-    //var_dump ($output2);
-    //echo '</pre>'.PHP_EOL;
-    setcookie ('cdb_authSession_cookie', $output2[1][0], strtotime($output2[1][2]), '/', $naWebOS->domain);
-    setcookie ('cdb_loginName', $username, strtotime($output2[1][2]), '/', $naWebOS->domain);
-    $_SESSION['cdb_loginName'] = $username;
+    if (count($output2[1])>0) {
+        //echo '<pre>'; var_dump ($output2); echo '</pre>'.PHP_EOL;
+        setcookie ('cdb_authSession_cookie', $output2[1][0], strtotime($output2[1][2]), '/', $naWebOS->domain);
+        setcookie ('cdb_loginName', $username, strtotime($output2[1][2]), '/', $naWebOS->domain);
+        $_SESSION['cdb_loginName'] = $username;
+    } else {
+        // failed; re-create user rec and try again
+        $xecA = 'curl -vD - -X POST https://'.$naWebOS->domain.'/NicerAppWebOS/businessLogic/ajax/ajax_register.php -d "loginName='.$username.'" -d "pw='.$_POST['pw'].'" -d "email=no-reply@hotmail.com"';
+        exec ($xecA, $outputA, $resultA);
+        //echo '<pre>'; var_dump ($xecA); echo PHP_EOL; var_dump ($outputA); echo '</pre>';
+    }
 
 } catch (Exception $e) {
     echo 'status : Failed.<br/>'.PHP_EOL;

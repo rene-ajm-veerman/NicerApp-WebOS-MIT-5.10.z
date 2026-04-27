@@ -49,15 +49,17 @@ if ($got) {
     $id = $call->body->_id; // should be the same as $uid really.
     $rev = $call->body->_rev;
     $got = false;
-    /* DON'T DO THIS BY DEFAULT!
+
     try {
+        /* DON'T DO THIS BY DEFAULT!
+         *
+         */
         $call = $cdb->delete ($id, $rev);
+    } catch (Exception $e) {
         //echo '<pre style="color:lime;background:navy;">ajax_register.php:$call='.json_encode($call,JSON_PRETTY_PRINT).'</pre>'; exit();
         //echo '<pre style="color:yellow;background:navy;">ajax_register.php:$call='; var_dump($call,JSON_PRETTY_PRINT); echo '</pre>'; exit();
-    } catch (Exception $e) {
         $got = true;
     }
-    */
 }
 
 

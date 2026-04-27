@@ -822,8 +822,9 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fa
 				.not ('#siteLoginSuccessful, #siteLoginFailed, #siteLogin, #siteRegistration, #siteDateTime, #infoWindow_info, #infoWindow_tools')
 				.animate ({opacity:1}, 'normal');
         }
-	}
-	
+        na.site.settings.running_loadContent = false;
+    }
+
 };
 //}, 100); // na.m.waitForCondition() (see top of this file)
 

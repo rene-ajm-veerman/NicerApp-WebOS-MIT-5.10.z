@@ -168,7 +168,13 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
         $('#jsTree').css({
             height : $('#siteToolbarLeft .vividDialogContent').height() - $('#jsTree_navBar').height() - 30
         });
-        na.cms.onload();
+        $(document).on('mousedown.jstree', function(e) {
+            if ($(e.target).closest('.mce-widget, .mce-floatpanel, .mce-menu, .mce-container').length) {
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
+        setTimeout(na.cms.onload,2000);
 
         $('#siteToolbarLeft .vividButton4, #siteToolbarLeft .vividButton, #siteToolbarLeft .vividButton_icon_50x50').each(function(idx,el){
             $('img[srcPreload]',el.parentNode).each(function(idx,el4) {

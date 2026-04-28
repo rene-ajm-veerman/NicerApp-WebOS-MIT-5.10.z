@@ -323,6 +323,10 @@ class class_NicerAppWebOS_database_API {
         return $this->callAllDataSets ('clearOutDatabases', [$dbs]);
     }
 
+    public function checkIndexes () {
+        return $this->callAllDataSets ('checkIndexes');
+    }
+
     public function setGlobals ($username) {
         return $this->callAllDataSets ('setGlobals', [$username]);
     }

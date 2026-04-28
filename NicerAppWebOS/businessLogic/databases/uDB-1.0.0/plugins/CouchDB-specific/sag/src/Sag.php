@@ -1194,9 +1194,34 @@ class Sag {
    *
    * @return Sag Returns $this->procPacket() results.
    */
-  public function setIndex($data) {
+  public function deleteIndex($index, $indexName, $dbName='') {
+    if ($dbName==='') $dbName = $this->db;
+    return $this->procPacket ('DELETE', '/'.$dbName.'/_index/'.$index.'/json/'.$indexName);
+  }
+  public function setIndex($data, $dbName='') {
     if (!is_string($data)) $data = json_encode($data);
-    return $this->procPacket ('POST', '/'.$this->db.'/_index', $data);
+    if ($dbName==='') $dbName = $this->db;
+    return $this->procPacket ('POST', '/'.$dbName.'/_index', $data);
+  }
+
+  /**
+   * Interface to /db/_index
+   *
+   * @param mixed $data (see https://docs.couchdb.org/en/stable/api/database/find.html#db-index)
+   *     $data = array (
+   *         'index' => array(
+   *             'fields' => array ('foo')
+   *         ),
+   *         'name' => 'foo-index',
+   *         'type' => 'json'
+   *     );
+   *
+   *
+   * @return Sag Returns $this->procPacket() results.
+   */
+  public function getIndexes($dbName='') {
+    if ($dbName==='') $dbName = $this->db;
+    return $this->procPacket ('GET', '/'.$dbName.'/_index');
   }
 
   /**
@@ -1215,10 +1240,11 @@ class Sag {
    *
    * @return Sag Returns $this->procPacket() results.
    */
-  public function find($data) {
+  public function find($data, $dbName='') {
     if (!is_string($data)) $data = json_encode($data);
+    if ($dbName==='') $dbName = $this->db;
     global $scriptName_SAG; $this->checkJSONencoding ($scriptName_SAG, 'find()', $data);
-    return $this->procPacket ('POST', '/'.$this->db.'/_find', $data);
+    return $this->procPacket ('POST', '/'.$dbName.'/_find', $data);
   }
   
   /**

@@ -344,9 +344,10 @@ class NicerAppWebOS {
                 echo '</pre>';
                 exit();
             }
-        }
+        };
 
         $this->dbs->setGlobals($this->dbs->findConnection('couchdb')->username);
+
         $this->dbsAdmin->setGlobals($this->dbsAdmin->findConnection('couchdb')->username);
 
         $this->initialized = true;

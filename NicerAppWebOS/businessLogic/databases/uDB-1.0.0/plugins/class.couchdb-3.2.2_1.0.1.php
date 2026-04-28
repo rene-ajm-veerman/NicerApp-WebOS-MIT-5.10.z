@@ -161,6 +161,62 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
         return $this;
     }
 
+    public function checkIndexes () {
+        global $naWebOS;
+        $dbs = $this->cdb->getAllDatabases()->body;
+        $dbs2 = [];
+        foreach ($dbs as $idx => $dbName) {
+            if (preg_match('/^'.$naWebOS->domainFolderForDB.'___/', $dbName)) $dbs2[] = $dbName;
+        }
+        foreach ($dbs2 as $idx => $dbName) {
+            echo '<h1>'.$dbName.'</h1>'.PHP_EOL;
+            $idxs = $this->cdb->getIndexes($dbName)->body->indexes;
+            $idxs2 = [];
+            foreach ($idxs as $idx2 => $objIdx) {
+                if ($idx2 > 0) {
+                    $idxs2[] = $index = $objIdx->ddoc;
+                    if (strpos($dbName, '___cms_tree___')!==false) {
+                        $fc = [
+                            'selector' => [
+                                'database' => $dbName
+                            ],
+                            'fields' => [ '_id' ],
+                            'sort' => [
+                                [ 'parent' => 'asc' ],
+                                [ 'order' => 'asc' ]
+                            ],
+                            'use_index' => $index
+                        ];
+                        $fr = $this->cdb->find($fc, $dbName);
+
+                        echo '<pre style="color:blue">'; var_dump ($fc); echo '</pre>';
+                        echo '<pre style="color:green">'; var_dump ($fr->body->docs); echo '</pre>';
+
+                        if (count($fr->body->docs)===0) {
+                            $this->cdb->deleteIndex ($index, 'parentOrderIndex', $dbName);
+
+                            $data = [
+                                'index' => [
+                                    'fields' => ['parent' ,'order' ],
+                                ],
+                                'name' => 'parentOrderIndex',
+                                'type' => 'json'
+                            ];
+
+                            $irr = $this->cdb->setIndex ($data, $dbName);
+                            echo '<pre style="color:red">'; var_dump ($irr); echo '</pre>';
+                            $fr2 = $this->cdb->find($fc, $dbName);
+                            echo '<pre style="color:darkgreen">'; var_dump ($fr2->body->docs); echo '</pre>';
+                        }
+                    }
+                }
+            }
+
+            echo '<pre style="color:orange">'; var_dump ($idxs2); echo '</pre>';
+        }
+
+    }
+
     public function setGlobals ($username) {
         global $naWebOS;
         $users = safeLoadJSONfile(

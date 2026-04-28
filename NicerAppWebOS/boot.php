@@ -320,7 +320,7 @@ NicerApp WebOS from Nicer Enterprises
     }
 
     if ($na_full_init) {
-        // MUST BE in the following order:
+        // MUST be in the following order:
         $naWebOS->initializeDatabases();
         $naWebOS->initializeGlobals();
     }

@@ -102,7 +102,7 @@ if ($debug) { echo '<pre style="color:green">'; var_dump($call); echo '</pre>'.P
 
             $rec = [
                 'index' => [
-                    'fields' => [ [ 'parent' => 'asc' ], [ 'order' => 'asc' ] ]
+                    'fields' => [ 'parent', 'order' ]
                 ],
                 'name' => 'parentOrderIndex',
                 'type' => 'json'

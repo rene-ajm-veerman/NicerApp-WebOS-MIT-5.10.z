@@ -185,8 +185,11 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
                                 [ 'parent' => 'asc' ],
                                 [ 'order' => 'asc' ]
                             ],
-                            'use_index' => $index
+                            'use_index' => $index,
+                            'update' => true
                         ];
+
+                        // won't work if fields 'database', 'parent' and 'order' aren't in the documents! :
                         $fr = $this->cdb->find($fc, $dbName);
 
                         echo '<pre style="color:blue">'; var_dump ($fc); echo '</pre>';
@@ -197,7 +200,7 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
 
                             $data = [
                                 'index' => [
-                                    'fields' => ['parent' ,'order' ],
+                                    'fields' => [ 'database', 'parent' ,'order' ],
                                 ],
                                 'name' => 'parentOrderIndex',
                                 'type' => 'json'

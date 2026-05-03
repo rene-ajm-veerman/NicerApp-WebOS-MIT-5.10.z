@@ -634,8 +634,8 @@ NicerApp WebOS from Nicer Enterprises
     // at the *bottom* of this file (that's for good reasons),
     // you will find : require_once(dirname(__FILE__).'/apps/nicer.app/api.paymentSystems/boot.php');
     
-    ini_set('memory_limit','128M'); // hacker deterrence by keeping it at 128M.
-    set_time_limit(70); // 70 seconds; also for hacker deterrence. can be overridden by individual ajax scripts though!
+    ini_set('memory_limit','5000M'); // hacker deterrence by keeping it at 128M.
+    set_time_limit(60*60); // 70 seconds; also for hacker deterrence. can be overridden by individual ajax scripts though!
 
     //echo '<pre>'; var_dump ($_SERVER); exit();
     

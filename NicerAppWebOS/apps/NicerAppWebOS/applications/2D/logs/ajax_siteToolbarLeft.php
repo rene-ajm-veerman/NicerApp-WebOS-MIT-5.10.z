@@ -134,7 +134,7 @@ echo $naWebOS->html_vividButton (
         $findCommand['selector']['isBot'] = false;//[ '$or' => [ [ '$eq' => null ], [ '$eq' => false ] ]];
         $findCommand['selector']['isLAN'] = false;//JUST RESULTS IN BOT HITS SHOWING FOR HUMAN VISITORS! [ '$or' => [ [ '$eq' => null ], [ '$eq' => false ] ]];
     }
-
+s
     //echo '<pre style="padding:8px;border-radius:10px;background:rgba(255,255,255,0.5);color:green;">'; var_dump ($findCommand); echo '</pre>';
     try {
         $call = $cdb->find ($findCommand);

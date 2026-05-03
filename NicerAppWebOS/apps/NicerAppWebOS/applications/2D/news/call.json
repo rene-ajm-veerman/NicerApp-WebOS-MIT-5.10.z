@@ -2,8 +2,8 @@ nicer_app___app_2d_news__rss_items
 {
     "selector": {
         "pd": {
-            "$gt": 1777144552,
-            "$lt": 1777148152
+            "$gt": 1777749533,
+            "$lt": 1777753133
         },
         "p": {
             "$regex": "^\/English News\/World Headlines"
@@ -25,7 +25,7 @@ nicer_app___app_2d_news__rss_items
         "c",
         "cc"
     ],
-    "bookmark": "g1AAAAFLeJxVkD1OAzEQhVepqLgBUiq6WUcrSBGEqJCoaClXE3uCnR3_yGNntVyNM1FxAbxIFLSf3ui9-bjruo3dmO5aCuYy0TKaqJ3xjX_bUpIclJrnuRdvex19j1XNMbNR3hnDBIRSVBVwGQPMmIHdhaAmg4UEEqEmKMhTSwRIOLnWE0BHZkxCgAIlV59AY9DEAhQucWnMJXCSkRiYjhhiu2lVdHKZQCxOC2BbANKSUysadsN-dzfsId1_5GHqbfH8lOn0mEVu0aeHWvzoybjq_yGJNWta0fj71qri6k8Fr3KO7mv7ueq4Uc_hnZ3Y7SvNot7W-PaF0LALJOfzD6iidp8"
+    "bookmark": "g1AAAADVeJw1zjsOwjAQRdEoFRUSC0BiA4N7eiQqWhok5NijeBL_5BkHpWDb1MQF5Xu3Ob7rut71ttuz6CIzri-bDNmw_R8nkvmiFEXBEvHNRrOcTQqqDVVZceWMRkDnXNBhtGiBImwZ1lRmMCQrlDQMWNYtLMkvFEcI1QtljzDWyC7JlqZaCBkkwUJGKKiG2v1RvjEH-j4PDXZU1zh6Yne6N8cjFW9PN9TWU0Seph9cIUtx"
 }
 {
     "headers": {
@@ -36,16 +36,16 @@ nicer_app___app_2d_news__rss_items
         },
         "cache-control": "must-revalidate",
         "content-type": "application\/json",
-        "date": "Sat, 25 Apr 2026 22:27:36 GMT",
+        "date": "Sun, 03 May 2026 00:46:27 GMT",
         "server": "CouchDB\/3.5.1 (Erlang OTP\/26)",
         "transfer-encoding": "chunked",
-        "x-couch-request-id": "2f7a55987a",
+        "x-couch-request-id": "a3dbfcf33b",
         "x-couchdb-body-time": "0"
     },
     "body": {
         "docs": [],
-        "bookmark": "g1AAAAFLeJxVkD1OAzEQhVepqLgBUiq6WUcrSBGEqJCoaClXE3uCnR3_yGNntVyNM1FxAbxIFLSf3ui9-bjruo3dmO5aCuYy0TKaqJ3xjX_bUpIclJrnuRdvex19j1XNMbNR3hnDBIRSVBVwGQPMmIHdhaAmg4UEEqEmKMhTSwRIOLnWE0BHZkxCgAIlV59AY9DEAhQucWnMJXCSkRiYjhhiu2lVdHKZQCxOC2BbANKSUysadsN-dzfsId1_5GHqbfH8lOn0mEVu0aeHWvzoybjq_yGJNWta0fj71qri6k8Fr3KO7mv7ueq4Uc_hnZ3Y7SvNot7W-PaF0LALJOfzD6iidp8"
+        "bookmark": "g1AAAADVeJw1zjsOwjAQRdEoFRUSC0BiA4N7eiQqWhok5NijeBL_5BkHpWDb1MQF5Xu3Ob7rut71ttuz6CIzri-bDNmw_R8nkvmiFEXBEvHNRrOcTQqqDVVZceWMRkDnXNBhtGiBImwZ1lRmMCQrlDQMWNYtLMkvFEcI1QtljzDWyC7JlqZaCBkkwUJGKKiG2v1RvjEH-j4PDXZU1zh6Yne6N8cjFW9PN9TWU0Seph9cIUtx"
     },
     "status": "200"
 }
-0.0314
+0.0323

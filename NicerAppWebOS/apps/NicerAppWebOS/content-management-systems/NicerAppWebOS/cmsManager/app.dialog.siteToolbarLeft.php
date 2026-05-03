@@ -173,7 +173,7 @@ $ip = (array_key_exists('X-Forwarded-For',apache_request_headers())?apache_reque
                 e.stopImmediatePropagation();
                 return false;
             }
-        }, true);
+        });
         setTimeout(na.cms.onload,2000);
 
         $('#siteToolbarLeft .vividButton4, #siteToolbarLeft .vividButton, #siteToolbarLeft .vividButton_icon_50x50').each(function(idx,el){

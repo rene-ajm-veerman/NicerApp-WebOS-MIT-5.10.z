@@ -116,16 +116,14 @@ export var naLog = {
                 html +=
                     '<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
                     +'</div>';
-
             }
 
-            /*
             var c1 = 'uneven';
             for (var ahr in naLog.dataByURL) {
                 var d2hr = naLog.dataByURL[ahr];
                 c1 = c1 == 'even' ? 'uneven' : 'even';
                 html2 += '<div class="'+c1+'"><div><div>'+ahr+'</div><div title="Number of content loads">'+d2hr.numContentLoads+'</div></div></div>';
-            }*/
+            }
 
             naLog.dataByDate = d5 = Object.keys(d5).sort().reduce((r, k) => (r[k] = d5[k], r), {});
 
@@ -133,7 +131,7 @@ export var naLog = {
             html2 += '<div style="height:500px"><canvas id="viewsByDate"></canvas></div>';
             html2 += '<div style="height:500px"><canvas id="viewsByCountry"></canvas></div>';
             html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
-            html2 += '<div class="naIPlog_header" style="clear:both;height:fit-content;display:flex;flex-wrap:wrap;">';
+            /*html2 += '<div class="naIPlog_header" style="clear:both;height:fit-content;display:flex;flex-wrap:wrap;">';
             var c1 = 'uneven';
             for (var aip in d2) {
                 var dip = d2[aip];
@@ -141,6 +139,7 @@ export var naLog = {
                 html2 += '<div class="'+c1+'"><div><div title="IP" alt="IP"><a href="javascript:na.site.scrollContent(event,\'#naIPlog_msg__\'+na.log.dataByIP[\''+aip+'\'].millisecondsSinceEpoch)">'+aip+'</a></div><div title="Number of initializations" alt="Number of initializations">'+dip.numInits+'</div><div title="Number of page loads" alt="Number of page loads">'+dip.numPageLoads+'</div><div title="Number of content loads">'+dip.numContentLoads+'</div><div>'+dip.loc+'</div></div></div>';
             }
             html2 += '</div>';
+            */
 
             $('#siteContent > .vividDialogContent').append(html2 + html).delay(100);
             na.site.startTooltips();
@@ -246,7 +245,7 @@ export var naLog = {
     },
     process_msg : function (msg, dit) {
         var r = '', prefix1 = 'Starting bootup process for ', prefix2 = /Background set to "(.*?)";\s(.*)/, m = [];
-        if (msg.indexOf(prefix1)===0) {
+        if (msg.indexOf(prefix1)===0 && dit.ipinfo) {
             r = { msg : prefix1, documentLocation : JSON.parse(msg.replace(prefix1,'')), ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length}
         } else if (m = msg.match(prefix2)) {
             r = { msg : msg, onclickHTML : na.site.displayWallpaper(m[2])};

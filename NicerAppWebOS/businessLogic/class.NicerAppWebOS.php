@@ -178,9 +178,11 @@ class NicerAppWebOS {
         }
 
         $content = $this->getContent();
+        //echo '<pre>'; var_dump ($content); echo '</pre>'; //die();
+
         ob_end_clean();    ob_start();    flush(); ob_flush(); ob_end_flush();
-        if ($content==='') $content = [ 'siteContent' => '<h2>HTTPS Error 404 : Not found.</h2>' ];
-        //echo '<pre>'; var_dump (htmlentities($content['siteContent'])); echo '</pre>'; die();
+        if ($content==='') $content = [ 'siteContent' => '<h2>HTTPS Error 404 : Not found.</h2>', 'head' => '<h2>HTTPS Error 404</h2>' ];
+
         if (array_key_exists('_desktopDefinition',$content))
             $desktopDefinition = $content['_desktopDefinition'];
         else
@@ -228,9 +230,9 @@ class NicerAppWebOS {
         $replaces = array_values($replacements);
         $html = require_return($templateFile, true);
         if (false) {
-            echo '<pre style="color:orange;">$html='; var_dump ($html); echo '</pre>';// exit();
-            //echo '<pre style="color:green;">$replacements='; var_dump ($replacements); echo '</pre>';// exit();
-            //echo '<pre style="color:lime;background:navy;">$replaces='; var_dump ($replaces); echo '</pre>';
+            //echo '<pre style="color:orange;">$html='; var_dump ($html); echo '</pre>';// exit();
+            echo '<pre style="color:green;">$replacements='; var_dump ($replacements); echo '</pre>';// exit();
+            echo '<pre style="color:lime;background:navy;">$content='; var_dump ($content); echo '</pre>';
             exit();
         };
         //$html = timestampJSmodule ($html);
@@ -423,12 +425,11 @@ class NicerAppWebOS {
 
 
     public function getContent ($divID=null, $viewID=null) {
-
         if (!is_null($viewID)) $_GET['viewID'] = $viewID;
         $fncn = $this->cn.'->getContent("'.$divID.'", "'.$viewID.'") $_GET='.json_encode($_GET);
         $debug = $this->debug;
         if ($debug) {
-            echo '<pre>'; var_dump ($fncn); echo '</pre>'; //die();
+            echo '<pre style="color:orange">'; var_dump ($fncn); echo '</pre>'; //die();
             echo '<pre>'; var_dump ($this->view); echo '</pre>'; //die();
         };
         if (is_null($viewID)) $view = $this->view; else {
@@ -574,7 +575,7 @@ class NicerAppWebOS {
         $debug = $this->debug;
         global $naWebOS;
 
-        if ($debug) { echo '<pre style="color:white;background:blue;">'; echo '$viewID='; var_dump ($viewID); echo '</pre>'; }
+        if ($debug) { echo '<pre style="color:white;background:blue;">'; echo '$viewID='; var_dump ($viewID); echo '</pre>';  }
         $ret = [];
         if (!is_string($viewID) || $viewID==='') {
             $msg = $fncn.' : FAILED (invalid or empty viewID parameter).';
@@ -821,7 +822,6 @@ class NicerAppWebOS {
             //$debug = true;
             if ($debug) {
                 echo '<pre style="color:navy;background:yellow">';
-                var_dump (htmlentities_recursive($ret));
                 echo '</pre>';
                 exit();
             }
@@ -1019,12 +1019,16 @@ class NicerAppWebOS {
         $view = [
             'findCommand' => $findCommand
         ];
+        //echo '<pre style="color:orange;">'.json_encode($findCommand, JSON_PRETTY_PRINT).'</pre>'.PHP_EOL;
         try {
             $call = $cdb->find ($findCommand);
+            //echo '<pre style="color:red;">'.json_encode($call, JSON_PRETTY_PRINT).'</pre>'.PHP_EOL; exit;
         } catch (Exception $e) {
             $msg = $fncn.' FAILED while trying to find in \''.$dataSetName.'\' : $e->getMessage()='.$e->getMessage().', $findCommand='.json_encode($findCommand);
             $this->view = $msg;
+            echo '<h1>'.$msg.'</h1>';
             trigger_error ($msg, E_USER_NOTICE);
+            exit;
             return false;
         }
         $view = [
@@ -1504,6 +1508,7 @@ class NicerAppWebOS {
         global $naIP;
         global $naUsername;
         $debug = $this->debugThemeLoading;
+        if ($debug) { echo '<h1>'.$fncn.'</h1>'.PHP_EOL; }
 
         $viewFolder = '[UNKNOWN VIEW]';
         $db = $this->dbs->findConnection('couchdb');

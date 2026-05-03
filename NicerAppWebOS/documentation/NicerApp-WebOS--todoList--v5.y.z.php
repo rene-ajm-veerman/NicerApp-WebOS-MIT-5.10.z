@@ -61,25 +61,13 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
     I promise to bring you all some level of CSS animations in the generation config language :)<br/>
     Maybe even a real translation of CSS animations (they're easy to parse), into SVG color and transparency animations! :D</div></li>
 
-    <li class="todoList"><div>(2028) Create a quantum + elemental + molecular editor data-structure and component as business logic code and an initially basic 2D (+3D ThreeJS?) user-interface.</div></li>
-
     <li class="todoList"><div>Create a donations button (again, in collaboration with paypal.com), with monthly goal indicator, for the news app.</div></li>
-
-    <li class="todoList"><div>(2030) Create a bitcoin + stocks + bonds + indexes storage &amp; trading app - with free to use accounts as well - in essence i'd need a bank company name. :-D</div></li>
 
     <li class="todoList"><div>Implement bandwidth throttling in the <a href="https://github.com/NicerEnterprises/NicerApp-WebOS/tree/main/NicerAppWebOS/scripts.install" target="mainBashInstallScript_for_NicerAppWebOS" class="nomod noPushState">main Bash install script</a>.</div></li>
 
     <li class="todoList"><div>Add a checkbox in the Theme Editor to select backgrounds and stretch instead of tile them for any DIV.</div></li>
 
     <!--<li class="todoList"><div>Restore the automatic retrieval of new backgrounds download routines for nicerapp via free to use methods of delivery at Google image search and (TODO :)Bing image search.</div></li>-->
-
-    <li class="todoList">
-    <div><pre class="todoList">
-    rewrite the backgrounds analysis and automatic resizing routines;
-    - put all of the backgrounds in a DOMAIN_TLD___backgrounds dataSet with relative filepath (starting at siteMedia/backgrounds) and image size.
-    - let users search for backgrounds based on filepath, then save those searches in their account settings and make them viewable as photoalbums.
-    </pre></div>
-    </li>
 
     <li class="todoList"><div>Upgrade the news app and vividDialog : add siteToolbarLeft functionality :<br/>
         <ol class="todoList_l1">
@@ -96,7 +84,12 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
     </div>
     </li>
 
-    <li class="todoList"><div>Integration of payment platforms (as plugins) for paypal.com, creditcards, and the Dutch banking system iDeal.</div></li>
+    <li class="todoList"><div>
+        Build a webshop module
+        <ol class="todoList_l1">
+        <li class="todoList_l1"><div>Integration of payment platforms (as plugins) for paypal.com, creditcards, and the Dutch banking system iDeal.</div></li>
+        </ol>
+    </div></li>
 </ol>
 <!-- no longer necessary here in v5.8.z, the following is now done in .../NicerWebAppOS/site-6.y.z.js::startUIvisuals() :
 <script type="text/javascript">

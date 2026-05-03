@@ -35,6 +35,7 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
         $cdbDomain = $naWebOS->domainFolderForDB;//str_replace('.','_',$naWebOS->domainFolder);
         $dsn = $cdbDomain.'___ipinfo';
         //var_dump($dsn);
+
         $cdb->setDatabase($dsn);
         $r = [];
         //echo '<pre>'; var_dump($call); echo '</pre>';
@@ -42,17 +43,19 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
         foreach ($call->body->docs as $idx => $rec) {
             if ($debugMe) { echo '<pre style="background:rgba(255,0,0,0.555);color:yellow;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec->_id); echo '</pre>'; };
 
-            //$dat = $cdb->get(urlencode($rec-><_id));
-            //echo '<pre styel="background:rgba(0,50,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($dat); echo '</pre>';
+            //$dat = $cdb->get(urlencode($rec->_id));
+            //echo '<pre style="background:rgba(0,50,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($dat); echo '</pre>';
 
-            $findCommand = [
+            /*$findCommand = [
                 'selector' => [ 'ip' => $rec->ip ],
                 'fields' => [ 'ip', 'ip_info' ]
             ];
             $cdb->setDatabase($dsn);
             $call2 = $cdb->find($findCommand);
             //echo '<pre>'; var_dump ($call2); echo '</pre>';
+            */
 
+            /*
             if (
                 isset($call2)
                 && property_exists($call2,'body')
@@ -60,12 +63,14 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
             ) {
                 $rec->ipinfo = $call2->body->docs;
             }
+            */
 
             $r[] = $rec;
             if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec); echo '</pre>'; };
         }
 
         $cdb->setDatabase($dataSetName);
+
         return $r;
     }
     function transformResults_getAllDocs ($call) {

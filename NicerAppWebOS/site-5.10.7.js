@@ -2517,8 +2517,8 @@ na.site = {
         var
         fncn = 'na.reloadMenu_forTheFirstTime(callback)',
         menuItemWidth = $('#siteMenu_vbChecker').outerWidth(),
-       numRootItems = ($(window).width()-(2*na.d.g.margin)) / menuItemWidth,
-         nri = Math.floor(numRootItems) > 2 ? Math.floor(numRootItems) : 1,
+        numRootItems = ($(window).width()-(2*na.d.g.margin)) / menuItemWidth,
+        nri = Math.floor(numRootItems) > 2 ? Math.floor(numRootItems) : 1,
         mlp = '<li class="contentMenu"><a class="contentMenu" href="-contentMenu-">-contentMenu-</a></li>',
         contentMenu = $('#app_mainmenu li')[0] ? '<li class="contentMenu_populated">'+$('#app_mainmenu li')[0].innerHTML+'</li>' : '';
 
@@ -2690,7 +2690,7 @@ na.site = {
         if (typeof simple=='undefined') simple = true;
         if (typeof saveTheme=='undefined') saveTheme = true;
 
-        $('.na_themes_dropdown').html('<div class="vividDropDownBox_selected vividScrollpane" style="white-space:normal;"></div><div class="vividDropDownBox_selector"><div class="vividScrollpane" style="padding:0px;height:400px;"></div></div>').delay(50);
+        $('.na_themes_dropdown').html('<div class="vividDropDownBox_selected vividScrollpane" style="white-space:normal;overflow:visible;"></div><div class="vividDropDownBox_selector"><div class="vividScrollpane" style="padding:0px;height:400px;"></div></div>').delay(50);
         $('.vividDropDownBox_selected, .vividDropDownBox_selector').each(function(idx,el) {
             /* junk :
             var w = 0;
@@ -2758,27 +2758,32 @@ na.site = {
             );
 
             if (selectMe) var lastSelected = i;
-            if (na.site.globals.themesDBkeys[i].has_write_permission)
+            if (selectMe) {
+                $(divEl).addClass('selected');
+                //$('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.specificityName);
+                na.site.globals.themeDBkeys = na.site.globals.themesDBkeys[lastSelected];
+                na.site.loadTheme_applySettings (na.site.globals.themes[na.site.globals.themeName], function(){na.te.onload('siteContent')});
+                $('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.themeDBkeys.specificityName);
+                na.te.settings.current.specificity = na.site.globals.themeDBkeys;
+                na.m.log (3, 'na.site.setSpecificity() : specificity (simple==='+(simple?'true':'false')+') now set to "'+na.site.globals.themeDBkeys.specificityName+'"')
+                //break; // DO NOT DO THIS! breaks na.site.saveTheme()??
+            };
+            if (na.site.globals.themesDBkeys[i].has_write_permission) {
                 $('.na_themes_dropdown__specificity > .vividDropDownBox_selector > .vividScrollpane').append($(divEl).clone(true,true));
+                $('.na_themes_dropdown__specificity').css({overflow:'visible'});
+                $('.na_themes_dropdown__specificity > .vividScrollpane').css({display:'block'});
+            }
         }
 
 
-        if (selectMe) {
-            $(divEl).addClass('selected');
-            //$('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.specificityName);
-            na.site.globals.themeDBkeys = na.site.globals.themesDBkeys[lastSelected];
-            na.site.loadTheme_applySettings (na.site.globals.themes[na.site.globals.themeName], function(){na.te.onload('siteContent')});
-            $('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.themeDBkeys.specificityName);
-            na.te.settings.current.specificity = na.site.globals.themeDBkeys;
-            na.m.log (3, 'na.site.setSpecificity() : specificity (simple==='+(simple?'true':'false')+') now set to "'+na.site.globals.themeDBkeys.specificityName+'"')
-            //break; // DO NOT DO THIS! breaks na.site.saveTheme()??
-        };
-
         na.te.settings.selectedThemeName = na.site.globals.themeName;
+        loop1:
         for (var themeName in na.site.globals.themes) {
             var theme = na.site.globals.themes[themeName];
+            loop2:
             for (var i in na.site.globals.themesDBkeys) {
                 var it = na.site.globals.themesDBkeys[i];
+                debugger;
                 if (
                     it.user === theme.user
                     || it.role === theme.role
@@ -2794,7 +2799,9 @@ na.site = {
                         $('.na_themes_dropdown__themes > .vividDropDownBox_selected').html(themeName);
                     }
                     $('.na_themes_dropdown__themes > .vividDropDownBox_selector > .vividScrollpane').append($(divEl2).clone(true,true));
-                    break;
+                    $('.na_themes_dropdown__themes').css({overflow:'visible'});
+                    $('.na_themes_dropdown__themes > .vividScrollpane').css({display:'block'});
+                    break loop2;
                 }
             };
         }
@@ -3118,8 +3125,8 @@ na.site = {
                     //});
                     return false;
                 }
-                //na.site.globals.themes = themes;
-                //na.site.components.theme = themes[theme];
+                na.site.globals.themes = themes;
+                na.site.components.theme = themes[theme];
 
                 /*
                 var html = ''; idx = 0;
@@ -3160,6 +3167,7 @@ na.site = {
     loadTheme_applySettings : function (dat, callback, loadBackground, saveTheme, changeInterval) {
         if (!dat) {
             na.m.log (1510, 'Error : loadTheme_applySettings() called with dat=undefined/false', false);
+            debugger;
             return false;
         };
         if (typeof loadBackground=='undefined') loadBackground = true;
@@ -3445,15 +3453,15 @@ na.site = {
         s = na.te.settings.current.specificity,
         u = na.site.components.url,
         apps = na.site.globals.app;
+        debugger;
 
         if (!na.te.settings.current.forDialogID && !na.te.settings.current.forElements)
             na.te.onload('siteContent');
 
+        if (!s) return false;
         if (!theme) theme = na.site.globals.themeName;
         na.site.components.running_saveTheme = true;
 
-        if (!s) return false;
-        if (!theme) theme = $('.na_themes_dropdown__themes > .vividDropDownBox_selected > .vividScrollpane').html();
         na.m.log (1451, 'na.saveTheme() : STARTING.', false);
 
         var tApp = null;

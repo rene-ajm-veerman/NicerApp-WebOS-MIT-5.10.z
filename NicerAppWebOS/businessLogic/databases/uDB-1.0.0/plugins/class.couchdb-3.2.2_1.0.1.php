@@ -55,7 +55,7 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
             if (!is_null($cRec)) $naLoginResult = cdb_login ($this, $this->cdb, $cRec, $cRec['username']); else $naLoginResult = cdb_login ($this, $this->cdb, null, null);
         } catch (Exception $e) {
             $naLoginResult = cdb_login ($this, $this->cdb, null, 'Guest');
-            echo '<pre>t44;';   var_dump ($naLoginResult); echo '</pre>'; exit();
+            echo '<pre>t44;';   var_dump ($naLoginResult); echo '</pre>'; //exit();
         }
 
         if (!$naLoginResult) return $naLoginResult; //die ('500 - could not login using username "'.$cRec['username'].' to NicerApp WebOS.');

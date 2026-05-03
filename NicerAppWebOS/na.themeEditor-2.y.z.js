@@ -1057,7 +1057,6 @@ class naThemeEditor {
     
     specificitySelected  (event) {
         var sn = $(event.currentTarget).html() || event;
-        debugger;
         if (!sn) return false;
 
         na.te.s.c.specificity = null;
@@ -1077,11 +1076,14 @@ class naThemeEditor {
                 na.site.c.buttons['#btnDeleteSpecificity'].enable();
             }
 
-            //na.site.setSpecificity();
+
+
 
             na.site.loadTheme (function () { // **POSSIBLY** NOT NEEDED
                 var btn = $('#'+na.te.s.c.selectedButtonID)[0];
                 if (btn) na.te.onclick(btn, false);
+                debugger;
+                na.site.setSpecificity();
             }, s.themeName);
 
 
@@ -1210,7 +1212,6 @@ class naThemeEditor {
 
             setTimeout (function(theme) {
                 na.site.loadTheme(function() {
-                    debugger;
                     var btn = $('#'+na.te.s.c.selectedButtonID)[0];
                     if (btn) na.te.onclick(btn, false);
 

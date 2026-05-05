@@ -2,8 +2,8 @@ nicer_app___app_2d_news__rss_items
 {
     "selector": {
         "pd": {
-            "$gt": 1777749533,
-            "$lt": 1777753133
+            "$gt": 1777982792,
+            "$lt": 1777986392
         },
         "p": {
             "$regex": "^\/English News\/World Headlines"
@@ -25,7 +25,7 @@ nicer_app___app_2d_news__rss_items
         "c",
         "cc"
     ],
-    "bookmark": "g1AAAADVeJw1zjsOwjAQRdEoFRUSC0BiA4N7eiQqWhok5NijeBL_5BkHpWDb1MQF5Xu3Ob7rut71ttuz6CIzri-bDNmw_R8nkvmiFEXBEvHNRrOcTQqqDVVZceWMRkDnXNBhtGiBImwZ1lRmMCQrlDQMWNYtLMkvFEcI1QtljzDWyC7JlqZaCBkkwUJGKKiG2v1RvjEH-j4PDXZU1zh6Yne6N8cjFW9PN9TWU0Seph9cIUtx"
+    "bookmark": "g1AAAADDeJw1zk0KwjAQBeDSlStvIPQCY2rBCu4FV25dSkyGZtr81ExK6QG8rDdwZ7MQ3urxHny2KIrSlLrYcpIxDbg8dFCk3doPJqWRz0L4ZQyc9io40dRNK-pjDo8hJhZ9YANm_UIK0aFPDKcWIwN5MMQweXpNCLNcQDIMntTAoOJEjHnSSYdwEJmw-RNsRj3p-3lnxk5cfGeJTXXDmcU9RKurK0ptySP3_Q9ZYEGG"
 }
 {
     "headers": {
@@ -36,16 +36,16 @@ nicer_app___app_2d_news__rss_items
         },
         "cache-control": "must-revalidate",
         "content-type": "application\/json",
-        "date": "Sun, 03 May 2026 00:46:27 GMT",
+        "date": "Tue, 05 May 2026 13:06:33 GMT",
         "server": "CouchDB\/3.5.1 (Erlang OTP\/26)",
         "transfer-encoding": "chunked",
-        "x-couch-request-id": "a3dbfcf33b",
+        "x-couch-request-id": "1bac6e8508",
         "x-couchdb-body-time": "0"
     },
     "body": {
         "docs": [],
-        "bookmark": "g1AAAADVeJw1zjsOwjAQRdEoFRUSC0BiA4N7eiQqWhok5NijeBL_5BkHpWDb1MQF5Xu3Ob7rut71ttuz6CIzri-bDNmw_R8nkvmiFEXBEvHNRrOcTQqqDVVZceWMRkDnXNBhtGiBImwZ1lRmMCQrlDQMWNYtLMkvFEcI1QtljzDWyC7JlqZaCBkkwUJGKKiG2v1RvjEH-j4PDXZU1zh6Yne6N8cjFW9PN9TWU0Seph9cIUtx"
+        "bookmark": "g1AAAADDeJw1zk0KwjAQBeDSlStvIPQCY2rBCu4FV25dSkyGZtr81ExK6QG8rDdwZ7MQ3urxHny2KIrSlLrYcpIxDbg8dFCk3doPJqWRz0L4ZQyc9io40dRNK-pjDo8hJhZ9YANm_UIK0aFPDKcWIwN5MMQweXpNCLNcQDIMntTAoOJEjHnSSYdwEJmw-RNsRj3p-3lnxk5cfGeJTXXDmcU9RKurK0ptySP3_Q9ZYEGG"
     },
     "status": "200"
 }
-0.0323
+0.0393

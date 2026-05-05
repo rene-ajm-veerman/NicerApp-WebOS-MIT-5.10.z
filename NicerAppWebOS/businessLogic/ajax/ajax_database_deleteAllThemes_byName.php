@@ -1,5 +1,5 @@
 <?php 
-$rootPathNA = realpath(dirname(__FILE__).'/../..').'/NicerAppWebOS';
+$rootPathNA = realpath(dirname(__FILE__).'/../..');
 require_once ($rootPathNA.'/boot.php');
 
 global $naWebOS;

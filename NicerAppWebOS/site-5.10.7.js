@@ -3453,7 +3453,6 @@ na.site = {
         s = na.te.settings.current.specificity,
         u = na.site.components.url,
         apps = na.site.globals.app;
-        debugger;
 
         if (!na.te.settings.current.forDialogID && !na.te.settings.current.forElements)
             na.te.onload('siteContent');
@@ -3583,7 +3582,7 @@ na.site = {
 
                     na.m.log (1451, 'na.saveTheme() : FINISHED.', false);
                     na.site.components.running_saveTheme = false;
-                    if (typeof callback=='function') callback (themeData, data);
+                    if (typeof callback=='function') callback (themeData);
                 }
             },
             error : function (xhr, textStatus, errorThrown) {
@@ -3713,10 +3712,7 @@ na.site = {
             } else if ($(selector).css('backgroundColor') !== '') {
                 ret[selector].background = $(selector).css('backgroundColor');
             }
-        };
-
-
-        if (
+        } else if (
             !selector.match(/,/)
             && $(selector+' > .vdBackground').length>0
         ) { // for vividDialogs only
@@ -3751,7 +3747,12 @@ na.site = {
                 )
                 && $(selector+' > .vdBackground').css('backgroundColor') !== ''
             ) ret[selector+' > .vdBackground'].background = $(selector+' > .vdBackground').css('backgroundColor');
+        } else if (!$(selector)[0]) {
+            $(selector).css('backgroundImage', 'none');
+            ret[selector].background = $(selector).css('backgroundColor');
         };
+
+
 
         /*
         ret[selector+' td'] = {

@@ -1837,7 +1837,7 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
         return true;
     }
 
-    public function delete_allThemes_byName ($themeName) {
+    public function delete_allThemes_byName ($themeName, $specificityName) {
         if ($themeName=='default') {
             echo 'ERROR : can not the delete themes which are named "default".<br/>'.PHP_EOL;
             return false;
@@ -1851,8 +1851,14 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
         foreach ($call->body->rows as $idx => $row) {
             try { $call2 = $this->cdb->get($row->id); } catch (Exception $e) { return false; }
             //var_dump ($call2);
-            if (property_exists($call2->body,'theme')) {
-                if ($call2->body->theme==$themeName) {
+            if (
+                property_exists($call2->body,'theme')
+                && property_exists($call2->body,'specificityName')
+            ) {
+                if (
+                    $call2->body->theme==$themeName
+                    && $call2->body->specificityName==$specificityName
+                ) {
                     $response = $this->cdb->delete ($call2->body->_id, $call2->body->_rev);
                     //try { $call3 = $this->cdb->get($row->id); } catch (Exception $e) { $call3 = false; }
                     //while ($call3 && $call3->body->ok) {
@@ -1862,7 +1868,17 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
                     
                     //if (is_bool($call3)) return $call3;
                 }
+            } elseif (
+                property_exists($call2->body,'theme')
+                && !isset($specificityName)
+              ) {
+                if (
+                    $call2->body->theme==$themeName
+                ) {
+                    $response = $this->cdb->delete ($call2->body->_id, $call2->body->_rev);
+                }
             }
+
         }
         return true;
     }

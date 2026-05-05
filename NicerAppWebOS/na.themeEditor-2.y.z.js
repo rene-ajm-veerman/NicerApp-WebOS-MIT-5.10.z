@@ -403,6 +403,8 @@ class naThemeEditor {
                 $('#themeEditor_photoScaleY').val(na.te.s.c.scaleY);
             };
             bgEl.src = bgSrc;
+        } else if ($(bg).css('backgroundColor')) {
+            debugger;
         }
         
         $('#siteToolbarThemeEditor').css({ display : 'flex', flexDirection : 'row', flexWrap : 'wrap' });
@@ -418,11 +420,13 @@ class naThemeEditor {
             clickoutFiresChange : false, 
             change  (color) {
                 if (typeof color=='object') color = 'rgba('+color._r+', '+color._g+', '+color._b+', '+color._a+')';
+                                                                           debugger;
                 if (na.te.s.c.forDialogID) {
                     var bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground')[0];
                 } else {
                     var bg = $(na.te.s.c.forElements);
                 };
+                debugger;
                 $(bg).css({ background : color, opacity : 1 });
                 na.site.saveTheme();
             }});
@@ -641,6 +645,22 @@ class naThemeEditor {
                             '#btnSelectBackgroundColor', '#btnSelectBorderSettings' , '#btnSelectBoxShadowSettings',
                             '#btnSelectTextSettings', '#btnSelectTextShadowSettings'
                         ]);
+                    } else if (data.node.text.match(/:before/)) {
+                        na.te.s.c.forDialogID = null;
+                        na.te.s.c.forElements = data.node.text;
+                        na.te.enableButtons([
+                            '#btnDeleteElement',
+                            '#btnSelectBackgroundFolder' , '#btnSelectBackgroundImage',
+                            '#btnSelectBackgroundColor', '#btnSelectBorderSettings' , '#btnSelectBoxShadowSettings',
+                            '#btnSelectTextSettings', '#btnSelectTextShadowSettings'
+
+                        ]);
+                        if (data.instance.get_node(data.node.parent).text!=='main') {
+                            //debugger;
+                            na.te.enableButtons([
+                                '#btnDeleteElement'
+                            ]);
+                        }
                     } else if (data.node.text.match(regExApps)) {
                         na.te.s.c.forDialogID = data.node.text.replace('#','');
                         //debugger;
@@ -1580,7 +1600,6 @@ class naThemeEditor {
         na.te.borderSettingsSelected (evt2, false); //event.currentTarget === ct
     }
     borderSettingsSelected  (color) {
-        debugger;
         if (color) na.te.s.c.borderColor = color; else color = na.te.s.c.borderColor;
         if (typeof color=='object') color = 'rgba('+color._r+', '+color._g+', '+color._b+', '+color._a+')'; // firefox bugfix
 
@@ -2487,52 +2506,40 @@ debugger;
         $('#themeEditor_jsTree_selectors').jstree(true).edit(na.te.s.c.selectedSelector.node);
     }
 
-    onclick_btnAddElement  () {
-        debugger;
-        if ($('div, p, span, li, ol, ul, h1, h2, h3, h4').css('cursor').match(/grab/)) {
-            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'inherit'}).each (function(){this.removeEventListener('click',na.te.btnAddElement_clickElement)});
-        } else {
-            na.te.s.c.addingElements = true;
-            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'url(/siteMedia/btnSettings2.32x32.png) 16 16, grab'}).each (function(idx,el) { this.addEventListener('click',na.te.btnAddElement_clickElement,{capture:true})});
-        }
-    }
-
     btnAddElement_clickElement  (evt) {
         //works just fine :
-        na.m.log (100,
-            '\n#'+event.target.id+'.'+event.target.className.replace(' ', '.')+'\n'
-            +'#'+event.currentTarget.id+'.'+event.currentTarget.className.replace(' ', '.')+'\n',
-            false
+        if (evt) na.m.log (100,
+            '\n#'+evt.target.id+'.'+evt.target.className.replace(' ', '.')+'\n'
+            +'#'+evt.currentTarget.id+'.'+evt.currentTarget.className.replace(' ', '.')+'\n',
+                           false
         );
-
-        if (!na.te.s.c.addingElements) return false;
-
         if (
-            event.target.tagName!==event.currentTarget.tagName
-            || event.target.id!==event.currentTarget.id
-            || event.target.className!==event.currentTarget.className
+            evt.target.tagName!==evt.currentTarget.tagName
+            || evt.target.id!==evt.currentTarget.id
+            || evt.target.className!==evt.currentTarget.className
         ) {
             if (
                 !na.te.s.c.pickedElement
                 || (
                     na.te.s.c.pickedElement.length>0
-                    && na.te.s.c.lastPickedElement!==event.target
+                    && na.te.s.c.lastPickedElement!==evt.target
                 )
             ) {
-                na.te.s.c.pickedElement = [ { event : $.extend({},event) } ];
-                na.te.s.c.lastPickedElement = event.target;
-            } else na.te.s.c.pickedElement.push ({ event : $.extend({},event) });
+                na.te.s.c.pickedElement = [ { evt : $.extend({},evt) } ];
+                na.te.s.c.lastPickedElement = evt.target;
+            } else na.te.s.c.pickedElement.push ({ evt : $.extend({},evt) });
             evt.preventDefault();
+            debugger;
         } else {
-            na.te.s.c.pickedElement.push ({ event : $.extend({},event) });
-            na.te.s.c.lastPickedElement = event.target;
+            na.te.s.c.pickedElement.push ({ evt : $.extend({},evt) });
+            na.te.s.c.lastPickedElement = evt.target;
             var msg = '';
             $('#siteToolbarThemeEditor__elementPicker').html('<div class="vividListSelector vividScrollpane"></div>').delay(50);
             for (var i=0; i<na.te.s.c.pickedElement.length; i++) {
-                var ev = na.te.s.c.pickedElement[i].event;
+                var ev = na.te.s.c.pickedElement[i].evt;
                 msg +=
-                    //'\n#'+ev.target.id+'.'+ev.target.className.replace(' ', '.')+'\n'
-                    '\n'+ev.currentTarget.tagName+'#'+ev.currentTarget.id+'.'+ev.currentTarget.className.replace(' ', '.')+'\n';
+                //'\n#'+ev.target.id+'.'+ev.target.className.replace(' ', '.')+'\n'
+                '\n'+ev.currentTarget.tagName+'#'+ev.currentTarget.id+'.'+ev.currentTarget.className.replace(' ', '.')+'\n';
                 var itemHTML = '<div class="vividButton" style="display:inline-block;width:fit-content;position:relative;z-index:900000">'+ev.currentTarget.tagName+'</div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">#'+ev.currentTarget.id+'</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">.'+ev.currentTarget.className.replace(' ', '</span></div><div class="vividButton" style="display:inline-block;width:fit-content;position:relative;"><div class="vdBackground"></div><span style="opacity:1">.')+'</div>';
                 var divEl = document.createElement('div');
                 $(divEl).html(itemHTML);
@@ -2559,9 +2566,9 @@ debugger;
             $('#siteToolbarThemeEditor__elementPicker > .vividListSelector').append(divEl);
 
             na.m.log (110, msg);
-            var br = event.target.getBoundingClientRect();
+            var br = evt.target.getBoundingClientRect();
             $('#siteToolbarThemeEditor__elementPicker').css({position:'absolute',left:br.left,top:br.top+br.height,zIndex:900000}).fadeIn('slow');
-            event.preventDefault();
+            evt.preventDefault();
 
             na.te.s.c.newElementID = na.m.randomString();
             $('#themeEditor_jsTree_selectors').jstree().create_node(na.te.s.c.selectedSelector.node, {
@@ -2575,6 +2582,15 @@ debugger;
 
             //$('#themeEditor_jsTree_selectors').jstree('deselect_all').jstree('select_node', na.te.s.c.newElementID);
 
+        }
+    }
+
+    onclick_btnAddElement  () {
+        if ($('div, p, span, li, ol, ul, h1, h2, h3, h4').css('cursor').match(/grab/)) {
+            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'inherit'}).each (function(){this.removeEventListener('click',na.te.btnAddElement_clickElement)});
+        } else {
+            na.te.s.c.addingElements = true;
+            $('div, p, span, li, ol, ul, h1, h2, h3, h4').css({cursor:'url(/siteMedia/btnSettings2.32x32.png) 16 16, grab'}).each (function(idx,el) { this.addEventListener('click',na.te.btnAddElement_clickElement,{capture:true})});
         }
     }
 
@@ -2601,12 +2617,12 @@ debugger;
         $('#themeEditor_jsTree_selectors').jstree().rename_node (na.te.s.c.newElementID, selector);
     }
 
-    onclick_btnDeleteGraphics  (event) {
-        na.te.deleteElement(nit);
+    onclick_btnDeleteGraphics  (evt) {
+        na.te.deleteElement(evt);
     }
 
-    onclick_btnDeleteElement  (nit) {
-        na.te.deleteElement(nit);
+    onclick_btnDeleteElement  (evt) {
+        na.te.deleteElement(evt);
     }
 
     deleteElement  (nit) {

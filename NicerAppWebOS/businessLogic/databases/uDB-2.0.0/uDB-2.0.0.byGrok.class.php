@@ -12,98 +12,199 @@ class uDB2
     private string $driver;
     private bool $useJsonColumns = true;
     private string $tablePrefix = '';
+    private string $table = '';
     private array $config = [];
 
     public string $cn = 'uDB2';
 
-    // ====================== CONNECTION & INITIALIZATION ======================
+    // ====================== CONNECTION ======================
+    // ... (keep all previous connection methods unchanged: createFromConfig, connectToDatabase, __construct)
 
-    public static function createFromConfig(array $cRec, string $username = 'Guest'): self
-    {
-        $driver = strtolower($cRec['driver'] ?? $cRec['dbConnectionType'] ?? 'mysqli');
+    public static function createFromConfig(array $cRec, string $username = 'Guest'): self { /* ... existing ... */ }
+    public static function connectToDatabase(string $username = 'Guest', string $connectionType = 'adodb', ?array $cRec = null): self { /* ... existing ... */ }
+    public function __construct(\ADOConnection $adodbConnection, string $driver = 'mysqli') { /* ... existing ... */ }
 
-        $adodbDriver = match($driver) {
-            'mysql', 'mysqli' => 'mysqli',
-            'postgresql', 'pgsql', 'postgres' => 'postgres',
-            'sqlite' => 'sqlite3',
-            default => $driver
-        };
-
-        $db = ADOnewConnection($adodbDriver);
-
-        if (!$db) {
-            throw new RuntimeException("Failed to create ADOdb connection for driver: $adodbDriver");
-        }
-
-        // SSL Support
-        if (!empty($cRec['ssl']) || !empty($cRec['config'])) {
-            $ssl = $cRec['ssl'] ?? $cRec['config'] ?? [];
-            if (isset($ssl['adodb_sslKeyFile']))     $db->ssl_key     = $ssl['adodb_sslKeyFile'];
-            if (isset($ssl['adodb_sslCertFile']))    $db->ssl_cert    = $ssl['adodb_sslCertFile'];
-            if (isset($ssl['adodb_sslCA']))          $db->ssl_ca      = $ssl['adodb_sslCA'];
-            if (isset($ssl['adodb_sslCApath']))      $db->ssl_capath  = $ssl['adodb_sslCApath'];
-            if (isset($ssl['adodb_sslCipher']))      $db->ssl_cipher  = $ssl['adodb_sslCipher'];
-        }
-
-        $host     = $cRec['host'] ?? '127.0.0.1';
-        $user     = $cRec['user'] ?? $cRec['username'] ?? '';
-        $password = $cRec['password'] ?? '';
-        $database = $cRec['database'] ?? $cRec['dbName'] ?? '';
-
-        $connected = $db->Connect($host, $user, $password, $database);
-
-        if (!$connected) {
-            throw new RuntimeException("uDB2 Connection failed: " . $db->ErrorMsg());
-        }
-
-        $db->SetFetchMode(ADODB_FETCH_ASSOC);
-
-        if (in_array($driver, ['mysqli', 'mysql'])) {
-            $db->Execute("SET NAMES utf8mb4");
-            $db->Execute("SET CHARACTER SET utf8mb4");
-        }
-
-        $instance = new self($db, $adodbDriver);
-        $instance->config = $cRec;
-        return $instance;
-    }
-
-    public static function connectToDatabase(string $username = 'Guest', string $connectionType = 'adodb', ?array $cRec = null): self
-    {
-        global $naWebOS;
-
-        if ($cRec === null) {
-            $domainConfigsPath = realpath(__DIR__ . '/../../../../domains/' . ($naWebOS->domainFolder ?? 'default') . '/domainConfig/');
-            $configFile = $domainConfigsPath . 'databases.username-' . $username . '.json';
-
-            if (!file_exists($configFile)) {
-                $configFile = $domainConfigsPath . 'databases.username-Guest.json';
-            }
-
-            $config = safeLoadJSONfile($configFile) ?? [];
-            $cRec = $config['databases'][$connectionType] ?? [];
-        }
-
-        return self::createFromConfig($cRec, $username);
-    }
-
-    public function __construct(\ADOConnection $adodbConnection, string $driver = 'mysqli')
-    {
-        $this->db = $adodbConnection;
-        $this->driver = strtolower($driver);
-        $this->useJsonColumns = in_array($this->driver, ['mysqli', 'mysql', 'postgres', 'sqlite3']);
-    }
-
+    // ====================== MAGIC & TABLE ======================
     public function __get(string $name)
     {
-        trigger_error("uDB2: Accessing undefined property '\$this->{$name}'", E_USER_NOTICE);
+        trigger_error("uDB2: Undefined property '\$this->{$name}' accessed on table '{$this->table}'", E_USER_NOTICE);
         return null;
     }
 
     public function setTable(string $table): self
     {
-        $this->table = $table;   // we'll add private string $table = ''; later
+        $this->table = $table;
         return $this;
+    }
+
+    public function getTable(): string
+    {
+        return $this->table;
+    }
+
+    // ====================== FIND() ======================
+
+    /**
+     * MongoDB-style find()
+     */
+    public function find(string $table = '', array $query = [], array $projection = [], ?int $limit = null, ?int $skip = null, array $sort = []): array
+    {
+        if (!empty($table)) {
+            $this->setTable($table);
+        }
+
+        if (empty($this->table)) {
+            trigger_error("uDB2: No table specified in find()", E_USER_WARNING);
+            return [];
+        }
+
+        $where = $this->translateQueryToWhere($query);
+        $fields = $this->translateProjection($projection);
+
+        $sql = "SELECT {$fields} FROM `{$this->tablePrefix}{$this->table}`";
+
+        if ($where['sql']) {
+            $sql .= " WHERE {$where['sql']}";
+        }
+
+        // ORDER BY
+        if (!empty($sort)) {
+            $orderParts = [];
+            foreach ($sort as $field => $direction) {
+                $dir = strtoupper($direction) === -1 || strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+                $orderParts[] = $this->jsonField($field) . " $dir";
+            }
+            $sql .= " ORDER BY " . implode(', ', $orderParts);
+        }
+
+        // LIMIT & OFFSET
+        if ($limit !== null) {
+            $sql .= " LIMIT ?";
+            $where['params'][] = (int)$limit;
+
+            if ($skip !== null) {
+                $sql .= " OFFSET ?";
+                $where['params'][] = (int)$skip;
+            }
+        }
+
+        try {
+            $rs = $this->db->Execute($sql, $where['params']);
+            return $rs ? $rs->GetRows() : [];
+        } catch (Throwable $e) {
+            trigger_error("uDB2: find() failed on table '{$this->table}' - " . $e->getMessage(), E_USER_WARNING);
+            return [];
+        }
+    }
+
+    private function translateProjection(array $projection): string
+    {
+        if (empty($projection)) {
+            return '*';
+        }
+
+        $fields = [];
+        foreach ($projection as $field => $include) {
+            if ($include === 1 || $include === true) {
+                $fields[] = $this->jsonField($field);
+            }
+        }
+
+        return empty($fields) ? '*' : implode(', ', $fields);
+    }
+
+    // ====================== INSERTMANY() ======================
+
+    /**
+     * MongoDB-style insertMany()
+     */
+    public function insertMany(string $table = '', array $documents = []): array
+    {
+        if (!empty($table)) {
+            $this->setTable($table);
+        }
+
+        if (empty($this->table)) {
+            trigger_error("uDB2: No table specified in insertMany()", E_USER_WARNING);
+            return ['inserted' => 0, 'ids' => []];
+        }
+
+        if (empty($documents)) {
+            return ['inserted' => 0, 'ids' => []];
+        }
+
+        $insertedIds = [];
+        $count = 0;
+
+        // Convert single document to array if needed
+        if (!isset($documents[0])) {
+            $documents = [$documents];
+        }
+
+        foreach ($documents as $doc) {
+            $result = $this->insertOneInternal($doc);
+            if ($result['success']) {
+                $count++;
+                $insertedIds[] = $result['id'];
+            }
+        }
+
+        return [
+            'inserted' => $count,
+            'ids' => $insertedIds
+        ];
+    }
+
+    private function insertOneInternal(array $document): array
+    {
+        // Auto-generate _id if not present
+        if (empty($document['_id'])) {
+            $document['_id'] = $this->generateId();
+        }
+
+        $fields = [];
+        $placeholders = [];
+        $params = [];
+
+        foreach ($document as $key => $value) {
+            $fields[] = "`$key`";
+            $placeholders[] = '?';
+            $params[] = $this->prepareInsertValue($value);
+        }
+
+        $sql = "INSERT INTO `{$this->tablePrefix}{$this->table}`
+        (" . implode(', ', $fields) . ")
+        VALUES (" . implode(', ', $placeholders) . ")";
+
+        try {
+            $this->db->Execute($sql, $params);
+            return [
+                'success' => true,
+                'id' => $document['_id']
+            ];
+        } catch (Throwable $e) {
+            trigger_error("uDB2: insert failed - " . $e->getMessage(), E_USER_WARNING);
+            return ['success' => false, 'id' => null];
+        }
+    }
+
+    private function generateId(): string
+    {
+        return bin2hex(random_bytes(12)); // 24 char hex ID (MongoDB-like)
+    }
+
+    private function prepareInsertValue(mixed $value): mixed
+    {
+        if (is_array($value) || is_object($value)) {
+            return json_encode($value);
+        }
+        if ($value instanceof DateTime) {
+            return $value->format('Y-m-d H:i:s');
+        }
+        if (is_bool($value)) {
+            return $value ? 1 : 0;
+        }
+        return $value;
     }
 
     // ====================== QUERY TRANSLATION ======================

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+
+    bootstrap="vendor/autoload.php"
+    cacheDirectory=".phpunit.cache"
+    backupGlobals="false"
+    backupStaticProperties="false"
+    colors="true"
+    displayDetailsOnAllTests="true"
+    failOnRisky="true"
+    failOnWarning="true"
+    processIsolation="false">
+
+    <testsuites>
+        <testsuite name="uDB2 Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>/var/www/nicer.app-5.10.z/domains/nicer.app/NicerAppWebOS/businessLogic/databases/uDB-2.0.0</directory>
+        </include>
+    </source>
+
+    <php>
+        <!-- Environment variables for tests -->
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_TEST_SQL_HOST" value="127.0.0.1"/>
+        <env name="DB_TEST_SQL_DB" value="nicer_app___test"/>
+        <env name="DB_TEST_COUCH_HOST" value="127.0.0.1"/>
+        <env name="DB_TEST_COUCH_PORT" value="5984"/>
+        <env name="DB_TEST_COUCH_USER" value="admin"/>
+        <env name="DB_TEST_COUCH_PASS" value="password"/>
+    </php>
+
+    <logging>
+        <junit outputFile="test-results.xml"/>
+    </logging>
+
+</phpunit>

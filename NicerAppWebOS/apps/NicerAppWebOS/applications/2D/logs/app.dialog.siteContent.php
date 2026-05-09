@@ -1,7 +1,7 @@
 <?php
 global $naWebOS;
 global $naLAN;
-$debugMe = false;
+$debugMe = true;
 $openToPublic = true;
 
 if (!$openToPublic && !$naLAN) {
@@ -66,7 +66,7 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
             */
 
             $r[] = $rec;
-            if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec); echo '</pre>'; };
+            //if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec); echo '</pre>'; };
         }
 
         $cdb->setDatabase($dataSetName);
@@ -85,7 +85,7 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
         //echo '<pre>'; var_dump($call); echo '</pre>'; return;
         //$b = json_decode(json_encode($call),true);
         foreach ($call->body->rows as $idx => $rec) {
-            if ($debugMe) { echo '<pre style="background:rgba(255,0,0,0.555);color:yellow;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec->id); echo '</pre>'; };
+            //if ($debugMe) { echo '<pre style="background:rgba(255,0,0,0.555);color:yellow;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec->id); echo '</pre>'; };
             if (!property_exists($rec, 'id')) continue;
             if (strpos($rec->id,'design/')!==false) continue;
 
@@ -111,7 +111,7 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
 
             $r1 = json_decode(json_encode($dat->body));
             $r[] = $r1;
-            if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($r1); echo '</pre>'; };
+            //if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($r1); echo '</pre>'; };
         }
 
         $cdb->setDatabase($dataSetName);
@@ -267,6 +267,7 @@ if ($debugMe) {
     echo '<pre style="background:rgba(0,0,50,0.555);color:lime;border-radius:10px;margin:10px;padding:10px;">';
     var_dump ($results);
     echo '</pre>';
+    exit;
 }
 ?>
 <h1><?=$naWebOS->domain?> Logs</h1>

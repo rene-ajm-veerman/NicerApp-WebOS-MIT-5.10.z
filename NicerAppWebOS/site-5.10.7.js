@@ -3305,7 +3305,41 @@ na.site = {
             $('.vividDialog').css(dat.themeSettings['.vividDialog']);
             $('.vividDialog > .vdBackground').css(dat.themeSettings['.vividDialog > .vdBackground']);
         };
-        if (dat.themeSettings)
+        if (dat.themeSettings) {
+            debugger;
+            var html = '<style id="cssThemeSettings">';
+            loop1:
+            for (var category in dat.themeSettings) {
+                var categoryItems = dat.themeSettings[category];
+                loop2:
+                switch (category) {
+                    case 'Dialogs' :
+                        for (var dID in categoryItems) {
+                            var dit = categoryItems[dID].css;
+                            html += na.m.cssTranslation (dID, dit);
+                        }
+                        break loop2;
+                    case 'Apps':
+                        for (var appName in categoryItems) {
+                            var dit = categoryItems[appName].css;
+                            html += na.m.cssTranslation (dID, dit);
+                        }
+                        break loop2;
+                    case 'Extras' :
+                        for (var btnAddGraphics_jsTreeText in categoryItems) {
+                            var it = categoryItems[btnAddGraphics_jsTreeText].css;
+                            for (var divSel in it) {
+                                var dit = it[divSel];
+                                html += na.m.cssTranslation (dID, dit);
+                            }
+                        }
+                        break loop2;
+                }
+            }
+        }
+        $('#cssThemeSettings').remove();
+        $(html).appendTo ($('#cssPageSpecific'));
+        /*
         for (var category in dat.themeSettings) {
             if (
                 dID=='.vividDialog'
@@ -3324,7 +3358,7 @@ na.site = {
                             if (dit2.background && dID == '#'+na.te.settings.forDialogID+' > .vdBackground') {
                                 var
                                 del = $(dID)[0],
-                                rgbaRegEx = /rgba\(\d{1,3}\,\s*\d{1,3}\,\s*\d{1,3}\,\s*([\d\.]+)\).*/,
+                                rgbaRegEx = /rgba\(\d{1,3}\,\s*\d{1,3}\,\s*\d{1,3}\,\s*([\d\.]+)\).* /,
                                 test = rgbaRegEx.test(dit.background),
                                 ditbgOpacity = test ? dit.background.match(rgbaRegEx)[1] : dit.opacity;
                                 $('.sliderOpacityRange', del).attr('value', ditbgOpacity*100);
@@ -3359,7 +3393,7 @@ na.site = {
                                     dit[prop] += ' !important';
                                 }
                             }
-                            */
+                            * /
 
                             $(divSel).css(dit);
 
@@ -3384,7 +3418,7 @@ na.site = {
                                         }
                                     }).css({display:'none'});
                                 }
-                            }*/
+                            }* /
                         }
                     }
                     break;
@@ -3402,7 +3436,7 @@ na.site = {
                                     dit[prop] += ' !important';
                                 }
                             }
-                            */
+                            * /
 
                             $(divSel).css(dit);
                             /*
@@ -3426,12 +3460,12 @@ na.site = {
                                         }
                                     }).css({display:'none'});
                                 }
-                            }*/
+                            }* /
                         }
                     }
                     break;
             }
-        };
+        };*/
 
         na.m.log (1510, 'na.loadTheme_applySettings() : FINISHED.', false);
         na.site.settings.running_loadTheme = false;

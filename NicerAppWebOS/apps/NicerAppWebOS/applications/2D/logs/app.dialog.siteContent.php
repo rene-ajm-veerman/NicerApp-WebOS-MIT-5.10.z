@@ -262,7 +262,7 @@ if ($debugMe) {
     var_dump ($findCommand);
     echo '</pre>';
     echo '<pre style="background:rgba(255,255,255,0.555);color:navy;border-radius:10px;margin:10px;padding:10px;">';
-    var_dump ($call);
+    //var_dump ($call);
     echo '</pre>';
     echo '<pre style="background:rgba(0,0,50,0.555);color:lime;border-radius:10px;margin:10px;padding:10px;">';
     var_dump ($results);

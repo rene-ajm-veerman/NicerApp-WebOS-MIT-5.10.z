@@ -628,6 +628,7 @@ class naThemeEditor {
                         '#btnSelectTextSettings', '#btnSelectTextShadowSettings',
                         '#btnSelectBackgroundFolder' , '#btnSelectBackgroundImage'
                     ]);
+                debugger;
                 if (data.node && data.node.type=='naElement') {
                     var
                     regExSite = /#site([\w\d]+)$/,

@@ -36,6 +36,16 @@ na.m = {
 		}
     },
 
+    cssTranslation : function (dID, cssObj) {
+        var cssText = dID+' {\n';
+        for (var k in cssObj) {
+            var v = cssObj[k];
+            cssText = '\t' + k + ' : '+(typeof v=='string'?'""':'')+v+(typeof v=='string'?'""':'');
+        }
+        cssText += '}\n';
+        return cssText;
+    },
+
     html : function (relativeIndentLevel, html) {
         //var indent = '';
         //for (var i=0; i < na.m.settings.baseLevel + relativeIndentLevel; i++) indent += "\t";

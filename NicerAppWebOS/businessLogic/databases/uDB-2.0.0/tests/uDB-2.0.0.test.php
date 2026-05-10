@@ -12,15 +12,15 @@ final class uDB2Test extends TestCase
     private ?uDB2 $dbSQL = null;
     private ?uDB2 $dbCouch = null;
 
-    protected function setUp(): void
-    {
+    protected function setUp(): void {
+        global $naWebOS;
         // === SQL Backend (Test Database) ===
         $sqlConfig = [
             'driver'     => 'mysqli',
             'host'       => '127.0.0.1',
             'user'       => 'root',           // Change for CI / your env
             'password'   => '',
-            'database'   => 'nicerapp_test',
+            'database'   => $naWebOS->domainFolderForDB.'___test',
             'tablePrefix'=> 'test_'
         ];
 
@@ -33,7 +33,7 @@ final class uDB2Test extends TestCase
             'port'       => 5984,
             'user'       => 'admin',
             'password'   => 'password',
-            'database'   => 'nicerapp_test'
+            'database'   => $naWebOS->domainFolderForDB.'___test'
         ];
 
         $this->dbCouch = uDB2::createFromConfig($couchConfig);

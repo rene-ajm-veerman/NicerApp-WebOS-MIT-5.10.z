@@ -3301,13 +3301,15 @@ na.site = {
                 if (bg) $(el).css({background:bg});
             });
         }
+        var html = '<style id="cssThemeSettings">';
         if (dat.themeSettings && dat.themeSettings['.vividDialog']) {
-            $('.vividDialog').css(dat.themeSettings['.vividDialog']);
-            $('.vividDialog > .vdBackground').css(dat.themeSettings['.vividDialog > .vdBackground']);
+            html += na.m.cssTranslation ('.vividDialog', dat.themeSettings['.vividDialog']);
+            html += na.m.cssTranslation ('.vividDialog > .vdBackground', dat.themeSettings['.vividDialog > .vdBackground']);
+            //$('.vividDialog').css(dat.themeSettings['.vividDialog']);
+            //$('.vividDialog > .vdBackground').css(dat.themeSettings['.vividDialog > .vdBackground']);
         };
         if (dat.themeSettings) {
             debugger;
-            var html = '<style id="cssThemeSettings">';
             loop1:
             for (var category in dat.themeSettings) {
                 var categoryItems = dat.themeSettings[category];
@@ -3338,7 +3340,7 @@ na.site = {
             }
         }
         $('#cssThemeSettings').remove();
-        $(html).appendTo ($('#cssPageSpecific'));
+        $('#cssPageSpecific').after (html);
         /*
         for (var category in dat.themeSettings) {
             if (

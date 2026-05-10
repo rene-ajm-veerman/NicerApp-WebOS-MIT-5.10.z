@@ -420,7 +420,6 @@ class naThemeEditor {
             clickoutFiresChange : false, 
             change  (color) {
                 if (typeof color=='object') color = 'rgba('+color._r+', '+color._g+', '+color._b+', '+color._a+')';
-                                                                           debugger;
                 if (na.te.s.c.forDialogID) {
                     var bg = $('#'+na.te.s.c.forDialogID+' > .vdBackground')[0];
                 } else {
@@ -428,7 +427,7 @@ class naThemeEditor {
                 };
                 debugger;
                 $(bg).css({ background : color, opacity : 1 });
-                na.site.saveTheme();
+                na.site.saveTheme({callback:na.site.loadTheme});
             }});
         //if (na.te.s.c.selectedButtonID!=='btnSelectBackgroundColor') $('#colorpicker').next().css({display:x});
         var x = $('#borderColorpicker').css('display');

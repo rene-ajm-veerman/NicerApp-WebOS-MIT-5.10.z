@@ -285,6 +285,9 @@ class naThemeEditor {
                         "state", "types", "wholerow", "multiselect"
                     ]
                 }).on('changed.jstree', function (e, data) {
+                    $('img[srcpreload]').each (function (idx,el) {
+                        el.src = el.srcpreload;
+                    })
                     if (data.action=='select_node') {
                         na.te.s.c.selectedBackground = data;
                         for (var i=0; i<data.selected.length; i++) {
@@ -771,6 +774,10 @@ class naThemeEditor {
     enableButtons (buttons) {
         for (var i=0; i<buttons.length; i++) {
             na.site.components.buttons[buttons[i]].enable();
+            $('img[srcpreload]').each (function (idx,el) {
+                el.src = $(el).attr('srcpreload');
+            })
+
         }
     }
 
@@ -2259,6 +2266,7 @@ debugger;
         } else {
             var div = bg = $(na.te.s.c.forElements);
         };
+        var
         bg1 = bg.css('background').replace(/\'/g, '\\\'').replace(/"/g, '\''),
         opacity = bg1.match(/url\(/) ? bg.css('opacity') : 1,
         border = div.css('border'),
@@ -2336,6 +2344,7 @@ debugger;
         newFontFamily = newFontFamily ? newFontFamily : na.te.s.c.selectedFontFamily, //$('#textFontFamily').val(),//.replace(/ /g, '+'),
         els = $('#'+na.te.s.c.selectedTextShadowID+' > div')
                 .add(el).add(el2).add(el3);
+        debugger;
         if (newFontFamily) na.te.s.c.selectedFontFamily = newFontFamily;
 
         els.css ({

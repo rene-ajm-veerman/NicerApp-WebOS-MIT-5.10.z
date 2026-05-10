@@ -3309,7 +3309,6 @@ na.site = {
             //$('.vividDialog > .vdBackground').css(dat.themeSettings['.vividDialog > .vdBackground']);
         };
         if (dat.themeSettings) {
-            debugger;
             loop1:
             for (var category in dat.themeSettings) {
                 var categoryItems = dat.themeSettings[category];
@@ -3324,7 +3323,7 @@ na.site = {
                     case 'Apps':
                         for (var appName in categoryItems) {
                             var dit = categoryItems[appName].css;
-                            html += na.m.cssTranslation (dID, dit);
+                            html += na.m.cssTranslation (appName, dit);
                         }
                         break loop2;
                     case 'Extras' :
@@ -3332,7 +3331,7 @@ na.site = {
                             var it = categoryItems[btnAddGraphics_jsTreeText].css;
                             for (var divSel in it) {
                                 var dit = it[divSel];
-                                html += na.m.cssTranslation (dID, dit);
+                                html += na.m.cssTranslation (btnAddGraphics_jsTreeText, dit);
                             }
                         }
                         break loop2;

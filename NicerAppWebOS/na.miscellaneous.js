@@ -37,12 +37,17 @@ na.m = {
     },
 
     cssTranslation : function (dID, cssObj) {
-        var cssText = dID+' {\n';
-        for (var k in cssObj) {
-            var v = cssObj[k];
-            cssText = '\t' + k + ' : '+(typeof v=='string'?'""':'')+v+(typeof v=='string'?'""':'');
+        //var cssText = dID+' {\n';
+        var cssText = '';
+        for (var sel in cssObj) {
+            cssText += sel+' {\n';
+            var v1 = cssObj[sel];
+            for (var k in v1) {
+                var v2 = v1[k];
+                cssText += '\t' + k + ' : '+(typeof v2=='string'?'""':'')+v2+(typeof v2=='string'?'""':'')+'\n';
+            }
+            cssText += '}\n';
         }
-        cssText += '}\n';
         return cssText;
     },
 

@@ -1630,7 +1630,7 @@ class naThemeEditor {
             $(na.te.s.c.forElements+' > .vdBackground').css({ borderRadius : newBorderRadius });
             //$(bg).css({borderRadius:newBorderRadius});
         }
-        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme();
+        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme(na.site.loadTheme);
     }
     
     selectBoxShadowSettings  (event, updateHTML) {
@@ -1815,7 +1815,7 @@ class naThemeEditor {
             $(na.te.s.c.forElements).css ({ boxShadow : newBoxSetting });
 
 
-        na.site.saveTheme();
+        na.site.saveTheme({callback:na.site.loadTheme});
         
     }
     boxSettingsChanged_shadowColor  (color) {
@@ -1991,7 +1991,7 @@ class naThemeEditor {
         } else { 
             $(bg).add('.boxShadow_bg, .textShadow_bg').css({ opacity : opacity });
         }
-        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme();
+        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme({callback:na.site.loadTheme});
     }
     
     imageSelected  (el) {
@@ -2286,7 +2286,7 @@ debugger;
             na.te.textSettingsSelected_updateDialog();
             na.te.textSettingsSelected(evt2,false);
             na.te.selectTextShadowSettings(false);
-            //na.site.saveTheme();
+            na.site.saveTheme({callback:na.site.loadTheme});
         }, 100);
         
     }
@@ -2344,7 +2344,7 @@ debugger;
             fontSize : newFontSize+'px',
             fontFamily : newFontFamily
         });
-        na.site.saveTheme();
+        na.site.saveTheme({callback:na.site.loadTheme});
 
         $('.textShadow_containerDiv').removeClass('selected');
         $('#'+na.te.s.c.selectedTextShadowID+'_containerDiv').addClass('selected');
@@ -2381,7 +2381,7 @@ debugger;
             
         $(el).add(el2).css({ fontWeight : newFontWeight, fontSize : newFontSize+'px', fontFamily : newFontFamily });
         $(el).add(el2).css({ textShadow : newTextShadow });
-        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme();
+        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme({callback:na.site.loadTheme});
         window.dispatchEvent(new Event('resize'));        
     }
     
@@ -2397,7 +2397,7 @@ debugger;
             var el = el2 = el3 = $(na.te.s.c.forElements);
         };
         $(el).add(el2).add(el3).css ({ color : color });
-        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme();
+        /*if (na.te.s.c.fireSaveTheme) */na.site.saveTheme({callback:na.site.loadTheme});
     }
     
     textSettingsSelected_textShadowColor  (color) {
@@ -2645,7 +2645,7 @@ debugger;
         $('#themeEditor_jsTree_selectors')
             .jstree('delete_node', node);
 
-        na.site.saveTheme (na.site.loadTheme);
+        na.site.saveTheme ({callback:na.site.loadTheme});
     }
 
 };

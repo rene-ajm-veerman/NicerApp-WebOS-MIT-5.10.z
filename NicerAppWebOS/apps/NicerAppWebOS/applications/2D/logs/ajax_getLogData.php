@@ -37,34 +37,35 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
         $dsn = $cdbDomain.'___ipinfo';
         //var_dump($dsn);
 
-        //$cdb->setDatabase($dsn);
+        $cdb->setDatabase($dsn);
         $r = [];
         //echo '<pre>'; var_dump($call); echo '</pre>';
         //$b = json_decode(json_encode($call),true);
         foreach ($call->body->docs as $idx => $rec) {
             if ($debugMe) { echo '<pre style="background:rgba(255,0,0,0.555);color:yellow;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec->_id); echo '</pre>'; };
 
-            //$dat = $cdb->get(urlencode($rec->_id));
-            //echo '<pre style="background:rgba(0,50,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($dat); echo '</pre>';
+            try {
+                $dat = $cdb->get(urlencode($rec->_id));
+                //echo '<pre style="background:rgba(0,50,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($dat); echo '</pre>';
 
-            /*$findCommand = [
-                'selector' => [ 'ip' => $rec->ip ],
-                'fields' => [ 'ip', 'ip_info' ]
-            ];
-            $cdb->setDatabase($dsn);
-            $call2 = $cdb->find($findCommand);
-            //echo '<pre>'; var_dump ($call2); echo '</pre>';
-            */
+                $findCommand = [
+                    'selector' => [ 'ip' => $rec->ip ],
+                    'fields' => [ 'ip', 'ip_info' ]
+                ];
+                $cdb->setDatabase($dsn);
+                $call2 = $cdb->find($findCommand);
+                //echo '<pre>'; var_dump ($call2); echo '</pre>';
 
-            /*
-            if (
-                isset($call2)
-                && property_exists($call2,'body')
-                && property_exists($call2->body, 'docs')
-            ) {
-                $rec->ipinfo = $call2->body->docs;
+
+
+                if (
+                    isset($call2)
+                    && property_exists($call2,'body')
+                    && property_exists($call2->body, 'docs')
+                ) $rec->ipinfo = $call2->body->docs;
+            } catch (Exception $e) {
+
             }
-            */
 
             $r[] = $rec;
             //if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec); echo '</pre>'; };
@@ -90,28 +91,27 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
             if (!property_exists($rec, 'id')) continue;
             if (strpos($rec->id,'design/')!==false) continue;
 
-            //$cdb->setDatabase($dataSetName);
-            //$dat = $cdb->get(urlencode($rec->id));
+            $cdb->setDatabase($dataSetName);
+            $dat = $cdb->get(urlencode($rec->id));
             //echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($dat); echo '</pre>';
 
 
-            // $findCommand = [
-            //     'selector' => [ 'ip' => $dat->body->ip ],
-            //     'fields' => [ 'ip', 'ip_info' ]
-            // ];
-            // $cdb->setDatabase($dsn);
-            //
-            //
-            // $call2 = $cdb->find($findCommand);
-            //
-            // if (
-            //     isset($call2)
-            //     && property_exists($call2,'body')
-            //     && property_exists($call2->body, 'docs')
-            // ) $dat->body->ipinfo = $call2->body->docs;
-            //
-            // $r1 = json_decode(json_encode($dat->body));
-            // $r[] = $r1;
+             $findCommand = [
+                 'selector' => [ 'ip' => $dat->body->ip ],
+                 'fields' => [ 'ip', 'ip_info' ]
+             ];
+             $cdb->setDatabase($dsn);
+
+
+             $call2 = $cdb->find($findCommand);
+
+             if (
+                 isset($call2)
+                 && property_exists($call2,'body')
+                 && property_exists($call2->body, 'docs')
+             ) $dat->body->ipinfo = $call2->body->docs;
+             $r1 = json_decode(json_encode($dat->body));
+             $r[] = $r1;
             //if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($r1); echo '</pre>'; };
         }
 
@@ -121,7 +121,6 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
 
 $in = &$_GET;
 $fields = [ '_id', 'ip', 'millisecondsSinceEpoch', 'msg', 'referrer', 'stacktrace', 'info', 'htmlClasses', 'dateTZ' ];
-
 
 if (
     $naWebOS->view[$afn]['beginDateTime']
@@ -140,23 +139,26 @@ if (
     $results = [];
     while ($bm!==$oldBM) {
         if ($bm!=='abc') $findCommand['bookmark'] = $bm;
-        $call = $cdb->find($findCommand);
-
         $oldBM = $bm;
-        if (
-            isset($call)
-            && property_exists($call,'body')
-            && property_exists($call->body, 'bookmark')
-            && is_string($call->body->bookmark)
-            && $call->body->bookmark !== ''
-            && $call->body->bookmark !== 'nil'
-        ) {
-            $bm = $call->body->bookmark;
-        } else {
-            $bm = 'abc';
-        };
 
-        $results = array_merge_recursive($results, transformResults_findCommand ($call));
+        try {
+            $call = $cdb->find($findCommand);
+
+            if (
+                isset($call)
+                && property_exists($call,'body')
+                && property_exists($call->body, 'bookmark')
+                && is_string($call->body->bookmark)
+                && $call->body->bookmark !== ''
+                && $call->body->bookmark !== 'nil'
+            ) {
+                $bm = $call->body->bookmark;
+            } else {
+                $bm = 'abc';
+            };
+
+            $results = array_merge_recursive($results, transformResults_findCommand ($call));
+        } catch (Exception $e) {}
     }
 } else if ($naWebOS->view[$afn]['beginDateTime']) {
     $findCommand = [
@@ -173,30 +175,32 @@ if (
     $i = 0;
     while ($bm!==$oldBM) {
         if ($bm!=='abc') $findCommand['bookmark'] = $bm;
-        $call = $cdb->find($findCommand);
-
         $oldBM = $bm;
-        if (
-            isset($call)
-            && property_exists($call,'body')
-            && property_exists($call->body, 'bookmark')
-            && is_string($call->body->bookmark)
-            && $call->body->bookmark !== ''
-            && $call->body->bookmark !== 'nil'
-        ) {
-            $bm = $call->body->bookmark;
-        } else {
-            $bm = 'abc';
-        };
-        /*
-        var_dump ($oldBM===$bm);
-        var_dump ($oldBM);
-        var_dump ($bm); echo '<br/>';PHP_EOL;
-        $i++;
-        if ($i>4) die();
-        */
+        try {
+            $call = $cdb->find($findCommand);
 
-        $results = array_merge_recursive($results, transformResults_findCommand ($call));
+            if (
+                isset($call)
+                && property_exists($call,'body')
+                && property_exists($call->body, 'bookmark')
+                && is_string($call->body->bookmark)
+                && $call->body->bookmark !== ''
+                && $call->body->bookmark !== 'nil'
+            ) {
+                $bm = $call->body->bookmark;
+            } else {
+                $bm = 'abc';
+            };
+            /*
+            var_dump ($oldBM===$bm);
+            var_dump ($oldBM);
+            var_dump ($bm); echo '<br/>';PHP_EOL;
+            $i++;
+            if ($i>4) die();
+            */
+
+            $results = array_merge_recursive($results, transformResults_findCommand ($call));
+        } catch (Exception $e) {};
 
     }
 } else if (array_key_exists('end', $in)) {

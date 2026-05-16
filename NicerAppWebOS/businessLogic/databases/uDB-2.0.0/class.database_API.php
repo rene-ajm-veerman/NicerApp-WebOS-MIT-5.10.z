@@ -1,5 +1,6 @@
 <?php
 $myPath_BLdbs = realpath(dirname(__FILE__).'/../../../'); global $myPath_BLdbs;
+//echo 't291:'; var_dump($myPath_BLdbs); exit;
 require_once ($myPath_BLdbs.'/boot.php');
 require_once (__DIR__.'/functions.php');
 

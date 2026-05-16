@@ -59,7 +59,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
     onreload : async function () {
         var
         url = '/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/ajax_getNewComments.php',
-        fnc = 'na.comments.onreload()',
+        fncn = 'na.comments.onreload()',
         data = {
             url : document.location.href.replace(document.location.search,'').replace(/\\\//g, '/')+document.location.search,
             openIDs : na.c.openIDs()

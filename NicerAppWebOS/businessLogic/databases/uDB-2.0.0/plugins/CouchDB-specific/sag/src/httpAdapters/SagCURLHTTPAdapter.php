@@ -55,9 +55,8 @@ class SagCURLHTTPAdapter extends SagHTTPAdapter {
       && is_string($_SESSION['cdb_pw'])
       && $_SESSION['cdb_pw']!=''
       ? "{$this->proto}://".$naWebOS->domainFolderForDB.'___'.preg_replace('/.*___/','',
-                                                                           str_replace(' ','_',
-                                                                                       str_replace('.','__',
-                                                                                                   $_SESSION['cdb_loginName']))).":".$_SESSION['cdb_pw']."@{$this->host}:{$this->port}{$url}"
+            str_replace(' ','_',
+              str_replace('.','__', $_SESSION['cdb_loginName']))).":".$_SESSION['cdb_pw']."@{$this->host}:{$this->port}{$url}"
       : "{$this->proto}://{$this->host}:{$this->port}{$url}"
     );
     //var_dump ('t3322'); var_dump ($url); die();

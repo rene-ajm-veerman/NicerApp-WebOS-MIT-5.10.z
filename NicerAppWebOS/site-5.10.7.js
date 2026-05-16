@@ -224,7 +224,7 @@ na.site = {
         t.components = t.c = { dialogs : {}, buttons : {}, menus : {} };
         let c = t.components;
 
-        na.m.addLogEntry ('Starting bootup process for '+JSON.stringify(document.location));
+        na.m.addLogEntry ('Starting bootup process for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>');
 
         if (navigator.connection) {
             console.log(`Effective network type: ${navigator.connection.effectiveType}`);
@@ -2783,7 +2783,6 @@ na.site = {
             loop2:
             for (var i in na.site.globals.themesDBkeys) {
                 var it = na.site.globals.themesDBkeys[i];
-                debugger;
                 if (
                     it.user === theme.user
                     || it.role === theme.role

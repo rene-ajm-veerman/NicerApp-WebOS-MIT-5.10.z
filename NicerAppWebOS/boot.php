@@ -9,6 +9,8 @@ rene.veerman.netherlands@gmail.com
 NicerApp WebOS from Nicer Enterprises
 */
 
+    require_once (__DIR__.'/businessLogic/vendor/autoload.php');
+    use Jaybizzle\CrawlerDetect\CrawlerDetect;
     define ("SESSION_ERRORS_ID", "NicerApp_WebOS_errors_PHP");
     define ("SEID", SESSION_ERRORS_ID);
 
@@ -121,7 +123,7 @@ NicerApp WebOS from Nicer Enterprises
 
     global $naIsLatestVersion;
     $naIsLatestVersion = (/*$naWebOS->domain*/$_SERVER['SERVER_NAME']=='new.nicer.app');
-    if ($naIsLatestVersion)
+    if (true || $naIsLatestVersion)
         $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-2.0.0';
     else
         $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-1.0.0';
@@ -131,7 +133,7 @@ NicerApp WebOS from Nicer Enterprises
     //require_once ($rootPath_na_dbs.'/connectors/forFuture_design_coding_debugging_and_usage/class.adodb5_1.0.0.php');
     //require_once ($rootPath_na.'/NicerAppWebOS/3rd-party/adodb5/adodb.inc.php');
 
-    require_once ($rootPath_na_dbs.'/plugins/class.couchdb-3.2.2_1.0.1.php');
+    require_once ($rootPath_na_dbs.'/plugins/class.couchdb-3.2.2_2.0.0.php');
     // Sag, the business code layer that i use towards the couchdb.apache.org database system.
     require_once($rootPath_na_dbs.'/plugins/CouchDB-specific/sag/src/Sag.php');
     require_once ($rootPath_na_dbs.'/plugins/CouchDB-specific/Sag-support-functions.php');
@@ -267,6 +269,14 @@ NicerApp WebOS from Nicer Enterprises
         $_SESSION['startedID'] = cdb_randomString(50);
 
         $naBot = stripos($_SERVER['HTTP_USER_AGENT'], 'bot')!==false;
+        $detect = new CrawlerDetect();
+
+        // Or pass a specific User-Agent
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $naIsBot = $detect->isCrawler($userAgent);
+        // Get the name of the bot (very useful)
+        $name = $detect->getMatches(); // Returns the matching bot name/pattern
+
         //echo '<pre>t584'; var_dump($naBot); die();
 
         if (!$naBot) {
@@ -352,6 +362,7 @@ NicerApp WebOS from Nicer Enterprises
     $naBrowserMarketSharePercentage = -1;
     if (!array_key_exists('HTTP_USER_AGENT',$_SERVER)) $naIsBot = true;
     else {
+        /*
         $naIsBot = preg_match('/bot/i', $_SERVER['HTTP_USER_AGENT']) === 1;
         if (!$naIsBot)
             $naIsBot = preg_match('/\+https:\/\//i', $_SERVER['HTTP_USER_AGENT']) === 1;
@@ -363,6 +374,7 @@ NicerApp WebOS from Nicer Enterprises
             $naIsBot = preg_match('/spider/i', $_SERVER['HTTP_USER_AGENT']) === 1;
         if (!$naIsBot)
             $naIsBot = preg_match('/scaninfo\@paloanetworks\.com/i', $_SERVER['HTTP_USER_AGENT']) === 1;
+        */
 
         $fn1 = dirname(__FILE__).'/apps/NicerAppWebOS/applications/2D/logs/userAgents.desktop.2023-12-02.json';
         $json1 = json_decode(file_get_contents($fn1), true);
@@ -634,7 +646,7 @@ NicerApp WebOS from Nicer Enterprises
     // at the *bottom* of this file (that's for good reasons),
     // you will find : require_once(dirname(__FILE__).'/apps/nicer.app/api.paymentSystems/boot.php');
     
-    ini_set('memory_limit','5000M'); // hacker deterrence by keeping it at 128M.
+    ini_set('memory_limit','5000M'); // hacker deterrence by keeping it at 5G (of 64G).
     set_time_limit(60*60); // 70 seconds; also for hacker deterrence. can be overridden by individual ajax scripts though!
 
     //echo '<pre>'; var_dump ($_SERVER); exit();

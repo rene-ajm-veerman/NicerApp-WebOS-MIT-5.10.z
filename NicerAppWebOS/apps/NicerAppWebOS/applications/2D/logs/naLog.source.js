@@ -59,7 +59,7 @@ export var naLog = {
                         var d2hr = naLog.dataByURL[hr];
                     }
                 };
-                if (dit.msg.match(/Starting bootup/)) {
+                if (dit.msg.match(/fully started/i)) {
                     if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
                     d2ip.numInits++;
                     if (d4tld) d4tld.numContentLoads++;

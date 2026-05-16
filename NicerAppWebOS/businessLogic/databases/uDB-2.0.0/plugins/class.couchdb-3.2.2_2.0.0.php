@@ -201,11 +201,13 @@ class class_NicerAppWebOS_database_API_couchdb_3_2__2_0_0 {
         else $groupsFinal = $groups;
 
 
+        /*
         if (is_null($users)) {
             echo '<pre style="color:yellow;background:brown;">t3332:is_null($users);'.PHP_EOL;
             echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT);
             echo '</pre>';
         }
+        */
         //echo '<pre style="color:green;">'.$username.'</pre>';
         if (!is_null($usersFinal))
         foreach ($usersFinal as $username1 => $userDoc) {
@@ -266,11 +268,11 @@ class class_NicerAppWebOS_database_API_couchdb_3_2__2_0_0 {
         trigger_error ($msg, $errorLevel);
     }
     
-    public function dataSetName_uDBversion ($domainName) {
-        return '2_0_0___';
+    public function dataSetName_uDBversion ($domainName="") {
+        return '';
     }
 
-    public function dataSetName_domainName ($domainName) {
+    public function dataSetName_domainName ($domainName="") {
         $dn = str_replace('.','_',strToLower($domainName));
         if (preg_match('/^\d/', $dn)) {
             $dn = 'number_'.$dn;

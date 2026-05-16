@@ -191,11 +191,13 @@ class class_NicerAppWebOS_database_API_couchdb_3_2 {
         else $groupsFinal = $groups;
 
 
+        /*
         if (is_null($users)) {
             echo '<pre style="color:yellow;background:brown;">t3332:is_null($users);'.PHP_EOL;
             echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT);
             echo '</pre>';
         }
+        */
         //echo '<pre style="color:green;">'.$username.'</pre>';
         if (!is_null($usersFinal))
         foreach ($usersFinal as $username1 => $userDoc) {

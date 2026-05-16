@@ -146,9 +146,9 @@
 }
 .newsApp__item__outer__bgFile1 {
     position : absolute;
-    background:url('/siteMedia/backgrounds/Tiled/Yellow/20972262180_07ae2c28aa_b.jpg');
+    background:url('/siteMedia/backgrounds/Tiled/Yellow/tileable_texture-light_orange.jpg');
     background-size :  650px 650px;
-    opacity : 0.3;
+    opacity : 0.555;
     z-index:-1;
     left : 0;
     top : 0;
@@ -174,8 +174,8 @@
 .newsApp__item__outer:hover .newsApp__item__outer__bgFile1 {
     animation : anim_itemOuter_bgFile1_hover 1s forwards;
 }
-@keyframes anim_itemOuter_bgFile1_normal { 0% { opacity : 0; } 100% { opacity : 0.57; } }
-@keyframes anim_itemOuter_bgFile1_hover { 0% { opacity : 0.57; } 100% { opacity : 0; } }
+@keyframes anim_itemOuter_bgFile1_normal { 0% { opacity : 0; } 100% { opacity : 0.7; } }
+@keyframes anim_itemOuter_bgFile1_hover { 0% { opacity : 0.7; } 100% { opacity : 0; } }
 
 .newsApp__item__outer .newsApp__item__outer__bgFile2 {
     animation : anim_itemOuter_bgFile2_normal 1s forwards;
@@ -183,8 +183,8 @@
 .newsApp__item__outer:hover .newsApp__item__outer__bgFile2 {
     animation : anim_itemOuter_bgFile2_hover 1s forwards;
 }
-@keyframes anim_itemOuter_bgFile2_hover { 0% { opacity : 0; } 100% { opacity : 0.57; } }
-@keyframes anim_itemOuter_bgFile2_normal { 0% { opacity : 0.57; } 100% { opacity : 0; } }
+@keyframes anim_itemOuter_bgFile2_hover { 0% { opacity : 0; } 100% { opacity : 0.7; } }
+@keyframes anim_itemOuter_bgFile2_normal { 0% { opacity : 0.7; } 100% { opacity : 0; } }
 
 .newsApp__item__outer figure {
     margin-block-start : 4px;

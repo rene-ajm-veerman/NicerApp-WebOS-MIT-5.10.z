@@ -27,7 +27,7 @@ global $naIP;
 if (array_key_exists('search',$_GET)) $wiki_url .= '?search='.$_GET['search'];
 if (array_key_exists('family',$_GET)) $wiki_url .= '&family='.$_GET['family'];
 if (array_key_exists('language',$_GET)) $wiki_url .= '&language='.$_GET['language'];
-$xec = 'curl -L '.$wiki_url.' -H "Api-User-Agent: NicerAppWebOS/5.10.2 (https://nicer.app/wiki/frontpage)" -H "X-NA-Forwarded-For: '.$naIP.'"';
+$xec = 'curl -L '.$wiki_url.' -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36" -H "API-User-Agent: NicerAppWebOS/5.10.8 (https://nicer.app/wiki/frontpage)" -H "X-NA-Forwarded-For: '.$naIP.'"';
 //var_dump ($xec); //die();
 
 exec ($xec, $output, $result);

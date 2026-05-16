@@ -1861,6 +1861,8 @@ class NicerAppWebOS {
         if (isset($css) && is_array($css) && !$hasJS && $js===true) {
                 $hasJS = true;
                 foreach ($selectors2 as $idx => $selector) {
+                    if ($hasJS) break;
+                    $hasJS = true;
                     if (
                         array_key_exists('specificityName', $selector)
                         && array_key_exists ('specificityName', $css)

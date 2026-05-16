@@ -1,11 +1,11 @@
 {
-    "whatsThis" : "NicerApp WebOS v5.10.7",
-    "version" : "5.10.7",
+    "whatsThis" : "NicerApp WebOS v5.10.8",
+    "version" : "5.10.8",
     "copyright" : "Copyright (C) 2002-2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com]",
     "license" : "https://opensource.org/license/mit",
     "history" : {
         "firstCreated" : "2002 around January if i'm not mistaken.",
-        "lastModified" : "2026-05(May)-06(Wednesday) 08:39:06"
+        "lastModified" : "2026-05(May)-16(Saturday) 14:25:02"
     },
     "supportedBrowsers" : [
         {

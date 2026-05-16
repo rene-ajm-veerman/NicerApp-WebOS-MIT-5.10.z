@@ -1,110 +1,115 @@
 <?php
-    require_once (realpath(dirname(__FILE__).'/../../../../../../').'/NicerAppWebOS/boot.php');
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
+require_once (realpath(dirname(__FILE__).'/../../../../../../').'/NicerAppWebOS/boot.php');
+
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set("display_errors", 0);   // Set to 1 only when debugging
+
 require_once (dirname(__FILE__).'/class.newsApp-3.php');
-$debug = false;
 
 global $naWebOS;
 
-    //header ('Content-Type: application/json');
-    //ob_start("ob_gzhandler");
-    //ini_set ('memory_limit', '1G');
-    
-    /*
-    $_GET['dateBegin'] = 'Tue Mar 20 2018 16:31:58 GMT+0100 (CET)';
-    $_GET['dateEnd'] = 'Tue Mar 20 2018 17:31:58 GMT+0100 (CET)';
-    echo $_GET['dateBegin'].' to '.$_GET['dateEnd'].'<br/>'.PHP_EOL;
-    */
-    //echo $_GET['dateBegin'].' to '.$_GET['dateEnd'].'<br/>'.PHP_EOL;exit();
-    $dateBeginStr = str_replace('.','0',urldecode($_GET['dateBegin']));
-    $dateEndStr = str_replace('.','0',urldecode($_GET['dateEnd']));
-    $dateBeginStr = str_replace ('GMT000', 'GMT+0000', $dateBeginStr);
-    $dateEndStr = str_replace ('GMT000', 'GMT+0000', $dateEndStr);
-    $dateBeginStr = str_replace ('GMT-01000', 'GMT-1000', $dateBeginStr);
-    $dateEndStr = str_replace ('GMT-01000', 'GMT-1000', $dateEndStr);
+$debug = false;
+
+// ====================== INPUT HANDLING ======================
+$dateBeginStr = urldecode($_REQUEST['dateBegin'] ?? '');
+$dateEndStr   = urldecode($_REQUEST['dateEnd']   ?? '');
+$section      = $_REQUEST['section'] ?? '';
+$loads        = intval($_REQUEST['loads'] ?? 0);
+
+try {
     $dateBegin = new DateTime($dateBeginStr);
-    //echo $_GET['dateBegin'].' to '.$_GET['dateEnd'].'<br/>'.PHP_EOL;
-    $dateScanning = new DateTime($dateBeginStr);
-    $dateEnd = new DateTime($dateEndStr);
-    //$dateEnd = $dateEnd->add (new DateInterval('PT2M'));
-    
-    $dateBegin->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    $dateScanning->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    $dateEnd->setTimeZone(new DateTimeZone(date_default_timezone_get()));
-    
-    
-    //echo '<pre>'; var_dump ($dateBegin); echo '</pre>'.PHP_EOL;   
-    //echo '<pre>'; var_dump ($dateEnd); echo '</pre>'.PHP_EOL;
-    //exit();
-    $dateDiff = $dateEnd->format('U') - $dateBegin->format('U');
-    if (
-        $dateDiff < 0
-        || $dateDiff > 60 * 60 // 1 hour
-    ) {
-        //exit();
-    }
-    
-    
-    $newsApp3_factorySettings_fn = dirname(__FILE__).'/config.factorySettings.json';
-    $newsApp3_factorySettings = json_decode(file_get_contents($newsApp3_factorySettings_fn), true);
+    $dateEnd   = new DateTime($dateEndStr);
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid date format']);
+    exit;
+}
 
-    $newsApp3 = new newsApp3_class($newsApp3_factorySettings);
+$dateBegin->setTimezone(new DateTimeZone(date_default_timezone_get()));
+$dateEnd->setTimezone(new DateTimeZone(date_default_timezone_get()));
 
-    
-    $startkey = $dateBegin->format('U');//[ intval(date('Y', $dateBegin)), intval(date('m', $dateBegin)), intval(date('d', $dateBegin)), intval(date('H', $dateBegin)), intval(date('i', $dateBegin)), intval(date('s', $dateBegin)) ];
-    $endkey = $dateEnd->format('U');//[ intval(date('Y', $dateEnd)), intval(date('m', $dateEnd)), intval(date('d', $dateEnd)), intval(date('H', $dateEnd)), intval(date('i', $dateEnd)), intval(date('s', $dateEnd)) ];
-    
-    
-    $searchPubDate = [
-        '$gt' => intval($startkey),
-        '$lt' => intval($endkey)
+// Security: Limit time window
+$dateDiff = $dateEnd->getTimestamp() - $dateBegin->getTimestamp();
+if ($dateDiff < 0 || $dateDiff > 3600 * 6) {  // max 6 hours
+    $dateEnd = clone $dateBegin;
+    $dateEnd->modify('+6 hours');
+}
+
+// ====================== COUCHDB QUERY ======================
+$newsApp3_factorySettings = json_decode(
+    file_get_contents(dirname(__FILE__).'/config.factorySettings.json'),
+                                        true
+);
+
+$newsApp3 = new newsApp3_class($newsApp3_factorySettings);
+
+$startTs = $dateBegin->format('U');
+$endTs   = $dateEnd->format('U');
+
+$searchPubDate = [
+    '$gt' => intval($startTs),
+    '$lt' => intval($endTs)
+];
+
+$bookmark = null;
+$done = false;
+$arr = [];
+
+$maxDocs = 600;           // safety limit
+$totalFetched = 0;
+
+while (!$done && $totalFetched < $maxDocs) {
+    $findCommand = [
+        'selector' => [
+            'pd' => $searchPubDate,
+            'p'  => [
+                '$regex' => '^/' . str_replace(['__', '_'], ['/', ' '], $section)
+            ]
+        ],
+        'limit'     => 200,
+        'use_index' => '_design/f8296ee26307f4441eaf3723ab3c982e996830a1',
+        'fields'    => ['_id', '_rev', 't', 'de', 'm', 'am', 'pd', 'pubDate', 'da', 'dd', 'c', 'cc']
     ];
-    $bookmark = null;
-    $done = false;
-    startDuration ('calls');
-    
-    $arr2 = [];
-    while (!$done) {
-        $findCommand = array (
-            'selector' => array (
-                'pd' => $searchPubDate,
-                'p' => [
-                    '$regex' => '^/'.str_replace('_',' ',str_replace('__','/',$_REQUEST['section']))
-                ]
-            ),
-            'limit' => 250,
-            'use_index' => '_design/f8296ee26307f4441eaf3723ab3c982e996830a1',
-            'fields' => array ('_id', '_rev', 't', 'de', 'm', 'am', 'pd', 'pubDate', 'da', 'dd', 'c', 'cc' )
-        );
-        if (!is_null($bookmark)) $findCommand['bookmark'] = $bookmark;
-        $go = true;
-        try {
-            $dbName = $naWebOS->dbs->findConnection('couchdb')->dataSetName('app_2D_news__rss_items');
-            $naWebOS->dbs->findConnection('couchdb')->cdb->setDatabase ($dbName, false);
-            $call = $naWebOS->dbs->findConnection('couchdb')->cdb->find ($findCommand);
-            file_put_contents(dirname(__FILE__).'/call.json', $dbName.PHP_EOL.json_encode($findCommand,JSON_PRETTY_PRINT).PHP_EOL.json_encode($call, JSON_PRETTY_PRINT).PHP_EOL.json_encode(getDuration('calls')));
-            if ($debug) { echo '$findCommand='; var_dump ($findCommand); echo PHP_EOL.'$call='; var_dump ($call); echo PHP_EOL.PHP_EOL; }
-        } catch (Exception $e) {
-            global $naErr;
-            if (
-                stripos($_SERVER['HTTP_USER_AGENT'], 'bot')===false
-                && stripos($_SERVER['SCRIPT_NAME'], 'logs.php')===false
-            ) {
-                $naErr->addStr('<p>'.$e->getMessage().'</p>'.PHP_EOL, $e->getMessage());
+
+    if ($bookmark) {
+        $findCommand['bookmark'] = $bookmark;
+    }
+
+    try {
+        $dbName = $naWebOS->dbs->findConnection('couchdb')->dataSetName('app_2D_news__rss_items');
+        $naWebOS->dbs->findConnection('couchdb')->cdb->setDatabase($dbName, false);
+
+        $call = $naWebOS->dbs->findConnection('couchdb')->cdb->find($findCommand);
+
+        if (isset($call->body->docs) && is_array($call->body->docs)) {
+            foreach ($call->body->docs as $doc) {
+                $arr[] = $doc;
+                $totalFetched++;
             }
-            echo $e->getMessage();
-            $go = false;
+
+            $bookmark = $call->body->bookmark ?? null;
+            if (count($call->body->docs) < 200) {
+                $done = true;
+            }
+        } else {
             $done = true;
         }
-
-        if ($go) {
-            if (!is_null($call) && !is_null($call->body) && count($call->body->docs)===0) $done = true;
-            if (!$done && !is_null($call) && !is_null($call->body)) $bookmark = $call->body->bookmark; else $bookmark = null;
-            if (!$done) foreach ($call->body->docs as $idx => $doc) $arr2[] = $doc;
+    } catch (Exception $e) {
+        if ($debug) {
+            error_log("CouchDB error: " . $e->getMessage());
         }
-        
+        break;
     }
-    
-    echo json_encode($arr2);
+}
+
+// ====================== OUTPUT ======================
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode($arr, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+if ($debug) {
+    file_put_contents(
+        dirname(__FILE__).'/last_call.log',
+                      "Loads: $loads | Section: $section | Items returned: " . count($arr) . "\n"
+    );
+}
 ?>

@@ -3,7 +3,7 @@ export var naLog = {
 
     },
     view : function (logData) {
-        naLog.data = logData;
+        naLog.data = JSON.parse(logData);
         naLog.dataByIP = {};
         naLog.dataByURL = {};
         naLog.dataByCountry = {};
@@ -29,20 +29,28 @@ export var naLog = {
                     dit.stacktrace = '<pre>'+dit.stacktrace.replace('\\n','\n')+'</pre>';
 
 
+                if (!d2[dit.ip]) d2[dit.ip] = {
+                    millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
+                    numInits : 0,
+                    numPageLoads : 0,
+                    numContentLoads : 0,
+                    loc : (
+                        dit.ipinfo
+                        ? dit.ipinfo.city+', '+dit.ipinfo.region+', '+dit.ipinfo.country
+                        : '[unknown location]'
+                    )
+
+                };
+                var d2ip = d2[dit.ip];
+                if (!d5[date]) d5[date] = {
+                    numContentLoads : 0
+                }
+                if (dit.ipinfo && !d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
+                    numContentLoads : 0
+                };
+                var d4tld = dit.ipinfo ? d4[dit.ipinfo.country] : null;
                 if (dit.ipinfo) {
                     dit.ipinfo = JSON.parse(dit.ipinfo[0].ip_info);
-                    if (!d2[dit.ip]) d2[dit.ip] = {
-                        millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
-                        numInits : 0,
-                        numPageLoads : 0,
-                        numContentLoads : 0,
-                        loc : dit.ipinfo.city+', '+dit.ipinfo.region+', '+dit.ipinfo.country
-                    };
-                    var d2ip = d2[dit.ip];
-                    if (!d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
-                        numContentLoads : 0
-                    };
-                    var d4tld = d4[dit.ipinfo.country];
                     if (dit.msgProcessed.documentLocation) {
                         var hr = dit.msgProcessed.documentLocation.href;
                         if (!naLog.dataByURL[hr]) naLog.dataByURL[hr] = {
@@ -50,30 +58,27 @@ export var naLog = {
                         }
                         var d2hr = naLog.dataByURL[hr];
                     }
-                    if (!d5[date]) d5[date] = {
-                        numContentLoads : 0
-                    }
-
-                    if (dit.msg.match(/Starting bootup/)) {
-                        if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
-                        d2ip.numInits++;
-                        d4tld.numContentLoads++;
-                        d5[date].numContentLoads++;
-                    };
-                    if (dit.msg.match(/Fully booted/)) d2ip.numPageLoads++;
-                    if (dit.msg.match(/na.site.stateChange/)) d2ip.numContentLoads++;
-                    if (
-                        dit.msg.match(/noPushState/)
-                        && !dit.msg.match(/javascript:/i)
-                    ) {
-                        d2ip.numContentLoads++;
-                        d4tld.numContentLoads++;
-                        d5[date].numContentLoads++;
-
-                        if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
-                    }
-
                 };
+                if (dit.msg.match(/Starting bootup/)) {
+                    if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
+                    d2ip.numInits++;
+                    if (d4tld) d4tld.numContentLoads++;
+                    d5[date].numContentLoads++;
+                };
+                if (dit.msg.match(/Fully booted/)) d2ip.numPageLoads++;
+                if (dit.msg.match(/na.site.stateChange/)) d2ip.numContentLoads++;
+                if (
+                    dit.msg.match(/noPushState/)
+                    && !dit.msg.match(/javascript:/i)
+                ) {
+                    d2ip.numContentLoads++;
+                    d4tld.numContentLoads++;
+                    d5[date].numContentLoads++;
+
+                    if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
+                }
+
+
 
                 html +=
                     '<div class="naIPlog_entry '+dit.htmlClasses+'">';
@@ -254,7 +259,7 @@ export var naLog = {
     },
     reload : function (evt,begin,end) {
         var
-        url = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/ajax_siteContent.php',
+        url = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/ajax_getLogData.php',
         dat = {
 
         },
@@ -263,7 +268,7 @@ export var naLog = {
             url : url,
             data : dat,
             success : function (data, ts, xhr) {
-                $('#siteContent .vividDialogContent').html(data);
+                naLog.view(data);
             },
             error : function (xhr, textStatus, errorThrown) {
             }

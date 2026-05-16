@@ -1507,6 +1507,7 @@ class NicerAppWebOS {
         global $naLAN;
         global $naIP;
         global $naUsername;
+        global $naIsBot;
         $debug = $this->debugThemeLoading;
         if ($debug) { echo '<h1>'.$fncn.'</h1>'.PHP_EOL; }
 
@@ -1680,6 +1681,7 @@ class NicerAppWebOS {
                     $r .= "\tdomain : '".$this->domain."',".PHP_EOL;
                     $r .= "\tdomainFolder : '".$this->domainFolder."',".PHP_EOL;
                     $r .= "\thasDB : ".($this->hasDB ? 'true' : 'false').','.PHP_EOL;
+                    $r .= "\tisBot : ".($naIsBot ? 'true' : 'false').','.PHP_EOL;
                     $r .= "\tnaLAN : ".($naLAN ? 'true' : 'false').','.PHP_EOL;
                     $r .= "\tnaHasErrors : ".((array_key_exists('naErrors',$_SESSION) && is_string ($_SESSION['naErrors']) && $_SESSION['naErrors']!=='') ? 'true' : 'false').','.PHP_EOL;
                     //$r .= "\tspecificityName : \"".$specificityName."\",".PHP_EOL;
@@ -1890,6 +1892,7 @@ class NicerAppWebOS {
                         //$r .= "\tspecificityNames : ".json_encode($selectorNames).",".PHP_EOL;
                         $r .= "\tthemesDBkeys : ".json_encode($selectors2, JSON_PRETTY_PRINT).",".PHP_EOL;
                         $r .= "\tview : ".json_encode($this->view, JSON_PRETTY_PRINT).",".PHP_EOL;
+                        $r .= "\tisBot : ".($naIsBot ? 'true' : 'false').','.PHP_EOL;
                         $r .= "\tnaLAN : ".($naLAN ? 'true' : 'false').','.PHP_EOL;
                         $r .= "\tnaHasErrors : ".((array_key_exists('naErrors',$_SESSION) && is_string ($_SESSION['naErrors']) && $_SESSION['naErrors']!=='') ? 'true' : 'false').','.PHP_EOL;
                         $r .= "\thasDB : ".($this->hasDB ? 'true' : 'false').PHP_EOL;

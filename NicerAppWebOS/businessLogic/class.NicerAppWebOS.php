@@ -1859,7 +1859,6 @@ class NicerAppWebOS {
         //echo '<pre>'; var_dump ($d); exit();
         //exit();
         if (isset($css) && is_array($css) && !$hasJS && $js===true) {
-                $hasJS = true;
                 foreach ($selectors2 as $idx => $selector) {
                     if ($hasJS) break;
                     $hasJS = true;

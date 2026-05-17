@@ -15,7 +15,11 @@ export var naLog = {
             d4 = naLog.dataByCountry,
             d5 = naLog.dataByDate,
             html = '',
-            html2 = '<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
+            html2 =
+                '<script type="module" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m='+(new Date()).getTime()+'"></script>'
+                +'<link rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.css?m='+(new Date()).getTime()+'"/>'
+                +'<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
+            debugger;
             for (var i=0; i<dat.length; i++) {
                 var
                 dit = dat[i],
@@ -23,34 +27,27 @@ export var naLog = {
                     new Date(parseInt(dit.millisecondsSinceEpoch))
                 ).match(/\d\d\d\d-\d\d-\d\d/)[0]; // remove that 'match' to get highly detailed time info.
 
+
                 dit.msgProcessed = naLog.process_msg (dit.msg, dit);
 
                 if (typeof dit.stacktrace=='string')
                     dit.stacktrace = '<pre>'+dit.stacktrace.replace('\\n','\n')+'</pre>';
 
 
-                if (!d2[dit.ip]) d2[dit.ip] = {
-                    millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
-                    numInits : 0,
-                    numPageLoads : 0,
-                    numContentLoads : 0,
-                    loc : (
-                        dit.ipinfo
-                        ? dit.ipinfo.city+', '+dit.ipinfo.region+', '+dit.ipinfo.country
-                        : '[unknown location]'
-                    )
-
-                };
-                var d2ip = d2[dit.ip];
-                if (!d5[date]) d5[date] = {
-                    numContentLoads : 0
-                }
-                if (dit.ipinfo && !d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
-                    numContentLoads : 0
-                };
-                var d4tld = dit.ipinfo ? d4[dit.ipinfo.country] : null;
                 if (dit.ipinfo) {
-                    dit.ipinfo = JSON.parse(dit.ipinfo[0].ip_info);
+                    dit.ipinfo = JSON.parse(dit.ipinfo);
+                    if (!d2[dit.ip]) d2[dit.ip] = {
+                        millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
+                        numInits : 0,
+                        numPageLoads : 0,
+                        numContentLoads : 0,
+                        loc : dit.ipinfo.city+', '+dit.ipinfo.region+', '+dit.ipinfo.country
+                    };
+                    var d2ip = d2[dit.ip];
+                    if (!d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
+                        numContentLoads : 0
+                    };
+                    var d4tld = d4[dit.ipinfo.country];
                     if (dit.msgProcessed.documentLocation) {
                         var hr = dit.msgProcessed.documentLocation.href;
                         if (!naLog.dataByURL[hr]) naLog.dataByURL[hr] = {
@@ -58,41 +55,55 @@ export var naLog = {
                         }
                         var d2hr = naLog.dataByURL[hr];
                     }
+                    if (!d5[date]) d5[date] = {
+                        numContentLoads : 0
+                    }
+
+                    if (dit.msg.match(/Fully started/)) {
+                        if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
+                        d2ip.numPageLoads++;
+                        d2ip.numInits++;
+                        d4tld.numContentLoads++;
+                        d5[date].numContentLoads++;
+                    };
+                    if (dit.msg.match(/na.site.stateChange/)) d2ip.numContentLoads++;
+                    if (
+                        dit.msg.match(/noPushState/)
+                        && !dit.msg.match(/javascript:/i)
+                    ) {
+                        d2ip.numContentLoads++;
+                        d4tld.numContentLoads++;
+                        d5[date].numContentLoads++;
+
+                        if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
+                    }
+
                 };
-                if (dit.msg.match(/fully started/i)) {
-                    if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
-                    d2ip.numInits++;
-                    d2ip.numPageLoads++;
-                    if (d4tld) d4tld.numContentLoads++;
-                    d5[date].numContentLoads++;
-                };
-                if (dit.msg.match(/na.site.stateChange/)) d2ip.numContentLoads++;
-                if (
-                    dit.msg.match(/noPushState/)
-                    && !dit.msg.match(/javascript:/i)
-                ) {
-                    d2ip.numContentLoads++;
-                    d4tld.numContentLoads++;
-                    d5[date].numContentLoads++;
-
-                    if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
-                }
-
-
-
                 html +=
                     '<div class="naIPlog_entry '+dit.htmlClasses+'">';
                 if (typeof dit.msgProcessed=='string') {
                     var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
+
+                    var info3 = $.extend({},{referrer:dit.referrer, msg : dit.msgProcessed, ipinfo : dit.ipinfo});
+
                     html +=
-                        '<span class="naIPlog_header2" onmouseover="$(\'.naIPlog_stacktrace\',$(this).parent()).show(\'slow\');" onmouseout="$(\'.naIPlog_stacktrace\',$(this).parent()).hide(\'normal\');">'
-                            +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
-                            +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
-                            +'<span class="naIPlog_address">'+dit.ip+'</span>'
-                        +'</span><br>'
-                        +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'">'+dit.msg+'</span>'
-                } else if (dit.msgProcessed.onclickHTML) {
+                        // '<span class="naIPlog_header2" onmouseover="$(\'.naIPlog_stacktrace\',$(this).parent()).show(\'slow\');" onmouseout="$(\'.naIPlog_stacktrace\',$(this).parent()).hide(\'normal\');">'
+                        //     +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
+                        //     +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
+                        //     +'<span class="naIPlog_address">'+dit.ip+'</span> '
+                        //     +(dit.ipinfo
+                        //         ?'<span class="naIPlog_ipinfo">'+dit.ipinfo.country+', '+dit.ipinfo.region+', '+dit.ipinfo.city+'</span>'
+                        //         :''
+                        //     )+'</span><br>'
+
+                            '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
+                            +'<script type="text/javascript" language="javascript">'
+                            +'setTimeout(function() {'
+                            +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
+                            +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msgProcessed.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script>';
+
+                } else if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
                     var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
                     html +=
@@ -119,8 +130,8 @@ export var naLog = {
                             +'</script>';
                 }
                 html +=
-                    '<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
-                    +'</div>';
+                    //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
+                    '</div>';
             }
 
             var c1 = 'uneven';
@@ -252,7 +263,7 @@ export var naLog = {
         if (msg.indexOf(prefix1)===0 && dit.ipinfo) {
             r = { msg : prefix1, documentLocation : JSON.parse(msg.replace(prefix1,'')), ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length}
         } else if (m = msg.match(prefix2)) {
-            r = { msg : msg, onclickHTML : na.site.displayWallpaper(m[2])};
+            r = { msg : msg, onclickHTML : 'na.site.displayWallpaper(\''+m[2]+'\');', ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length };
         } else r = msg;
         return r;
     },

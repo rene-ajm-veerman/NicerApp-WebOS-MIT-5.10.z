@@ -91,6 +91,7 @@ try {
             'ip' => $naIP,
             'ip_info' => join('',$output)
         ];
+        $ipInfo = json_decode(join('',$output),true);
         $cdb->post($rec);
     } catch (Exception $e) {};
 }
@@ -108,14 +109,10 @@ $rec = [
     'msg' => $in['msg'],
     'htmlClasses' => $in['htmlClasses'],
     'referrer' => $in['referrer'],
-    'stacktrace' => $in['stacktrace']
-
+    'stacktrace' => $in['stacktrace'],
+    'ipinfo' => json_encode($ipInfo)
 ];
-if (strpos($in['msg'], 'Starting bootup')!==false) {
-    $rec['info'] = $naBrowserInfo;
-} else {
-    $rec['ipinfo'] = json_encode($ipInfo);
-}
+
 try {
     $cdb->post($rec);
 } catch (Exception $e) {

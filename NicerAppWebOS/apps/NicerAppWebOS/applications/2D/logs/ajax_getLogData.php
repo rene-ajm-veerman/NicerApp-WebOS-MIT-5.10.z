@@ -120,7 +120,7 @@ $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
     }
 
 $in = &$_GET;
-$fields = [ '_id', 'ip', 'millisecondsSinceEpoch', 'msg', 'referrer', 'stacktrace', 'info', 'htmlClasses', 'dateTZ' ];
+$fields = [ '_id', 'ip', 'millisecondsSinceEpoch', 'msg', 'referrer', 'stacktrace', 'ipinfo', 'htmlClasses', 'dateTZ' ];
 
 if (
     $naWebOS->view[$afn]['beginDateTime']
@@ -210,7 +210,6 @@ if (
                     };
                     //var_dump ($add);
 
-/*
                     try {
                         $cdb->setDatabase($dsn);
                         $dat = $cdb->get(urlencode($call2->body->_id));
@@ -234,10 +233,9 @@ if (
                     } catch (Exception $e) {
                         $msg = $e->getMessage;
                         $cdb->setDatabase($dataSetName);
-                        echo PHP_EOL.$msg.'<br/>'.PHP_EOL;
+                        //echo PHP_EOL.$msg.'<br/>'.PHP_EOL;
 
                     }
-*/
 
                     $results = array_merge_recursive($results, [$add]);
                     //if ($debugMe) { echo '<pre style="background:rgba(100,0,0,0.555);color:white;border-radius:10px;margin:10px;padding:10px;">'; var_dump($rec); echo '</pre>'; };

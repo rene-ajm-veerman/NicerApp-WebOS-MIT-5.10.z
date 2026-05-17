@@ -546,7 +546,7 @@ na.backgrounds = na.background = na.bg = {
                         bgf.src = bgl.src;
                         $(bgl).css({display:'none'});
                         bgl.onload = function (evt) {
-                            $(this).fadeIn(na.bg.globals.fadingSpeed, 'swing', function () {
+                            $('img.bg_last').fadeIn(na.bg.globals.fadingSpeed, 'swing', function () {
                                 $('img.bg_first',$(this).parent())[0].src = $('img.bg_last',$(this).parent())[0].src;
                                 $('img.bg_last',$(this).parent()).css({display:'none'});
                             })

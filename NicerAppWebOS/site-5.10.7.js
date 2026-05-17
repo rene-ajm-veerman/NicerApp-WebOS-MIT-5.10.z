@@ -95,9 +95,10 @@ na.site = {
         var
         randomID = na.m.randomString(),
         html = '<div id="'+randomID+'" class="vividDialog vividPreview" style="cursor:hand;display:none;position:absolute;top:10%;left:10%;width:80%;height:80%;border-radius:10px;border:1px solid grey;box-shadow:-2px -2px 3px 1px rgba(255,255,255,0.555);color:white;"><img src="'+(relURL)+'" style="width:100%;height:100%;"/></div>'
-        +'<div id="'+randomID+'_clickShield" class="vividDialog vividClickShield" style="display:block;position:absolute;opacity:0.00001;top:0%;left:0%;width:100%;height:100%;" onclick="$(\'#'+randomID+', #'+randomID+'_clickShield\').fadeOut(\'normal\', function(evt) { $(this).removeClass(\'shown\');});"></div>',
+        +'<div id="'+randomID+'_clickShield" class="vividDialog vividClickShield" style="display:none;position:absolute;opacity:0.00001;top:0%;left:0%;width:100%;height:100%;" onclick="$(\'#'+randomID+', #'+randomID+'_clickShield\').fadeOut(\'normal\', function(evt) { $(this).removeClass(\'shown\');});"></div>',
         js = '$(\'#'+randomID+', #'+randomID+'_clickShield\').addClass(\'shown\').fadeIn(\'slow\');';
         $(document.body).append(html);
+        eval (js);
         return js;
     },
 

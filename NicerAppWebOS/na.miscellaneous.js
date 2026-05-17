@@ -104,7 +104,7 @@ na.m = {
 
 
     addLogEntry : function (msg, htmlClasses) {
-        if (na.site.globals.isBot || na.site.globals.naLAN) return false;
+        //if (na.site.globals.isBot || na.site.globals.naLAN) return false;
         var
         fncn = 'na.m.addLogEntry()',
         url = '/NicerAppWebOS/businessLogic/ajax/ajax_addJSlogEntry.php',

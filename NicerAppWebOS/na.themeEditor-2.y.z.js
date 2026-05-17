@@ -26,12 +26,16 @@ class naThemeEditor {
     }
 
     onload (forDialogID) {
-        /*na.m.waitForCondition ('na.te.onload(): $.spectrum()?', function () {
-            return jQuery.spectrum=='function'
+        na.m.waitForCondition ('na.te.onload(): $.spectrum()?', function () {
+            var r =
+                typeof jQuery.spectrum=='object'
+                && typeof jQuery.jstree=='object'
+                && typeof $('#themeEditor_jsTree_selectors').jstree('get_json')=='object';
+            debugger;
+            return r;
         }, function() {
             na.te.onload_do(forDialogID);
-        }, 200);*/
-            na.te.onload_do(forDialogID);
+        }, 200);
     }
 
     onload_do  (forDialogID) {
@@ -630,7 +634,6 @@ class naThemeEditor {
                         '#btnSelectTextSettings', '#btnSelectTextShadowSettings',
                         '#btnSelectBackgroundFolder' , '#btnSelectBackgroundImage'
                     ]);
-                debugger;
                 if (data.node && data.node.type=='naElement') {
                     var
                     regExSite = /#site([\w\d]+)$/,

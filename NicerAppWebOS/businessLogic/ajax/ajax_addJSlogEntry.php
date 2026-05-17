@@ -26,6 +26,7 @@ if (!is_string($in['msg'])) exit ('HTTPS ERROR 403 Forbidden - msg must be a str
 if (strpos($in['msg'],'<')!==false) exit ('HTTPS ERROR 403 Forbidden - msg may not contain \'<\'.');
 if (!is_string($in['stacktrace'])) exit ('HTTPS ERROR 403 Forbidden - stacktrace must be a string.');
 if (strpos($in['stacktrace'],'<')!==false) exit ('HTTPS ERROR 403 Forbidden - stacktrace may not contain \'<\'.');
+if ($naIsBot) exit ('HTTPS ERROR 403 Forbidden - Bots are not allowed to log their presence on this site.');
 
 // find unused _id
 $cdbDomain = $naWebOS->domainFolderForDB;
@@ -96,7 +97,7 @@ try {
 
 // add the data
 $dataSetName = $cdbDomain.'___analytics';
-//echo $dataSetName; exit();
+//secho $dataSetName; exit();
 $cdb->setDatabase($dataSetName, true);
 $rec = [
     '_id' => $id4db,

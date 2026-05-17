@@ -224,7 +224,7 @@ na.site = {
         t.components = t.c = { dialogs : {}, buttons : {}, menus : {} };
         let c = t.components;
 
-        na.m.addLogEntry ('Starting bootup process for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>');
+        //na.m.addLogEntry ('NicerAppWebOS starting for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>', 'naStatus_fullyBooted');
 
         if (navigator.connection) {
             console.log(`Effective network type: ${navigator.connection.effectiveType}`);
@@ -246,8 +246,14 @@ na.site = {
         na.m.preventScreenLock();
 
         na.m.waitForCondition (
-            'na.site.initialize : desktopIdle()? so we can do na.startUIvisuals()?',
-            na.m.desktopIdle, function() {
+            'na.site.initialize : desktopIdle()? so we can do na.startUIvisuals()?',function () {
+                var r =
+                    na.m.HTMLidle()
+                    && typeof jQuery.spectrum=='object'
+                    && typeof jQuery.jstree=='object'
+                    && typeof $('#themeEditor_jsTree_selectors').jstree('get_json')=='object';
+                return r;
+            }, function() {
                 var fncn = 'na.site.initialize()::desktopIdle()';
 
                 if (typeof naGlobals=='object') t.g = t.globals = $.extend (t.g, naGlobals);
@@ -483,7 +489,8 @@ na.site = {
                     na.site.settings.loadingApps = false;
                     na.site.settings.running_loadContent = false;
 
-                    na.m.addLogEntry ('NicerAppWebOS Fully started.', 'naStatus_fullyBooted');
+                    debugger;
+                    na.m.addLogEntry ('NicerAppWebOS Fully started for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>', 'naStatus_fullyBooted');
                     if (t.globals.version) {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
                         $('#siteLastModified').html(t.globals.version.version+', last modified : '+t.globals.version.history.lastModified+' CET');

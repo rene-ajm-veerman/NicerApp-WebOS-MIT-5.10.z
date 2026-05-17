@@ -1635,6 +1635,14 @@ class NicerAppWebOS {
             }
 
 
+            $fn = __DIR__.'/../version.json.php';
+            $fn2 = __DIR__.'/../version.json';
+            if ($reloadVersionInfo || !file_exists($fn2)) {
+                $json = execPHP($fn);
+                $this->about = json_decode($json,true);
+                file_put_contents ($fn2, $json);
+            }
+
             //if (is_array($css)) $css = json_encode($css, JSON_PRETTY_PRINT);
             //$_SESSION['selectorName'] = $selectorNames[$idx];
             //$_SESSION['preferredSelectorName'] = &$d['preferredSelectorName'];
@@ -1655,14 +1663,6 @@ class NicerAppWebOS {
                 $useVividTexts = !array_key_exists('uvt',$_GET) || $_GET['uvt']=='y' ? 'true' : 'false';
                 $useLoadContent = !array_key_exists('lc',$_GET) || $_GET['lc']=='y' ? 'true' : 'false';
                 $reloadVersionInfo = !array_key_exists('vi',$_GET) || $_GET['vi']=='y' ? false:true;
-
-                $fn = __DIR__.'/../version.json.php';
-                $fn2 = __DIR__.'/../version.json';
-                if ($reloadVersionInfo || !file_exists($fn2)) {
-                    $json = execPHP($fn);
-                    $this->about = json_decode($json,true);
-                    file_put_contents ($fn2, $json);
-                }
 
                 // //echo '<pre style="color:green">'; var_dump ($css); echo '</pre>'; exit();
                 $_SESSION['themeName'] = $themeName;
@@ -1892,6 +1892,7 @@ class NicerAppWebOS {
                         //$r .= "\tspecificityNames : ".json_encode($selectorNames).",".PHP_EOL;
                         $r .= "\tthemesDBkeys : ".json_encode($selectors2, JSON_PRETTY_PRINT).",".PHP_EOL;
                         $r .= "\tview : ".json_encode($this->view, JSON_PRETTY_PRINT).",".PHP_EOL;
+                        $r .= "\tversion : ".file_get_contents(__DIR__.'/../version.json').PHP_EOL.',';
                         $r .= "\tisBot : ".($naIsBot ? 'true' : 'false').','.PHP_EOL;
                         $r .= "\tnaLAN : ".($naLAN ? 'true' : 'false').','.PHP_EOL;
                         $r .= "\tnaHasErrors : ".((array_key_exists('naErrors',$_SESSION) && is_string ($_SESSION['naErrors']) && $_SESSION['naErrors']!=='') ? 'true' : 'false').','.PHP_EOL;

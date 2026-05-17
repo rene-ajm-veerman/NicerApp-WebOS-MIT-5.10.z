@@ -15,7 +15,7 @@ export var naLog = {
             d4 = naLog.dataByCountry,
             d5 = naLog.dataByDate,
             html = '',
-            html2 = '';
+            html2 = '<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
             for (var i=0; i<dat.length; i++) {
                 var
                 dit = dat[i],
@@ -62,10 +62,10 @@ export var naLog = {
                 if (dit.msg.match(/fully started/i)) {
                     if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
                     d2ip.numInits++;
+                    d2ip.numPageLoads++;
                     if (d4tld) d4tld.numContentLoads++;
                     d5[date].numContentLoads++;
                 };
-                if (dit.msg.match(/Fully booted/)) d2ip.numPageLoads++;
                 if (dit.msg.match(/na.site.stateChange/)) d2ip.numContentLoads++;
                 if (
                     dit.msg.match(/noPushState/)
@@ -146,7 +146,7 @@ export var naLog = {
             html2 += '</div>';
             */
 
-            $('#siteContent > .vividDialogContent').append(html2 + html).delay(100);
+            $('#siteContent > .vividDialogContent').html(html2 + html).delay(100);
             na.site.startTooltips();
 
             (async function() {
@@ -233,7 +233,6 @@ export var naLog = {
                     }
                 });
             })();
-
 
             na.desktop.settings.visibleDivs.push ('#siteToolbarLeft');
             na.desktop.resize();

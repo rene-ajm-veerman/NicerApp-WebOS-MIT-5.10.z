@@ -489,11 +489,17 @@ na.site = {
                     na.site.settings.loadingApps = false;
                     na.site.settings.running_loadContent = false;
 
-                    debugger;
                     na.m.addLogEntry ('NicerAppWebOS Fully started for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>', 'naStatus_fullyBooted');
                     if (t.globals.version) {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
                         $('#siteLastModified').html(t.globals.version.version+', last modified : '+t.globals.version.history.lastModified+' CET');
+                    } else {
+                        var html =
+                            '<span style="margin:10px;padding:10px;border-radius:10px;background:ivory;color:navy;font-weight:bold">'
+                            +'Could not get version information from the server.'
+                            +'</span>';
+                        na.site.setStatusMsg (html);
+                        $('#siteLastModified').html(html);
                     }
                     setTimeout (function() {
                         window._screenshotReady = true;

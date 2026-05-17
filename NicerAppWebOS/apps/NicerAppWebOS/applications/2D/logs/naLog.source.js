@@ -85,7 +85,7 @@ export var naLog = {
                     var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
 
-                    var info3 = $.extend({},{referrer:dit.referrer, msg : dit.msgProcessed, ipinfo : dit.ipinfo});
+                    var info3 = dit;
 
                     html +=
                         // '<span class="naIPlog_header2" onmouseover="$(\'.naIPlog_stacktrace\',$(this).parent()).show(\'slow\');" onmouseout="$(\'.naIPlog_stacktrace\',$(this).parent()).hide(\'normal\');">'
@@ -101,7 +101,7 @@ export var naLog = {
                             +'<script type="text/javascript" language="javascript">'
                             +'setTimeout(function() {'
                             +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
-                            +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msgProcessed.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script>';
+                            +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script>';
 
                 } else if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
                     var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),

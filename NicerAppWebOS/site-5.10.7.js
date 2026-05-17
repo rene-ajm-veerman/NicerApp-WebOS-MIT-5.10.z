@@ -490,7 +490,7 @@ na.site = {
                     na.site.settings.loadingApps = false;
                     na.site.settings.running_loadContent = false;
 
-                    na.m.addLogEntry ('NicerAppWebOS Fully started for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>', 'naStatus_fullyBooted');
+                    na.m.addLogEntry ('NicerAppWebOS Fully started for <a href=\\"'+document.location.href+'\\" target=\\"_new\\">'+document.location.href+'</a>', 'naStatus_fullyBooted');
                     if (t.globals.version) {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
                         $('#siteLastModified').html(t.globals.version.version+', last modified : '+t.globals.version.history.lastModified+' CET');
@@ -1712,7 +1712,7 @@ na.site = {
             if (!el.clickHandler_logging) {
                 el.clickHandler_logging = true;
                 $(el).click (function(){
-                    var msg = '.noPushState::click() : #'+this.id+' clicked; browsing to "'+this.href+'"';
+                    var msg = '.noPushState::click() : #'+this.id+' clicked; browsing to '+this.href;
                     na.m.addLogEntry(msg, 'naIPlog_externalLink');
                     na.m.log(2,msg);
                 })

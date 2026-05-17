@@ -19,6 +19,17 @@ export var naLog = {
                 '<script type="module" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m='+(new Date()).getTime()+'"></script>'
                 +'<link rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.css?m='+(new Date()).getTime()+'"/>'
                 +'<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
+            dat.sort (function (a,b) {
+                var
+                    c = a._id.split(' '),
+                    d = b._id.split(' '),
+                    c1 = new Date(c[1]+' '+c[2]).getTime()/1000 + (parseInt(c[4])*60),
+                    d1 = new Date(d[1]+' '+d[2]).getTime()/1000 + (parseInt(d[4])*60);
+                //debugger;
+                a.t = c1;
+                b.t = d1;
+                return d1 - c1;
+            });
             debugger;
             for (var i=0; i<dat.length; i++) {
                 var
@@ -82,10 +93,10 @@ export var naLog = {
                 html +=
                     '<div class="naIPlog_entry '+dit.htmlClasses+'">';
                 if (typeof dit.msgProcessed=='string') {
-                    var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
+                    var dt = new Date(dit.t * 1000),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
 
-                    var info3 = dit;
+                    var info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
 
                     html +=
                         // '<span class="naIPlog_header2" onmouseover="$(\'.naIPlog_stacktrace\',$(this).parent()).show(\'slow\');" onmouseout="$(\'.naIPlog_stacktrace\',$(this).parent()).hide(\'normal\');">'
@@ -104,7 +115,7 @@ export var naLog = {
                             +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script>';
 
                 } else if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
-                    var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
+                    var dt = new Date(dit.t * 1000),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
                     html +=
                         '<span class="naIPlog_header2" onmouseover="$(\'.naIPlog_stacktrace\',$(this).parent()).stop(true,true,false).show(\'slow\');" onmouseout="$(\'.naIPlog_stacktrace\',$(this).parent()).stop(true,true,false).hide(\'normal\');">'
@@ -118,28 +129,25 @@ export var naLog = {
                 } else {
                     var dt = new Date(parseInt(dit.millisecondsSinceEpoch)),
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
-                    var info3 = $.extend({referrer:dit.referrer, view : naLog.process_location(dit.msgProcessed.documentLocation.href)}, dit.msgProcessed, dit.ipinfo);
+                    var info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
                     html +=
-                        '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
-                            +'<script type="text/javascript" language="javascript">'
-                            +'setTimeout(function() {'
-                                +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
-                                +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dit.msgProcessed.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span> <span class=\\"naIPlog_url\\"><a href=\\"'+info3.documentLocation.href+'\\" class=\\"nomod noPushState\\" target=\\"_new\\">'+info3.documentLocation.href+'</a></span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' });'
-                                //+'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dit.msgProcessed.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span> <pre class=\\"naIPlog_url\\">'+naLog.process_location(dit.msgProcessed.documentLocation.href)+'</pre></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' });' // could not get this to work; escaping of " in process_location() prevents display
-                            +'},150);'
-                            +'</script>';
+                        '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'">'+dit.msg+'</span>'
+                        +'<script type="text/javascript" language="javascript">'
+                        +'setTimeout(function() {'
+                        +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
+                        +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script>';
                 }
                 html +=
                     //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
                     '</div>';
             }
 
-            var c1 = 'uneven';
-            for (var ahr in naLog.dataByURL) {
-                var d2hr = naLog.dataByURL[ahr];
-                c1 = c1 == 'even' ? 'uneven' : 'even';
-                html2 += '<div class="'+c1+'"><div><div>'+ahr+'</div><div title="Number of content loads">'+d2hr.numContentLoads+'</div></div></div>';
-            }
+            // var c1 = 'uneven';
+            // for (var ahr in naLog.dataByURL) {
+            //     var d2hr = naLog.dataByURL[ahr];
+            //     c1 = c1 == 'even' ? 'uneven' : 'even';
+            //     html2 += '<div class="'+c1+'"><div><div>'+ahr+'</div><div title="Number of content loads">'+d2hr.numContentLoads+'</div></div></div>';
+            // }
 
             naLog.dataByDate = d5 = Object.keys(d5).sort().reduce((r, k) => (r[k] = d5[k], r), {});
 

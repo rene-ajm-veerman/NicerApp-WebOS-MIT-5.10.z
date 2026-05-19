@@ -691,7 +691,6 @@ export class na3D_fileBrowser {
         var changed = false, timeLapsed = t.clock.getElapsedTime(), y = t.evt3;
         if (t.controlsKey!==6) {
             if (timeLapsed>0.5 && t.controlsKey!==4 && t.evt3 && t.evt3.type=='pointerdown' && (t.evt3.button===0||t.evt3.button===2)) {
-                debugger;
                 t.controlsKey = 4;
                 changed = true;
             } else if (t.controlsKey!==5 && t.evt3 && t.evt3.type=='pointerup' && (t.evt3.button===0 || t.evt3.button===2)) {
@@ -1361,7 +1360,6 @@ export class na3D_fileBrowser {
             var html = "", j = 0;
             for (var i=0; i<cit.item.data.files.length; i++) {
                 var file = cit.item.data.files[i];
-                debugger;
                 if (file.match(/\.mp3$/)) {
                     var
                     path = cit.item.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
@@ -1965,7 +1963,6 @@ export class na3D_fileBrowser {
         t.ld4 = [];
         t.s2 = [];
 
-        debugger;
         $('.na3D').css({
             width : $("#siteContent .vividDialogContent").width(),
             height : $("#siteContent .vividDialogContent").height()
@@ -2181,7 +2178,6 @@ export class na3D_fileBrowser {
     onresize_do_phase2(t, callback) {
         let fncn = 'na3D.js::onresize_do_phase2()';
         na.m.log (1555, fncn+' : BEGIN .pos calculations');
-        debugger;
 
 
         /*

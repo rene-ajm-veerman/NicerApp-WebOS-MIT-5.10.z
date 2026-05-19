@@ -679,7 +679,7 @@ na.site = {
             $('#mainCSS').html('.vividMenu_item td { font-size : 11px; }; #siteStatus td { font-weight : bold };');
             $('html, body, p, span, ul, ol, li, div').not('.vt, .vividButton, .vividMenu_item, .subMenu, .contentMenu').css({fontSize:'0.7rem'});
             na.site.settings.current.menuFontSize = '11px';
-            //$('.vividMenu .vividButton').css({ width : 100, height : 10 });
+            //$('.vividMenu .vividButton').css({ width  : 100, height : 10 });
             $('#neCompanyLogo').attr('width',70).attr('height',70);
             $('.td_spacer').css ({ height : 100 });
             if ($('#headerSite').length===1) {
@@ -1670,6 +1670,10 @@ na.site = {
      * (C) 2025 "Rene A.J.M. Veerman" <rene.veerman.netherlands@gmail.com>
      */
         //if (typeof startLogo=='function') startLogo('neCompanyLogo', 'countryOfOriginColors');
+
+        if (!divID) var el = $('body')[0]; else var el = $('#'+divID)[0];
+
+
         na.site.startTooltips();
 
 

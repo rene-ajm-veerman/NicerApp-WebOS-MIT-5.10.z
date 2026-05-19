@@ -13,7 +13,7 @@ $spacer = "\n\t\t\t\t";
 	<meta http-equiv="content-language" content="english">
 	<link type="text/css" rel="StyleSheet" media="screen" href="/NicerAppWebOS/3rd-party/jQuery/jPlayer-2.9.1/jplayer.vivid.css"/>
 
-	<div id="app__musicPlayer__player" class="vividDialog naNoComments" style="margin:20px;overflow:visible;position:relative;width:320px;height:120px;">
+	<div id="app__musicPlayer__player" class="vividDialog naNoComments" style="margin:20px;overflow:visible;position:relative;width:calc(100% - 40px);height:120px;">
         <audio id="audioTag"></audio>
         
 		<div class="audioPlayerUI">
@@ -42,15 +42,15 @@ $spacer = "\n\t\t\t\t";
 		</div>
 	</div>
 
-	<div id="app__musicPlayer__playlist" class="vividDialog naNoComments backdropped" theme="dark" style="margin:10px;margin-left:20px;text-align:center;overflow:visible;position:relative; width:300px;height:calc(50% - 130px);">
+	<div id="app__musicPlayer__playlist" class="vividDialog naNoComments backdropped" theme="dark" style="margin:10px;margin-left:20px;text-align:center;overflow:visible;position:relative; width:calc(100% - 60px);height:calc(50% - 130px);">
         <h2 class="vt backdropped" style="padding:0px !important; margin:10px !important;display:flex;justify-content:center;align-items:center;width:auto;height:50px;font-size:10px;background:rgba(0,0,255,0.25);color:white;border-radius:10px;box-shadow:2px 2px 3px 2px rgba(0,0,0,0.7);">Playlist<br/>(drag and drop files into this window)</h2>
 		<ul id="playlist" class="vividScrollpane" style="width:100%;height:calc(100% - 80px);"></ul>
 	</div>
 	
-	<div id="app__musicPlayer__fileListing" class="vividDialog naNoComments backdropped" theme="dark" style="margin:10px;margin-top:0;margin-left:20px;overflow:visible;position:relative;width:300px;height:calc(50% - 120px);">
+	<div id="app__musicPlayer__fileListing" class="vividDialog naNoComments backdropped" theme="dark" style="margin:10px;margin-top:0;margin-left:20px;overflow:visible;position:relative;width:calc(100% - 60px);height:calc(50% - 120px);">
         <h2 class="vt backdropped" style="padding:0px !important; margin:10px !important;display:flex;justify-content:center;align-items:center;width:auto;height:50px;font-size:10px;background:rgba(0,0,255,0.25);color:white;border-radius:10px;box-shadow:2px 2px 3px 2px rgba(0,0,0,0.7);">Files List<p class="backdropped"><a href="javascript:$('#fileListing').html('')">Clear</a></p></h2>
 
-		<ul id="fileListing" class="vividScrollpane" style="width:100%;height:calc(100% - 94px);"></ul>
+		<div id="fileListing" class="vividScrollpane" style="width:auto;height:calc(100% - 94px);"></div>
 	</div>
 
 	<style>

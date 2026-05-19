@@ -61,7 +61,7 @@ if (
             na.site.settings.na3D['#app_3D_fileExplorer'].settings.parameters =
 
                 <?php echo json_encode($view, JSON_PRETTY_PRINT); ?>;
-                }, 100);
+        }, 100);
     </script>
     <div id="site3D_backgroundsBrowser" class="na3D" theme="<?php echo $theme;?>">
     </div>

@@ -44,7 +44,7 @@ import { DragControls } from '/NicerAppWebOS/3rd-party/3D/libs/three.js/examples
             function () { 
 				var r =
                     na.site.initialized
-					&& typeof na.site.c.menus['#siteMenu'] !== 'undefined'
+                    && na.d && na.d.s && !na.d.s.animating
 					//&& typeof na.site.settings.backgroundsRecursive !== 'undefined'
                     //&& typeof na.site.settings.na3D['#app_3D_fileExplorer'] !== 'undefined'
                     //&& typeof na.site.settings.na3D['#app_3D_fileExplorer'].settings.parameters !== 'undefined'

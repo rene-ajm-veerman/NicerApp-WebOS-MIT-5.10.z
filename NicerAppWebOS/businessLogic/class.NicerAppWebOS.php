@@ -1641,7 +1641,11 @@ class NicerAppWebOS {
                 $json = execPHP($fn);
                 $this->about = json_decode($json,true);
                 file_put_contents ($fn2, $json);
+            } else {
+                $this->about = json_decode(file_get_contents($fn2),true);
             }
+            $this->version = $this->about;
+
 
             //if (is_array($css)) $css = json_encode($css, JSON_PRETTY_PRINT);
             //$_SESSION['selectorName'] = $selectorNames[$idx];

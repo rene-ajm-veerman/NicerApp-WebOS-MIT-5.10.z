@@ -31,7 +31,6 @@ class naThemeEditor {
                 typeof jQuery.spectrum=='object'
                 && typeof jQuery.jstree=='object'
                 && typeof $('#themeEditor_jsTree_selectors').jstree('get_json')=='object';
-            debugger;
             return r;
         }, function() {
             na.te.onload_do(forDialogID);

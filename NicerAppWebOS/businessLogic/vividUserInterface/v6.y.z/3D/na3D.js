@@ -2130,6 +2130,54 @@ export class na3D_fileBrowser {
         }
     }
 
+    // Returns all ancestor IDs up to the root
+    getAllAncestors (node) {
+        if (!node || !node.item?.idxPath) return new Set();
+
+        const ancestors = new Set();
+        const path = node.item.idxPath;
+
+        if (typeof path === 'string') {
+            const parts = path.substr(1,path.length-2).split('/');
+            for (let i = 0; i < parts.length; i++) {
+                var current_t_items_N_idx = parseInt(parts[i]);
+                ancestors.add(current_t_items_N_idx);           // add partial paths
+            }
+        }
+
+        // Also add the node itself
+        ancestors.add(node.id || node.item?.idx);
+
+        return ancestors;
+    }
+
+    getAllDescendants (t, node) {
+        if (!node) return new Set();
+
+        const descendants = new Set();
+        const queue = [node];
+
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const id = current.id || current;
+
+            if (descendants.has(id)) continue;
+            descendants.add(id);
+
+            // Find all direct children
+            t.graph.graphData().links.forEach(link => {
+                const sourceId = link.source?.id ?? link.source;
+                const targetId = link.target?.id ?? link.target;
+
+                if (sourceId === id) {
+                    queue.push(link.target);
+                }
+            });
+        }
+
+        return descendants;
+    }
+
     onresize_do_phase2(t, callback) {
         let fncn = 'na3D.js::onresize_do_phase2()';
         na.m.log (1555, fncn+' : BEGIN .pos calculations');
@@ -2653,7 +2701,6 @@ export class na3D_fileBrowser {
         .nodeLabel(null)
         .nodeOpacity(0.9)
         .linkOpacity(0.6)
-        .linkColor(() => '#666')
         .nodeColor(n => {
             const depth = n.item.level ?? 0;
             return t.getHierarchicalColor(depth);
@@ -2667,11 +2714,7 @@ export class na3D_fileBrowser {
         // Custom Link Labels
         .linkThreeObject(link => {
             const targetItem = t.items[parseInt(link.target)];
-            var pp = '', p = targetItem.parent;
-            // while (p && p.name!=='music') {
-            //     pp = targetItem.name+'/'+p;
-            //     p = p.parent;
-            // };
+            if (!targetItem) return false;
 
             const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
             const sprite = new SpriteText(text);
@@ -2681,15 +2724,6 @@ export class na3D_fileBrowser {
             return sprite;
         })
 
-        .linkPositionUpdate((sprite, { start, end }) => {
-            const pos = {
-                x: end.x + (end.x - start.x) * 0.25,
-                            y: end.y + (end.y - start.y) * 0.25,
-                            z: end.z + (end.z - start.z) * 0.25
-            };
-            Object.assign(sprite.position, pos);
-        })
-
         // === INTERACTIONS ===
         .onNodeHover(node => {
             t.currentHoverNode = node;
@@ -2697,28 +2731,186 @@ export class na3D_fileBrowser {
             // Remove old hover label
             if (t.hoverLabel) {
                 t.graph.scene().remove(t.hoverLabel);
+                t.hoverLabel = null;
             }
 
             if (node) {
-                const text = node.item.filepath + '/' + node.name;
+                const hovered = t.currentHoverNode;
+                console.log("Hovered node:", hovered?.name);
+                console.log("idxPath:", hovered?.item?.idxPath);
+                console.log("Ancestors Set:", t.getAllAncestors(hovered));
+
+                // Big hover label
+                const text = (node.item?.filepath || '') + '/' + node.name;
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
-                t.hoverLabel.textHeight = 4.5;        // ← this will be large
+                t.hoverLabel.textHeight = 4.8;
                 t.hoverLabel.fontFace = 'Arial';
                 t.hoverLabel.fontWeight = 'bold';
-
-                // Position slightly above the node
-                t.hoverLabel.position.set(node.x, node.y + 12, node.z);
-
+                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
                 t.graph.scene().add(t.hoverLabel);
+
+                // Get all nodes to highlight
+                const ancestors = t.getAllAncestors(node);
+                const descendants = t.getAllDescendants(t,node);
+                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
+
+                // === NODE COLORING ===
+                t.graph.nodeColor(n => {
+                    if (n === node) return '#ffff44';                    // hovered node
+                    if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
+                    const depth = n.item?.level ?? n.depth ?? 0;
+                    return t.getHierarchicalColor(depth);
+                });
+
+                // === LINK COLORING ===
+                t.graph.linkColor(link => {
+                    const sourceId = link.source?.id ?? link.source;
+                    const targetId = link.target?.id ?? link.target;
+
+                    const isAncestorLink = ancestors.has(sourceId) && ancestors.has(targetId);
+                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
+
+                    if (isAncestorLink) {
+                        return '#00ffcc';           // Cyan - path to root
+                    }
+                    if (isDescendantLink || sourceId === (node.id || node)) {
+                        return '#88ff88';           // Green - subtree
+                    }
+                    return '#444444';               // Dimmed
+                })
+
+                .linkOpacity(link => {
+                    const sourceId = link.source?.id ?? link.source;
+                    const targetId = link.target?.id ?? link.target;
+
+                    if (ancestors.has(sourceId) && ancestors.has(targetId)) return 1.0;
+                    if (descendants.has(sourceId) && descendants.has(targetId)) return 0.95;
+                    if (sourceId === (node.id || node)) return 0.9;
+
+                    return 0.07;   // strongly dimmed
+                })
+
+                .linkWidth(link => {
+                    const sourceId = link.source?.id ?? link.source;
+                    const targetId = link.target?.id ?? link.target;
+
+                    if (ancestors.has(sourceId) && ancestors.has(targetId)) return 5;
+                    if (descendants.has(sourceId) && descendants.has(targetId)) return 3.5;
+                    if (sourceId === (node.id || node)) return 4;
+
+                    return 0.6;
+                });
+            }
+            else {
+                // Reset when hover ends
+                t.graph.nodeColor(n => {
+                    const depth = n.item?.level ?? n.depth ?? 0;
+                    return t.getHierarchicalColor(depth);
+                });
+
+                t.graph.linkColor(() => '#555555')
+                .linkOpacity(0.35)
+                .linkWidth(1);
+            }
+        })
+        .onNodeHover(node => {
+            t.currentHoverNode = node;
+
+            // Remove old hover label
+            if (t.hoverLabel) {
+                t.graph.scene().remove(t.hoverLabel);
+                t.hoverLabel = null;
             }
 
-            t.graph.nodeColor(n => {
-                if (n === node) return '#ffff00';           // highlight
-                const depth = n.item.level ?? 0;
-                return t.getHierarchicalColor(depth);
-            });
+            if (node) {
+                // Big hover label
+                const text = (node.item?.filepath || '') + '/' + node.name;
+                t.hoverLabel = new SpriteText(text);
+                t.hoverLabel.color = '#ffff88';
+                t.hoverLabel.textHeight = 4.8;
+                t.hoverLabel.fontFace = 'Arial';
+                t.hoverLabel.fontWeight = 'bold';
+                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                t.graph.scene().add(t.hoverLabel);
 
+                // Get all nodes to highlight
+                const ancestors = t.getAllAncestors(node);
+                const descendants = t.getAllDescendants(node);
+                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
+
+                t.graph
+                .nodeColor(n => {
+                    if (n === node) return '#ffff44';                    // hovered node
+                    if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
+                    const depth = n.item?.level ?? n.depth ?? 0;
+                    return t.getHierarchicalColor(depth);
+                })
+                .linkColor(link => {
+                    const hovered = t.currentHoverNode;
+                    if (!hovered) return '#555555';
+
+                    const hoveredAncestors = t.getAllAncestors(hovered);
+                    const sourceAncestors = t.getAllAncestors(link.source);
+                    const sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+
+                    const targetAncestors = t.getAllAncestors(link.target);
+                    const targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+
+                    const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
+                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
+
+
+                     if (isAncestorLink) {
+                         return t.getHierarchicalColor(sourceDepth);
+                     }
+                     // Direct children
+                     if (sourceId === (hovered.id || hovered)) {
+                         return t.getHierarchicalColor(targetDepth);
+                     }
+
+                     return 'rgba(255,255,255,0.2)';
+
+                })
+                .linkOpacity(link => {
+                    const hovered = t.currentHoverNode;
+                    if (!hovered) return 0.35;
+
+                    const ancestors = t.getAllAncestors(hovered);
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+                    if (ancestors.has(sourceId) && ancestors.has(targetId)) return 1.0;
+                    if (sourceId === (hovered.id || hovered)) return 0.7;
+
+                    return 0.2;
+                })
+                .linkWidth(link => {
+                    const hovered = t.currentHoverNode;
+                    if (!hovered) return 1;
+
+                    const sourceId = link.source?.id ?? link.source;
+                    const targetId = link.target?.id ?? link.target;
+                    const hoverId  = hovered.id ?? hovered;
+
+                    return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
+                });
+            }
+            else {
+                // Reset when hover ends
+                t.graph.nodeColor(n => {
+                    const depth = n.item?.level ?? n.depth ?? 0;
+                    return t.getHierarchicalColor(depth);
+                });
+
+                t.graph.linkColor(() => '#555555')
+                .linkOpacity(0.35)
+                .linkWidth(1);
+            }
         })
 
         .onNodeClick(node => {
@@ -2868,11 +3060,14 @@ export class na3D_fileBrowser {
             '#f06595',   // 4 - pink
             '#9775fa',   // 5 - purple
             '#74c0fc',   // 6
-            '#63e6be'    // 7+
+            '#63e6be',
+            'blue',
+            'cyan',
+            'lime'
         ];
 
-        const x = Math.abs(colors.length/depth);
-        return colors[Math.min(Math.abs(colors.length/depth), colors.length - 1)] || '#aaaaaa';
+        return colors[Math.min(depth, colors.length - 1)] || '#aaaaaa';
+        //return colors[Math.min(Math.abs(colors.length/depth), colors.length - 1)] || '#aaaaaa';
     }
 
     play (btn, relPath) {
@@ -4679,22 +4874,22 @@ export class na3D_demo_cube {
         const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
         var materials = [
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/4a065201509c0fc50e7341ce04cf7902--twitter-backgrounds-blue-backgrounds.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/4a065201509c0fc50e7341ce04cf7902--twitter-backgrounds-blue-backgrounds.jpg")
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/blue170.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/blue170.jpg")
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/abstract_water_texture-seamless.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/blue/abstract_water_texture-seamless.jpg")
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/orange/467781133_4f4354223e.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/orange/467781133_4f4354223e.jpg")
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/green/dgren051.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/green/dgren051.jpg")
             }),
             new THREE.MeshBasicMaterial({
-                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/green/leaves007.mp3")
+                map: new THREE.TextureLoader().load("/siteMedia/backgrounds/tiled/green/leaves007.jpg")
             })
         ];
         t.cube = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 1 ), materials );

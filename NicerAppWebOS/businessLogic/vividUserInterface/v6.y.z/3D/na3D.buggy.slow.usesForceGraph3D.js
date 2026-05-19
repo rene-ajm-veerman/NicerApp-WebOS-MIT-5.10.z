@@ -2650,15 +2650,10 @@ export class na3D_fileBrowser {
         .dagMode('radialout')
         .graphData(dat2)   // { nodes: [...], links: [...] }
 
-        .nodeLabel(null)
+        .nodeLabel('name')
         .nodeOpacity(0.9)
         .linkOpacity(0.6)
         .linkColor(() => '#666')
-        .nodeColor(n => {
-            const depth = n.item.level ?? 0;
-            return t.getHierarchicalColor(depth);
-        })
-
 
         // === Custom Nodes & Links ===
         .nodeThreeObjectExtend(true)
@@ -2700,7 +2695,7 @@ export class na3D_fileBrowser {
             }
 
             if (node) {
-                const text = node.item.filepath + '/' + node.name;
+                const text = node.filepath + '/' + node.name;
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 4.5;        // ← this will be large

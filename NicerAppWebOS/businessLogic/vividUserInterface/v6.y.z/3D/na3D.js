@@ -287,321 +287,267 @@ export class na3D_fileBrowser {
         t.clock = new THREE.Clock();
         t.lookClock = -1;
 
-        //setTimeout(function() {
-  //      debugger;
+debugger;
         t.initializeItems (t);
-            //t.initializeFolderList (t, t.data);
+debugger;
+
+        t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
+        na.apps.loaded.threed_fileExplorer = t;
+        t.graph = ForceGraph3D({
+            rendererConfig: { antialias: true, alpha: true }
+        })(t.el)
+
+        .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
+        .width(t.el.clientWidth || 1000)
+        .height(t.el.clientHeight || 700)
+        .dagMode('radialout')
+        .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
+        //.forceEngine('ngraph')
+
+        .nodeLabel(null)
+        .nodeOpacity(0.9)
+        .linkOpacity(0.1)
+        .linkColor('#FFF')
+        .nodeColor(n => {
+            const ancestors = t.getAllAncestors(n);
+            const descendants = t.getAllDescendants(t, n);
+            const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
+            const defaultColor = 'rgba(255,255,255,0.55)';
+
+            const sourceAncestors = t.getAllAncestors(n);
+            if (sourceAncestors.size===0) return defaultColor;
+            var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+            sourceDepth = Math.round(sourceDepth / 2) + 1;
+
+            const targetAncestors = t.getAllAncestors(n);
+            if (targetAncestors.size===0) return defaultColor;
+            var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+            targetDepth = Math.round(targetDepth / 2) + 1;
+
+            const isAncestorLink =  ancestors.has(n.id);
+            const isDescendantLink = descendants.has(n.id);
 
 
-            //na.m.waitForCondition (fncn + ' : t.items ready?', function() {
-              //  return t.itemsInitialized ;// && t.items.length > 20 && t.items[0].model;
-            //}, function () {
-                t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
-                na.apps.loaded.threed_fileExplorer = t;
-//debugger;
-                t.graph = ForceGraph3D({
-                    rendererConfig: { antialias: true, alpha: true }
-                })(t.el)
+            if (isAncestorLink) {
+                return t.getHierarchicalColor(sourceDepth);
+            }
+            // Direct children
+            if (isDescendantLink) {
+                return t.getHierarchicalColor(targetDepth);
+            }
 
-                .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
-                .width(t.el.clientWidth || 1000)
-                .height(t.el.clientHeight || 700)
-                .dagMode('radialout')
-                .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
+            return defaultColor;
 
-                .nodeLabel(null)
-                .nodeOpacity(0.9)
-                .linkOpacity(0.1)
-                .linkColor('#FFF')
-                .nodeColor(n => {
-                    const depth = n.item.level ?? 0;
-                    return t.getHierarchicalColor(depth);
-                })
-                .warmupTicks(250)      // or more
-                .cooldownTicks(0)
+        })
+        .warmupTicks(250)      // or more
+        .cooldownTicks(0)
 
-                // === Custom Nodes & Links ===
-                .nodeThreeObjectExtend(true)
-                .linkThreeObjectExtend(true)
+        // === Custom Nodes & Links ===
+        .nodeThreeObjectExtend(true)
+        .linkThreeObjectExtend(true)
 
-                // Custom Link Labels
-                .linkThreeObject(link => {
-                    const targetItem = t.items[parseInt(link.target)];
-                    if (!targetItem) return false;
+        // Custom Link Labels
+        .linkThreeObject(link => {
+            const targetItem = t.items[parseInt(link.target)];
+            if (!targetItem) return false;
 
-                    const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
-                    const sprite = new SpriteText(text);
-                    sprite.color = '#aaaaaa';
-                    sprite.textHeight = 2.8;
-                    sprite.fontFace = 'Arial';
-                    return sprite;
-                })
+            const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
+            const sprite = new SpriteText(text);
+            sprite.color = '#aaaaaa';
+            sprite.textHeight = 2.8;
+            sprite.fontFace = 'Arial';
+            return sprite;
+        })
 
-                // === INTERACTIONS ===
-                .onNodeHover(node => {
-                    t.currentHoverNode = node;
+        // === INTERACTIONS ===
+        .onNodeHover(node => {
+            t.currentHoverNode = node;
 
-                    // Remove old hover label
-                    if (t.hoverLabel) {
-                        t.graph.scene().remove(t.hoverLabel);
-                        t.hoverLabel = null;
-                    }
+            // Remove old hover label
+            if (t.hoverLabel) {
+                t.graph.scene().remove(t.hoverLabel);
+                t.hoverLabel = null;
+            }
 
-                    if (node) {
-                        // Big hover label
-                        const text = (node.item?.filepath || '') + '/' + node.name;
-                        t.hoverLabel = new SpriteText(text);
-                        t.hoverLabel.color = '#ffff88';
-                        t.hoverLabel.textHeight = 4.8;
-                        t.hoverLabel.fontFace = 'Arial';
-                        t.hoverLabel.fontWeight = 'bold';
-                        t.hoverLabel.position.set(node.x, node.y + 18, node.z);
-                        t.graph.scene().add(t.hoverLabel);
+            if (node) {
+                // Big hover label
+                const text = (node.item?.filepath || '') + '/' + node.name;
+                t.hoverLabel = new SpriteText(text);
+                t.hoverLabel.color = '#ffff88';
+                t.hoverLabel.textHeight = 4.8;
+                t.hoverLabel.fontFace = 'Arial';
+                t.hoverLabel.fontWeight = 'bold';
+                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                t.graph.scene().add(t.hoverLabel);
 
-                        // Get all nodes to highlight
-                        const ancestors = t.getAllAncestors(node);
-                        const descendants = t.getAllDescendants(t, node);
-                        const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
-
-                        t.graph
-                        // .nodeColor(n => {
-                        //     if (n === node) return '#ffff44';                    // hovered node
-                        //     if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
-                        //     const depth = n.item?.level ?? n.depth ?? 0;
-                        //     return t.getHierarchicalColor(depth);
-                        // })
-                        .linkColor(link => {
-                            const hovered = t.currentHoverNode;
-                            if (!hovered) return 'rgba(255,255,255,0.2)';
-
-                            const hoveredAncestors = t.getAllAncestors(hovered);
-                            const sourceAncestors = t.getAllAncestors(link.source);
-                            var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                            //sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                            const targetAncestors = t.getAllAncestors(link.target);
-                            var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                            //targetDepth = Math.round(targetDepth / 2) + 1;
-
-                            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-
-                            const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
-                            const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
-
-
-                            if (ancestors.has(sourceId) && ancestors.has(targetId)) {
-                                return t.getHierarchicalColor(sourceDepth);
-                            }
-                            // Direct children
-                            if (isDescendantLink) {
-                                return t.getHierarchicalColor(targetDepth);
-                            }
-
-                            return 'rgba(255,255,255,0.1)';
-
-                        })
-                        // .linkOpacity(link => {
-                        //     const hovered = t.currentHoverNode;
-                        //     if (!hovered) return 0.35;
-                        //
-                        //     const ancestors = t.getAllAncestors(hovered);
-                        //     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                        //     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                        //
-                        //     if (ancestors.has(sourceId) && ancestors.has(targetId)) return 0.7;
-                        //     if (sourceId === (hovered.id || hovered)) return 0.7;
-                        //
-                        //     return 0.4;
-                        // })
-                        .linkWidth(link => {
-                            const hovered = t.currentHoverNode;
-                            if (!hovered) return 1;
-
-                            const sourceId = link.source?.id ?? link.source;
-                            const targetId = link.target?.id ?? link.target;
-                            const hoverId  = hovered.id ?? hovered;
-
-                            return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
-                        });
-                    }
-                    else {
-                        // Reset when hover ends
-                        t.graph.nodeColor(n => {
-                            const depth = n.item?.level ?? n.depth ?? 0;
-                            return t.getHierarchicalColor(depth);
-                        });
-
-                        t.graph.linkColor(() => '#555555')
-                        .linkOpacity(0.35)
-                        .linkWidth(1.2);
-                    }
-                })
-
-                .onNodeClick(node => {
-                    if (!node) return;
-                    console.log('Clicked node:', node.name);
-
-                    // Camera focus
-                    const distance = 180;
-                    const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
-
-                    t.graph.cameraPosition(
-                        {
-                            x: (node.x||0) * distRatio,
-                                           y: (node.y||0) * distRatio,
-                                           z: (node.z||0) * distRatio
-                        },
-                        node,
-                        1600
-                    );
-
-                    // Your existing file listing logic
-                    if (typeof t.onclick_node === 'function') {
-                        t.onclick_node(t, node);
-                    }
-                })
-
-                .onBackgroundClick(() => {
-                    t.graph.nodeColor(null); // reset highlights
-                })
-                .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
-                .nodeRelSize(7);
-
+                // Get all nodes to highlight
+                const ancestors = t.getAllAncestors(node);
+                const descendants = t.getAllDescendants(t, node);
+                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
 
                 t.graph
-                .d3Force('charge').strength(-280);   // stronger repulsion
+                .nodeColor(n => {
+                   if (n === node) return '#ffff44';                    // hovered node
+                   if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
+                   var depth = n.item?.level ?? n.depth ?? 0;
+                    depth = depth / 2 + 1;
+                   return t.getHierarchicalColor(depth);
+                })
+                .linkColor(link => {
+                    const defaultColor = 'rgba(255,255,255,0.2)'
+                    const hovered = t.currentHoverNode;
+                    if (!hovered) return defaultColor;
+
+                    const hoveredAncestors = t.getAllAncestors(hovered);
+                    const sourceAncestors = t.getAllAncestors(link.source);
+                    if (sourceAncestors.size===0) return defaultColor;
+                    var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+                    sourceDepth = Math.round(sourceDepth / 2) + 1;
+
+                    const targetAncestors = t.getAllAncestors(link.target);
+                    if (targetAncestors.size===0) return defaultColor;
+                    var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+                    targetDepth = Math.round(targetDepth / 2) + 1;
+
+                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
 
- //           }, 200);
+                    const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
+                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
 
 
-
-            //t.camera.lookAt (t.s2[0].position);
-            //t.controls._camera.lookAt (t.s2[0].position);
-
-            na.m.waitForCondition("animate?", function() {
-                return t.items.length > 2;// && t.winners;
-            }, function() {
-                //debugger;
-                t.create(t);
-                t.animate(t, null);
-
-                $(t.renderer.domElement).bind("mousemove", function() {
-                    //event.preventDefault();
-                    t.onMouseMove (event, t)
-                });
-                //$(t.renderer.domElement).bind("pointerup", function() { t.onPointerUp (event, t) });
-                $(t.renderer.domElement).click (function(event) {
-                    event.preventDefault();
-                    if (event.detail === 2) { // double click
-                        //t.controls.autoRotate = !t.controls.autoRotate
-                        //if (t.controls.autoRotate) $("#autoRotate").removeClass("vividButton").addClass("vividButtonSelected");
-                        //else $("#autoRotate").removeClass("vividButtonSelected").addClass("vividButton");
-                        t.onclick_double (t, event);
-
-                    } else if (event.detail === 3) { // triple click
-                        //if (t.controls.autoRotateSpeed<0) t.controls.autoRotateSpeed = 1; else t.controls.autoRotateSpeed = -1;
-                        t.onclick_triple (t, event);
-                    } else {
-                        t.onclick (t, event);
+                    if (ancestors.has(sourceId) && ancestors.has(targetId)) {
+                        return t.getHierarchicalColor(sourceDepth);
+                    }
+                    // Direct children
+                    if (isDescendantLink) {
+                        return t.getHierarchicalColor(targetDepth);
                     }
 
+                    return defaultColor;
+
+                })
+                .linkWidth(link => {
+                    const hovered = t.currentHoverNode;
+                    if (!hovered) return 1;
+
+                    const sourceId = link.source?.id ?? link.source;
+                    const targetId = link.target?.id ?? link.target;
+                    const hoverId  = hovered.id ?? hovered;
+
+                    return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
                 });
-                $(document).on("keydown", function(event) {
-                    /*if (t.dragndrop && t.dragndrop.obj) {
-                        t.zoomInterval = setInterval(function() {
-                            if (event.keyCode===16 || event.keyCode===38) {
-                                for (let i=0; i<t.items.length; i++) {
-                                    let it = t.items[i];
-                                    if (it.parent === t.dragndrop.obj.it.parent) {
-                                        it.model.position.z -= 25;
-                                    }
+            }
+            else {
+                // Reset when hover ends
+                t.graph.nodeColor(n => {
+                    var depth = n.item?.level ?? n.depth ?? 0;
+                    depth = depth / 2 + 1;
+                    return t.getHierarchicalColor(depth);
+                });
+
+                t.graph.linkColor(() => '#555555')
+                .linkOpacity(0.35)
+                .linkWidth(1.2);
+            }
+        })
+
+        .onNodeClick(node => {
+            if (!node) return;
+            console.log('Clicked node:', node.name);
+
+            // Camera focus
+            const distance = 180;
+            const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
+
+            t.graph.cameraPosition(
+                {
+                    x: (node.x||0) * distRatio,
+                                    y: (node.y||0) * distRatio,
+                                    z: (node.z||0) * distRatio
+                },
+                node,
+                1600
+            );
+
+            // Your existing file listing logic
+            if (typeof t.onclick_node === 'function') {
+                t.onclick_node(t, node);
+            }
+        })
+
+        .onBackgroundClick(() => {
+            t.graph.nodeColor(null); // reset highlights
+        })
+        .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
+        .nodeRelSize(7)
+        .forceEngine('ngraph')           // often better for >1k nodes
+        .numDimensions(2);
+debugger;
+
+        t.graph
+        .d3Force('charge').strength(null);   // stronger repulsion
+
+        na.m.waitForCondition("animate?", function() {
+            return t.items.length > 2;// && t.winners;
+        }, function() {
+            //debugger;
+            t.create(t);
+            t.animate(t, null);
+
+            $(t.renderer.domElement).bind("mousemove", function() {
+                //event.preventDefault();
+                t.onMouseMove (event, t)
+            });
+            //$(t.renderer.domElement).bind("pointerup", function() { t.onPointerUp (event, t) });
+            $(t.renderer.domElement).click (function(event) {
+                event.preventDefault();
+                if (event.detail === 2) { // double click
+                    //t.controls.autoRotate = !t.controls.autoRotate
+                    //if (t.controls.autoRotate) $("#autoRotate").removeClass("vividButton").addClass("vividButtonSelected");
+                    //else $("#autoRotate").removeClass("vividButtonSelected").addClass("vividButton");
+                    t.onclick_double (t, event);
+
+                } else if (event.detail === 3) { // triple click
+                    //if (t.controls.autoRotateSpeed<0) t.controls.autoRotateSpeed = 1; else t.controls.autoRotateSpeed = -1;
+                    t.onclick_triple (t, event);
+                } else {
+                    t.onclick (t, event);
+                }
+
+            });
+            $(document).on("keydown", function(event) {
+                /*if (t.dragndrop && t.dragndrop.obj) {
+                    t.zoomInterval = setInterval(function() {
+                        if (event.keyCode===16 || event.keyCode===38) {
+                            for (let i=0; i<t.items.length; i++) {
+                                let it = t.items[i];
+                                if (it.parent === t.dragndrop.obj.it.parent) {
+                                    it.model.position.z -= 25;
                                 }
-                            };
-                            if (event.keyCode===17 || event.keyCode===40) {
-                                for (let i=0; i<t.items.length; i++) {
-                                    let it = t.items[i];
-                                    if (it.parent === t.dragndrop.obj.it.parent) {
-                                        it.model.position.z += 25;
-                                    }
+                            }
+                        };
+                        if (event.keyCode===17 || event.keyCode===40) {
+                            for (let i=0; i<t.items.length; i++) {
+                                let it = t.items[i];
+                                if (it.parent === t.dragndrop.obj.it.parent) {
+                                    it.model.position.z += 25;
                                 }
-                            };
-                        }, 200);
-                    }*/
-                    if (event.keyCode===32) t.controls.autoRotate = !t.controls.autoRotate;
-                });
-                $(document).on("keyup", function(event) {
-                    event.preventDefault();
-                    clearInterval(t.zoomInterval);
-                });
+                            }
+                        };
+                    }, 200);
+                }*/
+                if (event.keyCode===32) t.controls.autoRotate = !t.controls.autoRotate;
+            });
+            $(document).on("keyup", function(event) {
+                event.preventDefault();
+                clearInterval(t.zoomInterval);
+            });
 
-
-                /* OUTDATED : replaced with .createcontrols()
-                 *
-                t.orbitControls = new OrbitControls( t.camera, t.renderer.domElement );
-                t.orbitControls.enabled = true;
-                t.orbitControls.position0.x = 0;
-                t.orbitControls.position0.y = 0;
-                t.orbitControls.position0.z = 15000;
-                //t.orbitControls.listenToKeyEvents( window ); // optional
-
-                t.controls = new CameraControls (t.camera, t.renderer.domElement);
-                t.controls._camera.position.x = 0;
-                t.controls._camera.position.y = 0;
-                t.controls._camera.position.z = 5000;
-                t.controls._target.x = 0;
-                t.controls._target.y = 0;
-                t.controls._target.z = 15000;
-                t.controls._targetEnd.x = 0;
-                t.controls._targetEnd.y = 0;
-                t.controls._targetEnd.z = 15000;
-
-                t.controls._target0.x = 0;
-                t.controls._target0.y = 0;
-                t.controls._target0.z = 15000;
-
-                t.camera.position.x = 0;
-                t.camera.position.y = 0;
-                t.camera.position.z = 15000;
-                t.controls.enabled = t.useCameraControls;
-                t.flyControls = new FlyControls (t.camera, t.renderer.domElement);
-                t.flyControls.enabled = false;
-                t.flyControls.movementSpeed = 750;
-                t.flyControls.dragToLook = true;
-                t.flyControls.rollSpeed = Math.PI / 4; // default is 0.005
-                t.flyControls.autoMove = true;
-                */
-            }, 200);
-            /*
-            na.m.waitForCondition("animate(2)?", function() {
-                return t.winners;
-            }, function() {
-                t.camera.lookAt (t.middle.x, t.middle.y, t.middle.z);
-                //t.controls._camera.lookAt (t.middle.x, t.middle.y, t.middle.z);
-                t.animate(t, null);
-                //debugger;
-                //t.camera.position.set(t.middle.x, t.middle.y, t.winners.front);
-                //t.animate(t, null);
-            }, 250);
-            *
-        }, 250);*/
+        }, 200);
 
     }
-    /*
-    animate(t, evt) {
-        requestAnimationFrame( function(evt) { t.animate (t,evt) });
-        const delta = t.clock.getDelta();
-        t.controls.enabled = true;
-        t.controls.update (delta, true);
-        //t.orbitControls.enabled = true;
-        //t.orbitControls.update (delta);
-        t.renderer.render( t.scene, t.camera );
-    }*/
-
-
-
 
     zapitem(k) {
         try {
@@ -1118,283 +1064,6 @@ export class na3D_fileBrowser {
 
         t.renderer.render( t.scene, t.camera );
     }
-
-    /*
-    animate_OLD_AND_BUGGY (t, p) {
-        //setTimeout(function() {
-            //requestAnimationFrame( function(p) { t.animate (t,p) });
-
-        const delta = t.clock.getDelta();
-        totaldelta+=delta;
-        if(totaldelta<1/10)return; //change 10 to other values to speedup
-        totaldelta=0;
-
-        //if (t.mouse.x!==0 || t.mouse.y!==0) {
-
-            for (var i=0; i<t.s2.length; i++) {
-                var it = t.s2[i];
-                it.updateMatrixWorld();
-            };
-            t.raycaster.setFromCamera (t.mouse, t.camera);
-
-            t.scene.matrixWorldAutoUpdate = true;;
-            t.camera.matrixWorldAutoUpdate = true;
-
-            //t.flyControls.enabled = false;
-
-            //const delta = t.clock.getDelta();
-
-            if (false) {
-                var x = t.controls._activePointers;
-                //if (x[0]) debugger;
-                var dbg = {
-                    "x[0]" : x[0],
-                    "x[0].mouseButton" : x[0] ? x[0].mouseButton : null,
-                    "t.lookClock" : t.lookClock,
-                    "delta2" : delta2 > t.lookClock
-                };
-                if (t.debug) console.log (dbg);
-            }
-
-
-            if (t.cameraOrigin && t.cameraOrigin.x && t.middle && t.middle.x) {
-                if (t.middle && t.middle.x) {
-                    if (!t.started3) {
-                        t.camera.position.x = t.middle.x;
-                        t.camera.position.y = t.middle.y;
-                        t.camera.position.z = 5 * t.middle.z ;
-                        t.camera.lookAt (t.middle.x, t.middle.y, t.middle.z);
-                        t.orbitControls.center =  new THREE.Vector3(
-                            t.middle.x,
-                            t.winners.north.y,
-                            t.winners.north.z
-                        );
-                        t.started3 = true;
-                    }
-                };
-            }
-
-            if (t.flyControls.movementSpeed > 0 && t.flyControls.movementSpeed < 1250)
-                t.flyControls.movementSpeed += 50;
-
-            if (t.orbitControls.enabled/* && t.middle && t.middle.x* /) {
-                //t.orbitControls.target.set(t.middle.x, t.middle.y, t.middle.z);
-                t.orbitControls.update(t.flyControls.object.quaternion);
-                t.flyControls.object.position.x = t.orbitControls.object.position.x;
-                t.flyControls.object.position.y = t.orbitControls.object.position.y;
-                t.flyControls.object.position.z = t.orbitControls.object.position.z;
-            };
-            if (t.flyControls.enabled && t.middle && t.middle.x) {
-                //t.flyControls.object.set (t.middle.x, t.middle.y, t.middle.z);
-                t.flyControls.update(delta);
-                //t.orbitControls.tmpQuaternion.set (t.flyControls.rotationVector.x, t.flyControls.rotationVector.y, t.flyControls.rotationVector.z);
-                t.orbitControls.object.position.x = t.flyControls.object.position.x;
-                t.orbitControls.object.position.y = t.flyControls.object.position.y;
-                t.orbitControls.object.position.z = t.flyControls.object.position.z;
-            };
-
-            t.camera.updateProjectionMatrix();
-            t.camera.updateWorldMatrix (true, false);
-
-            var intersects = t.raycaster.intersectObjects (t.s2);
-            t.hoverOverName = "{UNKOWN}";
-            if (intersects[0] && intersects[0].object.type!=="Line")
-            for (var i=0; i<intersects.length; i++) {
-                var hoveredItem = intersects[i].object, done = false;
-                while (hoveredItem && !done) {
-
-                    for (var j=0; j<t.lines.length; j++) {
-                        if (t.lines[j]) {
-                            if (t.lines[j].it === it) {
-                                haveLine = true;
-                            } else {
-                                t.scene.remove(t.lines[j].line);
-                                t.lines[j].geometry.dispose();
-                                delete t.lines[j];
-                            }
-                        }
-                    }
-
-                    // build a line towards parent
-                    if (hoveredItem && hoveredItem.it && !done) {
-                        let p = hoveredItem.it.model.position;
-                        //if (t.hoverOverName=='{UNKNOWN}') t.hoverOverName = "("+hoveredItem.it.column+":"+hoveredItem.it.row+") ("+p.x+", "+p.y+", "+p.z + ") : " + hoveredItem.it.name;
-                        //debugger;
-                        if (t.hoverOverName=='{UNKNOWN}') t.hoverOverName += hoveredItem.it.name;
-                    //debugger;
-                        var
-                        it = hoveredItem.it;
-
-                        // draw line to parent(s)
-                        while (it && it.parent) {
-                            var
-                            parent = it.parent,
-                            haveLine = false;
-
-                            if (parent && parent.model) {
-                                if (!haveLine) {
-                                    var
-                                    p1 = it.model.position,
-                                    p2 = parent.model.position;
-                                    //if (p1.x===0 && p1.y===0 && p1.z===0) continue;
-                                    //if (p2.x===0 && p2.y===0 && p2.z===0) continue;
-                                    const points = [];
-                                    points.push( new THREE.Vector3( p1.x, p1.y, p1.z ) );
-                                    points.push( new THREE.Vector3( p2.x, p2.y, p2.z ) );
-
-                                    var
-                                    geometry = new THREE.BufferGeometry().setFromPoints (points);
-
-
-                                    geometry.dynamic = true;
-                                    geometry.verticesNeedUpdate = true;
-
-                                    var material = new THREE.LineBasicMaterial({ color: 0x0000FF, linewidth:2 });
-                                    var line = new THREE.Line( geometry, material );
-                                    t.scene.add(line);
-
-                                    t.lines[t.lines.length] = {
-                                        it : it,
-                                        line : line,
-                                        geometry : geometry,
-                                        material : material
-                                    };
-                                } else {
-                                    for (var j=0; j<t.lines.length; j++) {
-                                        if (t.lines[j]) t.lines[j].geometry.verticesNeedUpdate = true;
-                                    }
-                                }
-                            }
-                            it = it.parent;
-                        }
-
-
-                        // draw lines to children
-                        for (var j=0; j<t.items.length; j++) {
-                            var child = t.items[j];
-                            //if (child.name.match(/\(Hard-/)) debugger;
-                            //if (child.name.match(/Sabaton/)) debugger;
-                            if (
-                                hoveredItem && hoveredItem.it && hoveredItem.it.model && child && child.model && child.parent
-                                && hoveredItem.it.idx=== child.parent.idx
-                            ) {
-                                //if (child.name.match(/\.mp3$/)) continue;
-
-                                var
-                                p1 = child.model.position,
-                                p2 = hoveredItem.it.model.position,
-                                x = child.name;
-
-                                if (p1.x===0 && p1.y===0 && p1.z===0) continue;
-                                if (p2.x===0 && p2.y===0 && p2.z===0) continue;
-
-                                const points = [];
-                                points.push( new THREE.Vector3( p1.x, p1.y, p1.z ) );
-                                points.push( new THREE.Vector3( p2.x, p2.y, p2.z ) );
-
-                                var
-                                geometry = new THREE.BufferGeometry().setFromPoints (points);
-
-                                geometry.dynamic = true;
-                                geometry.verticesNeedUpdate = true;
-
-                                var material = new THREE.LineBasicMaterial({ color: 0xFF0000, linewidth : 1 });
-                                var line = new THREE.Line( geometry, material );
-                                t.scene.add(line);
-
-                                t.lines[t.lines.length] = {
-                                    it : it,
-                                    line : line,
-                                    geometry : geometry,
-                                    material : material
-                                };
-                            }
-                        }
-                        done = true;
-                    }
-
-                    //hoveredItem = t.items[hoveredItem.parent.idx];
-                }
-
-            if (!t.animPlaying) {
-                    // show folder name for item under mouse and closest to the country
-                    $("#site3D_label").css({display:"flex",opacity:1});
-
-                    delete t.hovered;
-                    const intersects2 = t.raycaster.intersectObjects (t.s2, true);
-                    if (intersects2 && intersects2[0]) t.hovered = intersects2[0];
-                    if (t.hovered && t.hovered.object.type!=="Line") {
-                        t.drawLines(t);
-                        //t.orbitControls.enabled = false;
-
-                        // Setup label
-                        t.renderer.domElement.className = "hovered";
-
-                        var
-                        name = "",
-                        parent = t.hovered;
-                        debugger;
-
-                        while (parent) {
-                            //$("#site3D_label")[0].textContent =
-                            //  t.hovered.object.it.name.replace(/-\s*[\w]+\.mp3/, ".mp3");
-                            var l =
-                                parent.object.it.filepath
-                                    .replace("/0/filesAtRoot/folders/","")
-                                    .replace("/0/filesAtRoot/folders","");
-                            if (l!=="") l+= "/";
-                            l += parent.object.it.name.replace(/\s*\-\s*[-_\w]+\.mp3$/,".mp3")
-                            //l += " ("+parent.object.it.parent.rndz+")";
-                            l = l.replace(/folders\//g, "");
-                            if (name=='') name = l;
-                            /*
-                            name += l+" ("+parent.object.it.model.position.x+","
-                                +parent.object.it.model.position.y+","
-                                +parent.object.it.model.position.z+") "
-                                +"("+parent.object.it.columnOffsetValue+","
-                                +parent.object.it.rowOffsetValue+","
-                                +parent.object.it.depthOffsetValue+")<br/>";
-                            * /
-                            parent = parent.parent;
-                        }
-
-                        //name = l;
-                        $("#site3D_label").html (name);
-
-
-                        $("#site3D_label").css({
-                            display : "block",
-                            left : t.mouse.layerX + 20,
-                            top : t.mouse.layerY + 50
-                        });
-                        /*console.log({
-                            name : $("#site3D_label")[0].textContent,
-                            left : t.mouse.layerX + 20,
-                            top : t.mouse.layerY + 20
-                        });* /
-                    } else {
-                        //t.orbitControls.enabled = true;
-                        t.renderer.domElement.className = "";
-                        $("#site3D_label").css({ display : "none" });
-                    }
-            } else {
-                t.renderer.domElement.className = "";
-                $("#site3D_label").css({ display : "none" });
-            }
-
-            for (var i=0; i<t.lines.length; i++) {
-                var it = t.lines[i];
-                if (it && it.geometry) it.geometry.verticesNeedUpdate = true;
-            };
-            for (var i=0; i<t.permaLines.length; i++) {
-                var it = t.permaLines[i];
-                if (it && it.geometry) it.geometry.verticesNeedUpdate = true;
-            };
-        }
-        
-        t.renderer.render( t.scene, t.camera );
-    }
-    */
 
     rotate (event, t) {
         t.controlsKey = 6;
@@ -3391,453 +3060,6 @@ export class na3D_fileBrowser {
     onresize_postDo (t, animate=false) {
         //t.drawLines(t);
         //t.controls._camera.lookAt (t.s2[0].position);
-
-        t.winners = {
-            north : 0,
-            east : 0,
-            south : 0,
-            west : 0,
-            front : 0,
-            behind : 0
-        };
-        for (var i=0; i < t.items.length; i++) {
-            var it = t.items[i];
-            if (!it.model) continue;
-            if (it.model.position.y > t.winners.north) t.winners.north = it.model.position.y;
-            if (it.model.position.x > t.winners.east) t.winners.east = it.model.position.x;
-            if (it.model.position.y < t.winners.south) t.winners.south = it.model.position.y;
-            if (it.model.position.x < t.winners.west) t.winners.west = it.model.position.x;
-            if (it.model.position.z > t.winners.front) t.winners.front = it.model.position.z;
-            if (it.model.position.z < t.winners.behind) t.winners.behind = it.model.position.z;
-        };
-        var
-        tf = t.winners.behind + Math.round((t.winners.behind - t.winners.front) / 2),
-        ol = 34 * 1000,
-        numPoints = 555,
-        radius = 34*1000;
-        t.middle = {
-            x : Math.round((t.winners.west + t.winners.east) / 2),
-            y : Math.round((t.winners.north + t.winners.south) / 2),
-            z : Math.round((t.winners.front + t.winners.behind) /2)
-        };
-        //t.flyControls.object.lookAt (new THREE.Vector3( t.middle.x, t.middle.y, t.middle.z));
-
-
-        /*
-            t.cameraOrigin = {
-                x : t.middle.x,
-                y : t.middle.y,
-                z : radius
-            };
-
-        if (!t.started4) {
-            t.controlsKey = 6;
-            t.controls = t.zapitem(t.controls);
-            t.createcontrols(t, t.evt3);
-            t.controls.setLookAt (
-                t.cameraOrigin.x, t.cameraOrigin.y, t.cameraOrigin.z, 0,0,0,false
-            )
-
-            t.controlsKey = 5;
-            t.controls = t.zapitem(t.controls);
-            t.createcontrols(t, t.evt3);
-        }
-
-
-
-        if (!t.curve1b) {
-            console.log ("t778", t.winners, t.middle);
-
-            t.curve1b = new THREE.CatmullRomCurve3( [ // in effect, this is calls up a 'tweening engine'.
-                new THREE.Vector3 (0, 0, ol),
-                new THREE.Vector3 (t.winners.west - ol, 0, ol),
-                new THREE.Vector3 (t.winners.west - ol, 0, t.winners.front - ol),
-                new THREE.Vector3 (t.winners.east + ol, 0, t.winners.front - ol),
-                new THREE.Vector3 (t.winners.east + ol, 0, ol),
-                new THREE.Vector3 (0, 0, ol),
-            ]);
-            var first = last = {x:0,y:0,z:ol};
-            t.points1b = t.curve1b.getPoints(numPoints);
-            t.curves1a = [
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z),
-                new THREE.Vector3(first.x,first.y,first.z)
-            ];
-            t.curve1a = new THREE.CatmullRomCurve3(t.curves1a);
-            t.points1a = t.curve1a.getPoints(50);
-            t.curves1z = [
-                new THREE.Vector3(last.x,last.y,last.z),
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z)
-            ];
-            t.curve1z = new THREE.CatmullRomCurve3(t.curves1z);
-            t.points1z = t.curve1z.getPoints(50);
-
-            t.curves1x = t.points1a.concat (t.points1b, t.points1z);
-            t.curve1 = new THREE.CatmullRomCurve3(t.curves1x);
-            t.points1 = t.curve1.getPoints(numPoints);
-
-
-
-            t.curves2b = [];
-            for (var i=0; i<numPoints; i++) {
-                var
-                x = radius * Math.cos (2 * Math.PI * i / numPoints),
-                y = radius * Math.sin (2 * Math.PI * i / numPoints),
-                z = 1.4 * radius;
-                z = t.middle.z - (radius * Math.sin (2 * Math.PI * i / numPoints) / 2);
-                if (i===0) var first = {x:x,y:y,z:z};
-                if (i===numPoints-1) var last = {x:x,y:y,z:z};
-                t.curves2b.push (new THREE.Vector3(x,y,z));
-            }
-            t.curves2a = [
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z),
-                new THREE.Vector3(first.x,first.y,first.z)
-            ];
-            t.curve2a = new THREE.CatmullRomCurve3(t.curves2a);
-            t.points2a = t.curve2a.getPoints(50);
-            t.curves2z = [
-                new THREE.Vector3(last.x,last.y,last.z),
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z)
-            ];
-            t.curve2z = new THREE.CatmullRomCurve3(t.curves2z);
-            t.points2z = t.curve2z.getPoints(50);
-
-            t.curves2x = t.points2a.concat (t.curves2b, t.points2z);
-            t.curve2 = new THREE.CatmullRomCurve3(t.curves2x);
-            t.points2 = t.curve2.getPoints(numPoints);
-
-            t.curves3b = [];
-            for (var i=0; i<numPoints; i++) {
-                var
-                x = radius * Math.cos (2 * Math.PI * i / numPoints),
-                y = radius * Math.sin (2 * Math.PI * i / numPoints),
-                z = 1.4 * radius;
-                z = t.middle.z - (radius * Math.sin (2 * Math.PI * i / numPoints) / 2);
-                if (i===0) var first = {x:x,y:y,z:z};
-                if (i===numPoints-1) var last = {x:x,y:y,z:z};
-                t.curves3b.push (new THREE.Vector3(x,y,z));
-            }
-            t.curve3b = new THREE.CatmullRomCurve3(t.curves3b);
-            t.points3b = t.curve3b.getPoints(numPoints);
-            t.curves3a = [
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z),
-                new THREE.Vector3(first.x,first.y,first.z)
-            ];
-            t.curve3a = new THREE.CatmullRomCurve3(t.curves3a);
-            t.points3a = t.curve3a.getPoints(50);
-            t.curves3z = [
-                new THREE.Vector3(last.x,last.y,last.z),
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z)
-            ];
-            t.curve3z = new THREE.CatmullRomCurve3(t.curves3z);
-            t.points3z = t.curve3z.getPoints(50);
-
-            t.curves3x = t.points3a.concat (t.points3b, t.points3z);
-            t.curve3 = new THREE.CatmullRomCurve3(t.curves3x);
-            t.points3 = t.curve3.getPoints(numPoints);
-
-/*
-            if (!t.dragndrop) {
-                t.orbitControls.center =  new THREE.Vector3(
-                    t.middle.x,
-                    t.middle.y,
-                    t.middle.z
-                );
-                //t.controls._target.copy (t.middle);
-            }
-*/
-    /*
-            const geometry = new THREE.BufferGeometry().setFromPoints( t.points );
-            const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-            // Create the final object to add to the scene
-            const curveObject = new THREE.Line( geometry, material );
-            t.scene.add(curveObject);
-
-
-            const geometry2 = new THREE.BufferGeometry().setFromPoints( t.points2 );
-            const material2 = new THREE.LineBasicMaterial( { color: 0xffffff } );
-            // Create the final object to add to the scene
-            const curveObject2 = new THREE.Line( geometry2, material2 );
-            t.scene.add(curveObject2);
-    * /
-
-            t._tmp = new THREE.Vector3();
-            t.animationProgress = { value: 0 };
-            t.pathAnimation = gsap.fromTo(
-                t.animationProgress,
-                {
-                    value: 0,
-                },
-                {
-                    value: 1,
-                    duration: t.animationDuration,
-                    overwrite: true,
-                    paused: true,
-                    onUpdateParams: [ t.animationProgress ],
-                    onUpdate( { value } ) {
-
-                        if ( ! this.isActive() ) return;
-
-                        t.curve1.getPoint ( value, t._tmp );
-                        t.controls.setLookAt(
-                            t._tmp.x,
-                            t._tmp.y,
-                            t._tmp.z,
-                            t.middle.x,
-                            t.middle.y,
-                            t.middle.z,
-                            false, // IMPORTANT! disable cameraControls"s transition and leave it to gsap.
-                        );
-
-                    },
-                    onStart() {
-                        t.animPlaying = true;
-                    },
-                    onComplete(e) {
-                        t.animPlaying = false;
-                        t.prevControlsKey = 6;
-                        t.controlsKey = 5;
-                        t.controls = t.zapitem(t.controls);
-                        t.createcontrols(t, t.evt3);
-                        t.onresize_postDo(t);
-                    }
-                }
-            );
-
-            t._tmp2 = new THREE.Vector3();
-            t.animationProgress2 = { value: 0 };
-            t.pathAnimation2 = gsap.fromTo(
-                t.animationProgress2,
-                {
-                    value: 0,
-                },
-                {
-                    value: 1,
-                    duration: t.animationDuration,
-                    overwrite: true,
-                    paused: true,
-                    onUpdateParams: [ t.animationProgress2 ],
-                    onUpdate( { value } ) {
-
-                        if ( ! this.isActive() ) return;
-
-                        t.curve2.getPoint ( value, t._tmp2 );
-                        t.controls.setLookAt(
-                            t._tmp2.x,
-                            t._tmp2.y,
-                            t._tmp2.z,
-                            t.middle.x,
-                            t.middle.y,
-                            t.middle.z,
-                            false, // IMPORTANT! disable cameraControls"s transition and leave it to gsap.
-                        );
-
-                    },
-                    onStart() {
-                        t.animPlaying = true;
-                        t.flyControls.enabled = false;
-                        t.controls.enabled = false;
-                    },
-                    onComplete() {
-                        t.animPlaying = false;
-                        t.controlsKey = 5;
-                        t.controls = t.zapitem(t.controls);
-                        t.createcontrols(t, t.evt3);
-                        t.onresize_postDo(t);
-                    }
-                }
-            );
-
-            t._tmp3 = new THREE.Vector3();
-            t.animationProgress3 = { value: 0 };
-            t.pathAnimation3 = gsap.fromTo(
-                t.animationProgress3,
-                {
-                    value:  0,
-                },
-                {
-                    value: 1,
-                    duration: t.animationDuration,
-                    overwrite: true,
-                    paused: true,
-                    onUpdateParams: [ t.animationProgress3 ],
-                    onUpdate( { value } ) {
-
-                        if ( ! this.isActive() ) return;
-
-                        t.curve3.getPoint ( value, t._tmp3 );
-                        t.controls.setLookAt(
-                            t._tmp3.x,
-                            t._tmp3.y,
-                            t._tmp3.z,
-                            t.middle.x,
-                            t.middle.y,
-                            t.middle.z,
-                            false, // IMPORTANT! disable cameraControls"s transition and leave it to gsap.
-                        );
-
-                    },
-                    onStart() {
-                        t.animPlaying = true;
-                    },
-                    onComplete() {
-                        t.animPlaying = false;
-                        t.controlsKey = 5;
-                        t.controls = t.zapitem(t.controls);
-                        t.createcontrols(t, t.evt3);
-                        t.onresize_postDo(t);
-                    }
-                }
-            );
-
-            //if (animate) t.pathAnimation.play(0);
-
-            /*
-            setTimeout (function() {
-
-                if (!t.started2) {
-                    t.started2 = true;
-                    //t.controls.enabled = true;
-                    //if (animate) t.pathAnimation.play(0);
-                    //t.camera.lookAt (t.s2[0].position);
-                    //t.controls._camera.lookAt (t.s2[0].position);
-                    //t.controls._camera.position = t.cameraOrigin;
-
-
-                    t.renderer.domElement.addEventListener ("pointerdown", function (evt) {
-                        /*const intersects = t.raycaster.intersectObjects (t.s2);
-                        console.log ("pointerdown(): t.lookClock set to -1");
-                        //t.lookClock = null;
-                        t.lookClock = -1;
-                        if (intersects[0] && intersects[0].object.type!=="Line") {
-                            t.orbitControls.enabled = false;
-                        t.controls.enabled= false;
-                        t.flyControls.enabled = false;
-                            console.log ("pointerdown()",t.orbitControls.enabled, t.controls.enabled, t.flyControls.enabled);
-                            //t.camera.lookAt (t.s2[0].position);
-                            //t.controls._camera.lookAt (t.s2[0].position);
-                            //t.controls._camera.position = t.cameraOrigin;
-                        } else {
-                        t.controls.enabled= false;
-                        t.flyControls.enabled = true;
-                            t.orbitControls.enabled = true;
-                            console.log ("pointerdown()",t.orbitControls.enabled, t.controls.enabled, t.flyControls.enabled);
-                            //t.camera.lookAt (t.s2[0].position);
-                            //t.controls._camera.lookAt (t.s2[0].position);
-                            //t.controls._camera.position = t.cameraOrigin;
-                        }* /
-                    });
-                    t.renderer.domElement.addEventListener ("pointermove", function (evt) {
-                        var dbg = {
-                            "t.controls._isDragging" : t.controls._isDragging,
-                            "t.controls._dragNeedsUpdate" : t.controls._dragNeedsUpdate,
-                            "t.lookClock" : t.lookClock
-                        };
-                        //if (t.debug) console.log (dbg);
-                    });
-                    t.renderer.domElement.addEventListener ("pointerup", function (evt) {
-                        /*
-                        if (t.debug) console.log ("pointerup() t.lookClock === -1, t.controls.enabled");
-                        t.lookClock = -1;
-                        t.controls.enabled = true;
-                        t.orbitControls.enabled = true;
-                        t.flyControls.enabled = false;
-                        * /
-                    });
-                }
-
-
-
-                if (false && !t.dragndrop) {
-                    console.log ("Initializing drag and drop");
-                    //var objs = [];
-                    //for (var i=0; i<t.items.length; i++) if (t.items[i].model) objs[objs.length] = t.items[i].model;
-
-                    t.dragndrop = new DragControls(
-                        t.s2, t.camera, t.renderer.domElement
-                    );
-                    t.dragndrop.activate();
-                    $(t.renderer.domElement).contextmenu(function() {
-                        return false;
-                    });
-
-                    t.dragndrop.addEventListener( "dragstart", function ( event ) {
-                        console.log ("dragstart() : init");;
-                        t.controls.enabled = false;
-                        t.flyControls.enabled = false;
-                        t.flyControls.moveState.forward = 0;
-                        t.flyControls.moveState.back = 0;
-                        t.orbitControls.enabled = false;
-
-                        t.dragndrop.cube = event.object;
-                        t.dragndrop.mouseX = t.mouse.layerX;
-                        t.dragndrop.mouseY = t.mouse.layerY;
-
-                        let cube = event.object;
-
-                        for (let i=0; i<t.items.length; i++) {
-                            let it2 = t.items[i];
-                            if (it2.idxPath === cube.it.idxPath) {
-                                debugger;
-                                it2.model.position.dragStartX = it2.model.position.x;
-                                it2.model.position.dragStartY = it2.model.position.y;
-                                it2.model.position.dragStartZ = it2.model.position.z;
-                                /*it2.model2.position.dragStartX = it2.model2.position.x;
-                                it2.model2.position.dragStartY = it2.model2.position.y;
-                                it2.model2.position.dragStartZ = it2.model2.position.z;* /
-                            }
-                        }
-
-                    } );
-
-                    t.dragndrop.addEventListener( "drag", function (event) {
-                        let cube = event.object;
-
-                        //if (false)
-                        for (let i=0; i<t.items.length; i++) {
-                            let it2 = t.items[i];
-                            if (it2.idxPath === cube.it.idxPath) {
-                                debugger;
-                                it2.model.position.x = it2.model.position.dragStartX + (t.dragndrop.mouseX - t.mouse.layerX) * 10;
-                                it2.model.position.y = it2.model.position.dragStartY + (t.dragndrop.mouseY - t.mouse.layerY) * 10;
-                                it2.model.position.z = it2.model.position.dragStartZ ;
-
-                                /*
-                                it2.model2.position.x = it2.model2.position.dragStartX - (t.dragndrop.mouseX - t.mouse.layerX);
-                                it2.model2.position.y = it2.model2.position.dragStartY + (t.dragndrop.mouseY - t.mouse.layerY);
-                                it2.model2.position.z = it2.model2.position.dragStartZ ;* /
-                            }
-                        }
-                        /*
-                        clearTimeout (t.posDataToDB);
-                        t.posDataToDB = setTimeout(function() {
-                            t.posDataToDatabase(t);
-                        },
-                        1000);
-                        * /
-
-                        if (t.showLines) {
-                            for (var i=0; i<t.permaLines.length; i++) {
-                                var l = t.permaLines[i];
-                                t.scene.remove (l.line);
-                                l.geometry.dispose();
-                                l.material.dispose();
-                            }
-                            t.permaLines = [];
-                            t.drawLines(t);
-                        }
-                    });
-
-                    t.dragndrop.addEventListener( "dragend", function ( event ) {
-                        if (t.showLines) t.drawLines(t);
-                        t.lookClock = -2;
-                        t.controls.enabled = true;
-                        t.orbitControls.enabled = true;
-                        t.flyControls.enabled = false;
-                    } );
-
-                };
-            }, 50);* /
-        }; */
 
         const width = t.el.clientWidth;
         const height = t.el.clientHeight;

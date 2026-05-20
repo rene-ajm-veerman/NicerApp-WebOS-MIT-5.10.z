@@ -202,94 +202,14 @@ export class na3D_fileBrowser {
         t.far = 144000000 * t.radius;
         t.v = { controls : 4 };
         t.maxcontrols = 10;
-        t.vtext = { controls : [ "None", "Arcball", "Drag", "FirstPerson", "Fly", "Orbit", "Camera", "PointerLock", "Trackball", "Transform", "Undefined"]};
-        t.controlsKey = 5;
-        t.controlsValue = t.vtext.controls[t.controlsKey];
-        t.controls = t.zapitem(t.controls);
-        t.createcontrols(t, t.evt3);
 
-        t.ctrlcamera = {
-            position: new THREE.Vector3(),
-            rotation: new THREE.Euler(),
-            quaternion: new THREE.Quaternion(),
-            matrix: new THREE.Matrix4(),
-            target: new THREE.Vector3()
-        };
-
-        $(el).bind("mousemove", function() { t.onMouseMove (event, t) });
-
-        //el.appendChild( t.renderer.domElement );
-
-
-        const light1  = new THREE.AmbientLight(0xFFFFFF, 0.3);
-        light1.name = "ambient_light";
-        light1.intensity = 0.3;
-        light1.color = 0xFFFFFF;
-        //t.camera.add( light1 );
-
-        const light2  = new THREE.DirectionalLight(0xFFFFFF, 0.8 * Math.PI);
-        light2.position.set(0.5, 0, 0.866); // ~60º
-        light2.name = "main_light";
-        light2.intensity = 0.8 * Math.PI;
-        light2.color = 0xFFFFFF;
-        //t.camera.add( light2 );
-        
-        t.lights.push(light1, light2);
-        
-        t.pmremGenerator = new THREE.PMREMGenerator( t.renderer );
-        t.pmremGenerator.compileEquirectangularShader();
-        
-        //t.updateEnvironment(this);
-        
-        t.raycaster = new THREE.Raycaster();
         t.mouse = new THREE.Vector2();
         t.mouse.x = 0;
         t.mouse.y = 0;
 
         na.threeD = t;
 
-        // Handle window resize
-        na.desktop.registerCallback ('na3D resize', '#siteContent', () => {
-        //window.addEventListener("resize", () => {
-            na.m.waitForCondition ('na3D resize', function() {
-                //debugger;
-                return t.camera;
-            }, function() {
-                setTimeout(function() {
-                    //const { innerWidth, innerHeight } = window;
-                    var innerWidth = $("#siteContent .vividDialogContent").width();
-                    var innerHeight = $("#siteContent .vividDialogContent").height();// - $("#header").position().top - $("#header").height();
-
-                    t.renderer.setSize(innerWidth, innerHeight);
-                    t.camera.aspect = innerWidth / innerHeight;
-                    t.camera.updateProjectionMatrix();
-                    //t.onresize (t);
-                }, 100);
-            }, 100);
-        });
-        setTimeout (function() {
-            var innerWidth = $("#siteContent .vividDialogContent").width();
-            var innerHeight = $("#siteContent .vividDialogContent").height();// - $("#header").position().top - $("#header").height();
-
-            t.renderer.setSize(innerWidth, innerHeight);
-        }, 100);
-
-        /*
-        t.renderer.setAnimationLoop(() => {
-            //controls.update();
-
-            // Pick objects from view using normalized mouse coordinates
-            t.raycaster.setFromCamera(t.mouse, t.camera);
-
-        });
-        */
-        CameraControls.install ({ THREE : THREE });
-        t.clock = new THREE.Clock();
-        t.lookClock = -1;
-
-debugger;
         t.initializeItems (t);
-debugger;
 
         t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
         na.apps.loaded.threed_fileExplorer = t;
@@ -339,7 +259,7 @@ debugger;
             return defaultColor;
 
         })
-        .warmupTicks(250)      // or more
+        .warmupTicks(500)      // or more
         .cooldownTicks(0)
 
         // === Custom Nodes & Links ===
@@ -366,7 +286,6 @@ debugger;
             // Remove old hover label
             if (t.hoverLabel) {
                 t.graph.scene().remove(t.hoverLabel);
-                t.hoverLabel = null;
             }
 
             if (node) {
@@ -388,10 +307,12 @@ debugger;
                 t.graph
                 .nodeColor(n => {
                    if (n === node) return '#ffff44';                    // hovered node
-                   if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
+
                    var depth = n.item?.level ?? n.depth ?? 0;
-                    depth = depth / 2 + 1;
-                   return t.getHierarchicalColor(depth);
+                   depth = depth / 2 + 1;
+                   if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(depth);
+                   return '#aaffff'; // connected nodes
+
                 })
                 .linkColor(link => {
                     const defaultColor = 'rgba(255,255,255,0.2)'
@@ -435,8 +356,13 @@ debugger;
                     const sourceId = link.source?.id ?? link.source;
                     const targetId = link.target?.id ?? link.target;
                     const hoverId  = hovered.id ?? hovered;
+                    const allRelated = new Set([...ancestors, ...descendants, hoverId]);
 
-                    return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
+                    if (allRelated.has(sourceId) && allRelated.has(targetId)) {
+                        return 4;
+                    } else {
+                        return 1;
+                    }
                 });
             }
             else {
@@ -450,6 +376,8 @@ debugger;
                 t.graph.linkColor(() => '#555555')
                 .linkOpacity(0.35)
                 .linkWidth(1.2);
+
+
             }
         })
 
@@ -482,721 +410,12 @@ debugger;
         })
         .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
         .nodeRelSize(7)
-        .forceEngine('ngraph')           // often better for >1k nodes
-        .numDimensions(2);
-debugger;
+        //.forceEngine('ngraph')           // often better for >1k nodes
+        .numDimensions(3)
 
-        t.graph
-        .d3Force('charge').strength(null);   // stronger repulsion
+        // t.graph
+        // .d3Force('charge').strength(null);   // stronger repulsion
 
-        na.m.waitForCondition("animate?", function() {
-            return t.items.length > 2;// && t.winners;
-        }, function() {
-            //debugger;
-            t.create(t);
-            t.animate(t, null);
-
-            $(t.renderer.domElement).bind("mousemove", function() {
-                //event.preventDefault();
-                t.onMouseMove (event, t)
-            });
-            //$(t.renderer.domElement).bind("pointerup", function() { t.onPointerUp (event, t) });
-            $(t.renderer.domElement).click (function(event) {
-                event.preventDefault();
-                if (event.detail === 2) { // double click
-                    //t.controls.autoRotate = !t.controls.autoRotate
-                    //if (t.controls.autoRotate) $("#autoRotate").removeClass("vividButton").addClass("vividButtonSelected");
-                    //else $("#autoRotate").removeClass("vividButtonSelected").addClass("vividButton");
-                    t.onclick_double (t, event);
-
-                } else if (event.detail === 3) { // triple click
-                    //if (t.controls.autoRotateSpeed<0) t.controls.autoRotateSpeed = 1; else t.controls.autoRotateSpeed = -1;
-                    t.onclick_triple (t, event);
-                } else {
-                    t.onclick (t, event);
-                }
-
-            });
-            $(document).on("keydown", function(event) {
-                /*if (t.dragndrop && t.dragndrop.obj) {
-                    t.zoomInterval = setInterval(function() {
-                        if (event.keyCode===16 || event.keyCode===38) {
-                            for (let i=0; i<t.items.length; i++) {
-                                let it = t.items[i];
-                                if (it.parent === t.dragndrop.obj.it.parent) {
-                                    it.model.position.z -= 25;
-                                }
-                            }
-                        };
-                        if (event.keyCode===17 || event.keyCode===40) {
-                            for (let i=0; i<t.items.length; i++) {
-                                let it = t.items[i];
-                                if (it.parent === t.dragndrop.obj.it.parent) {
-                                    it.model.position.z += 25;
-                                }
-                            }
-                        };
-                    }, 200);
-                }*/
-                if (event.keyCode===32) t.controls.autoRotate = !t.controls.autoRotate;
-            });
-            $(document).on("keyup", function(event) {
-                event.preventDefault();
-                clearInterval(t.zoomInterval);
-            });
-
-        }, 200);
-
-    }
-
-    zapitem(k) {
-        try {
-            k.traverse(function(o) {
-                try {o.geometry.dispose();} catch {};
-                try {o.material.dispose();} catch {};
-                try {for (var m of o.material) {m.dispose();};} catch {};
-            });
-        } catch {};
-        try {k.removeFromParent();} catch {};
-        try {k.detach();} catch {};
-        try {k.dispose();} catch {};
-        return undefined;
-    }
-
-    atPointerDown(t, e) {
-        switch (t.controlsKey) {
-            case 4:
-                t.adelta = t.aclock.getDelta();
-                t.fly(t);
-                break;
-        };
-    }
-
-    fly(t, evt) {
-        t.ctrlid = requestAnimationFrame(function(evt) {t.fly(t,evt);});
-        t.adelta = t.aclock.getDelta();
-        t.controls.update(t.adelta);
-        t.render(t);
-    };
-
-    atPointerUp(t, e) {
-        switch (t.controlsKey) {
-            case 4:
-                cancelAnimationFrame(t.ctrlid);
-                t.adelta = t.aclock.getDelta();
-                break;
-        };
-    }
-
-    atKeyDown(t, e) {
-        switch (t.controlsKey) {
-            case 4: switch (e.code) {
-                case "KeyR": case "KeyA": case "KeyW": case "KeyS": case "KeyD": case "KeyF":
-                case "KeyQ": case "ArrowLeft": case "ArrowUp": case "ArrowDown": case "ArrowRight": case "KeyE":
-                requestAnimationFrame(function() {
-                    t.adelta = 1 / 60; t.controls.update(adelta);
-                    t.render(t);
-                });
-                break;
-            };
-            break;
-        };
-    }
-
-    createcontrols(t, e) {
-        if (!t.camera) {return;};
-        switch (t.controlsKey) {
-            case 0: break;
-            case 1:
-                t.controls = new ArcballControls(t.camera, t.renderer.domElement, t.scene);
-                t.controls.enabled = true;
-                t.controls.setTbRadius(1); t.controls._gizmos.visible = false; t.controls._up0.copy(cup); t.controls._upState.copy(t.cup);
-                t.controls.addEventListener("change", function(e) {t.render();});
-                break;
-            case 4:
-                t.adelta = t.aclock.getDelta();
-                t.controls = new FlyControls(t.camera, t.renderer.domElement);
-                t.controls.enabled = true;
-                t.controls.dragToLook = true;
-                //t.controls.pointerdown ($.extend({button:0},e));
-                //t.controls.object.lookAt (new THREE.Vector3( 0, 0, 1000))
-                t.controls.movementSpeed = 2000; t.controls.rollSpeed = -1 * 0.015;
-                //t.camera.position.set(t.middle.x, t.middle.y, t.middle.z);
-                //t.camera.object.lookAt(t.middle.x, t.middle.y, t.middle.z);
-                t.renderer.domElement.addEventListener("pointerdown", function () {
-                    t.controlsKey = 6;
-                    t.atPointerDown(t, event)
-                }, {passive: false});
-                t.renderer.domElement.addEventListener("pointerup", function() {
-                    t.controlsKey = 5;
-                    t.atPointerUp(t, event)
-                }, {passive: false});
-                document.addEventListener("keydown", function() {
-                    t.atKeyDown(t, event)
-                }, {passive: false});
-                break;
-            case 5:
-                if (t.prevControlsKey==6 && t.prevControls._camera) {
-                    var pos = $.extend({},t.prevControls._camera.position);
-                    var tar = $.extend({},t.prevControls._target);
-                }
-                t.controls = new OrbitControls(t.camera, t.renderer.domElement);
-                t.controls.enabled = true;
-                if (t.prevControlsKey==6) t.controls.setLookAt (
-                    pos.x,
-                    pos.y,
-                    pos.z,
-                    tar.x,
-                    tar.y,
-                    tar.z,
-                    false
-                );
-                t.controls.addEventListener("change", function(e) {t.render(t);});
-                break;
-            case 6:
-                var initMe = t.controls && typeof t.controls._camera=='undefined';
-                t.controls = new CameraControls (t.camera, t.renderer.domElement);
-                t.controls.enabled = true;
-                /*
-                debugger;
-                if (initMe) {
-                    t.controls._camera.position.x = 0;
-                    t.controls._camera.position.y = 0;
-                    t.controls._camera.position.z = 20*1000;
-                    t.controls._target.x = 0;
-                    t.controls._target.y = 0;
-                    t.controls._target.z = 0;
-                    t.controls._targetEnd.x = 0;
-                    t.controls._targetEnd.y = 0;
-                    t.controls._targetEnd.z = 0;
-
-                    t.controls._target0.x = 0;
-                    t.controls._target0.y = 0;
-                    t.controls._target0.z = 0;
-                }
-                */
-                break;
-        };
-    }
-
-    savecamera(t) {
-        t.ctrlcamera.position.copy(t.camera.position);
-        //ctrlcamera.rotation.copy(camera.rotation);
-        t.ctrlcamera.quaternion.copy(t.camera.quaternion);
-        //ctrlcamera.matrix.copy(camera.matrix);
-        t.ctrlcamera.target.copy(t.camera.position).add(
-            new THREE.Vector3(
-                0, 0,
-                - t.camera.position.distanceTo(t.amesh.position)).applyQuaternion(t.camera.quaternion)
-        );
-    }
-
-    loadcamera(t) {
-        if (t.camera && t.camera.position) {t.camera.position.copy(t.ctrlcamera.position);};
-        //if (camera && camera.rotation) {camera.rotation.copy(ctrlcamera.rotation);};
-        if (t.camera && t.camera.quaternion) {t.camera.quaternion.copy(t.ctrlcamera.quaternion);};
-        //if (camera && camera.matrix) {camera.matrix.copy(ctrlcamera.matrix);};
-        if (t.controls && t.controls.target) {t.controls.target.copy(t.ctrlcamera.target);};
-
-        t.desireddirection = new THREE.Vector3(0, 1, 0).applyQuaternion(t.ctrlcamera.quaternion);
-        t.currentdirection = t.camera.up.clone();
-        // using just camera.up.applyQuaternion(ctrlcamera.quaternion); adds the whole desired
-        // rotation to the result, so we need to use the desired - current rotation difference
-        t.camera.up.applyQuaternion(
-            new THREE.Quaternion().setFromUnitVectors(t.currentdirection, t.desireddirection)
-        );
-    }
-
-    modcontrols(t, callAnimate, e) {
-        t.stagnate(t);
-        t.savecamera(t);
-        t.prevControls = t.controls;
-        t.controls = t.zapitem(t.controls);
-        t.createcontrols(t, t.evt3);
-        t.loadcamera(t);
-        t.delta = t.clock.getDelta();
-        t.adelta = t.aclock.getDelta();
-        t.update(t);
-        t.render(t);
-        if (callAnimate) t.animate(t, false);
-    }
-
-    createlisteners(t) {
-        document.addEventListener("pointerdown", function(e) {
-            //console.log ('t.createlisteners() : pointerdown() : t.controlsKey = '+t.controlsKey);
-            t.evt3 = $.extend({},e);
-            switch (t.controlsKey) {
-                case 5:
-                    t.clock.start();
-                    break;
-            };
-        });
-        document.addEventListener("pointerup", function(e) {
-            //console.log ('t.createlisteners() : pointerup() : t.controlsKey = '+t.controlsKey);
-            t.evt3 = $.extend({},e);
-            switch (t.controlsKey) {
-                case 4:
-                    var cl = t.clock.getElapsedTime();
-                    if (cl > 0.5) {
-                        t.stagnate(t);
-                        t.controlsKey = 5;
-                        t.modcontrols(t,true,e);
-                    }
-                    break;
-            };
-        });
-        document.addEventListener("pointermove", function(e) {
-            //console.log ('t.createlisteners() : pointermove() : t.controlsKey = '+t.controlsKey);
-            t.evt3 = $.extend({},e);
-        });
-    }
-
-    update(t) {
-        if (t.controls && t.controls.update) {
-            t.controls.update(t.controls.update.length ? t.adelta : null);
-        };
-    }
-
-    render(t) {
-        t.renderer.render(t.scene, t.camera);
-    }
-
-    create(t) {
-        t.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: true,
-            logarithmicDepthBuffer: true
-        });
-        t.renderer.setSize(window.innerWidth, window.innerHeight);
-        t.el.appendChild(t.renderer.domElement);
-        t.camera = new THREE.PerspectiveCamera(
-            t.fov,
-            window.innerWidth / window.innerHeight,
-            t.near,
-            t.far
-        );
-        if (t.middle) {
-            t.camera.position.set(t.middle.x, t.middle.y, t.middle.z);
-        } else {
-            t.camera.position.set(0, 0, t.eye * 50);
-        }
-        t.cup = new THREE.Vector3(0, 1, 0);
-        t.light = new THREE.DirectionalLight("rgb(255, 255, 255)");
-        t.light.position.copy(t.camera.position);
-        var geometry = new THREE.SphereGeometry(t.radius, 360, 180);
-        var material = new THREE.MeshPhongMaterial();
-        material.map = new THREE.TextureLoader().load("https://threejs.org/examples/textures/uv_grid_opengl.jpg");
-        t.amesh = new THREE.Mesh(t.geometry, t.material);
-        t.scene = new THREE.Scene();
-        //t.scene.background = new THREE.Color(0x000000);
-        t.scene.add(t.camera);
-        t.scene.add(t.light);
-        t.scene.add(t.amesh);
-
-        var fncn = t.me + '::create(t)';
-        na.m.waitForCondition (fncn + ' : t.items ready?', function() {
-            return t.itemsInitialized && t.started4;// && t.items.length > 20 && t.items[0].model;
-        }, function () {
-            t.createcontrols(t);
-            t.createlisteners(t);
-        }, 200);
-    }
-
-
-    animate(t, callAnimate, e) {
-        //console.log ('t.animate()');
-        if (t.reqid) cancelAnimationFrame(t.reqid);
-        t.reqid = requestAnimationFrame(function(e){t.animate(t, false, e);});
-        if (t.paused || !t.controls) {return;};
-        t.amesh.rotation.x += Math.PI * 2 / 360 * t.speedx;
-        t.amesh.rotation.y += Math.PI * 2 / 360 * t.speedy;
-        t.amesh.rotation.z += Math.PI * 2 / 360 * t.speedz;
-        //console.log ('t333',t.speedx,t.speedy,t.speedz);
-        //debugger;
-
-        t.controls.movementSpeed += 50;
-
-        var changed = false, timeLapsed = t.clock.getElapsedTime(), y = t.evt3;
-        if (t.controlsKey!==6) {
-            if (timeLapsed>0.5 && t.controlsKey!==4 && t.evt3 && t.evt3.type=='pointerdown' && (t.evt3.button===0||t.evt3.button===2)) {
-                t.controlsKey = 4;
-                changed = true;
-            } else if (t.controlsKey!==5 && t.evt3 && t.evt3.type=='pointerup' && (t.evt3.button===0 || t.evt3.button===2)) {
-                t.controlsKey = 5;
-                changed = true;
-            };
-        };
-        if (changed) {
-            //console.log ('t.animate() : changed = true');
-            //t.modcontrols(t, callAnimate);
-            t.modcontrols(t, false, e);
-            t.fly(t);
-        }
-
-        $('#site3D_controls_key').html(t.vtext.controls[t.controlsKey]);
-        t.animate_OLD_AND_WITH_ANGLE_BUG(t,e);
-        //debugger;
-
-//         for (var i=0; i<t.items.length; i++) {
-//             var
-//             it = t.items[i],
-//             sprite = it.sprite,
-//             start = sprite.start,
-//             end = sprite.end;
-//
-//
-//             const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
-//                         [c]: end[c] + 50//(end[c] - start[c]) * 0.2 // calc middle point
-//                     })));
-//
-//                     // Position sprite
-//                     Object.assign(sprite.position, middlePos);
-// ;
-//
-//         }
-
-
-        t.update(t);
-        t.render(t);
-    }
-
-    stagnate(t) {
-        if (!t.paused) {return;};
-        cancelAnimationFrame(t.reqid);
-    };
-
-
-
-
-
-
-
-
-
-
-    animate_OLD_AND_WITH_ANGLE_BUG (t, evt) {
-        //requestAnimationFrame( function(evt) { t.animate (t,evt) });
-        //if (t.mouse.x!==0 || t.mouse.y!==0) {
-            t.scene.matrixWorldAutoUpdate = true;;
-            t.camera.matrixWorldAutoUpdate = true;
-            t.camera.updateProjectionMatrix();
-            t.camera.updateWorldMatrix (true, false);
-            //t.raycaster.setFromCamera (t.camera.position, t.camera);
-
-            t.hoverOverName = '{UNKNOWN}';
-            var intersects = t.raycaster.intersectObjects (t.s2);
-            if (intersects[0] && intersects[0].object.type!=="Line")
-            for (var i=0; i<1/*intersects.length <-- this just gets an endless series of hits from camera into the furthest reaches of what"s visible behind the mouse pointer */; i++) {
-                var hoveredItem = intersects[i].object, done = false;
-                while (hoveredItem && !done) {
-
-                    for (var j=0; j<t.lines.length; j++) {
-                        if (t.lines[j]) {
-                            if (t.lines[j].it === it) {
-                                haveLine = true;
-                            } else {
-                                t.scene.remove(t.lines[j].line);
-                                t.lines[j].geometry.dispose();
-                                delete t.lines[j];
-                            }
-                        }
-                    }
-
-                    // build a line towards parent
-                    if (hoveredItem && hoveredItem.it && !done) {
-                        let p = hoveredItem.it.model.position;
-                        if (t.hoverOverName=='{UNKNOWN}') t.hoverOverName = "("+hoveredItem.it.column+":"+hoveredItem.it.row+") ("+p.x+", "+p.y+", "+p.z + ") : " + hoveredItem.it.filepath+'/'+hoveredItem.it.name+' : '+hoveredItem.it.color;
-                        //if (t.hoverOverName=='{UNKNOWN}') t.hoverOverName = hoveredItem.it.name;// + ' ('+intersects.length+')';
-                    //debugger;
-                        done = true;
-                        var
-                        it = hoveredItem.it,
-                        parent = it.parent ? t.items[it.parent.idx] : null,
-                        haveLine = false;
-
-                        // draw line to parent(s)
-                        while (it && it.parent && it.parent!==0 && typeof it.parent !== "undefined") {
-                            var
-                            parent = t.items[it.parent.idx],
-                            haveLine = false;
-
-                            if (parent && parent.model) {
-                                if (!haveLine) {
-                                    var
-                                    p1 = it.model.position,
-                                    p2 = parent.model.position;
-                                    if (p1.x===0 && p1.y===0 && p1.z===0) {
-                                        it = t.items[it.parent.idx];
-                                        continue;
-                                    }
-                                    if (p2.x===0 && p2.y===0 && p2.z===0) {
-                                        it = t.items[it.parent.idx];
-                                        continue;
-                                    }
-
-
-                                    const points = [];
-                                    points.push( new THREE.Vector3( p1.x, p1.y, p1.z ) );
-                                    points.push( new THREE.Vector3( p2.x, p2.y, p2.z ) );
-
-                                    var
-                                    geometry = new THREE.BufferGeometry().setFromPoints (points);
-
-
-                                    geometry.dynamic = true;
-                                    geometry.verticesNeedUpdate = true;
-
-                                    var material = new THREE.LineBasicMaterial({ color: 0xCCCCFF, linewidth:4 });
-                                    var line = new THREE.Line( geometry, material );
-                                    t.scene.add(line);
-
-                                    t.lines[t.lines.length] = {
-                                        it : it,
-                                        line : line,
-                                        geometry : geometry,
-                                        material : material
-                                    };
-                                } else {
-                                    for (var j=0; j<t.lines.length; j++) {
-                                        if (t.lines[j]) t.lines[j].geometry.verticesNeedUpdate = true;
-                                    }
-                                }
-                            }
-                            it = t.items[it.parent.idx];
-                        }
-
-                        // draw lines to children
-                        if (hoveredItem.parent)
-                        for (var j=0; j<t.items.length; j++) {
-                            var child = t.items[j];
-                            if (
-                                hoveredItem && hoveredItem.it && hoveredItem.it.model && child.model && child.parent
-                                && hoveredItem.it.idx === child.parent.idx
-                            ) {
-                                var
-                                p1 = child.model.position,
-                                p2 = hoveredItem.it.model.position,
-                                x = child.name;
-
-                                if (p1.x===0 && p1.y===0 && p1.z===0) {
-                                    it = t.items[it.parent.idx];
-                                    continue;
-                                }
-                                if (p2.x===0 && p2.y===0 && p2.z===0) {
-                                    it = t.items[it.parent.idx];
-                                    continue;
-                                }
-
-                                const points = [];
-                                points.push( new THREE.Vector3( p1.x, p1.y, p1.z ) );
-                                points.push( new THREE.Vector3( p2.x, p2.y, p2.z ) );
-
-                                var
-                                geometry = new THREE.BufferGeometry().setFromPoints (points);
-
-                                geometry.dynamic = true;
-                                geometry.verticesNeedUpdate = true;
-
-                                var material = new THREE.LineBasicMaterial({ color: 0x0000A1, linewidth : 4 });
-                                var line = new THREE.Line( geometry, material );
-                                t.scene.add(line);
-
-                                t.lines[t.lines.length] = {
-                                    it : it,
-                                    line : line,
-                                    geometry : geometry,
-                                    material : material
-                                };
-                            }
-                        }
-                        done = true;
-                    }
-
-                    hoveredItem = t.items[hoveredItem.parent.idx];
-                }
-
-                // show folder name for item under mouse and closest to the country
-                $("#site3D_label").html(t.hoverOverName).css({display:"flex",opacity:1});
-
-                const [hovered] = t.raycaster.intersectObjects(t.s2);
-                if (hovered && hovered.object.type!=="Line") {
-                    // Setup label
-                    t.renderer.domElement.className = "hovered";
-                    // Move label over hovered element
-                    if (t.evt3) $("#site3D_label").css({
-                        left : t.evt3.layerX + 20,
-                        top : t.evt3.layerY + 20
-                    });
-                } else {
-                    // Reset label
-                    t.renderer.domElement.className = "";
-                    t.label.visible = false;
-                    t.labelDiv.textContent = "";
-                }
-
-                // Render scene
-                //t.renderer.render(t.scene, t.camera);
-
-                // Render labels
-                //t.labelRenderer.render(t.scene, t.camera);
-            }
-            if (!intersects[0]) {
-                $("#site3D_label").fadeOut();
-            } else {
-                if (intersects[0] && intersects[0].object && intersects[0].object.parent && intersects[0].object.parent.parent) {
-                    var model = intersects[0].object.parent.parent.parent.parent.parent.parent;
-                    model.rotation.z += 0.02; //TODO : auto revert back to model.rotation.z = 0;
-                }
-            }
-        //}
-
-        //if (t.controls) t.controls.update();
-
-        for (var i=0; i<t.lines.length; i++) {
-            var it = t.lines[i];
-            if (it && it.geometry) it.geometry.verticesNeedUpdate = true;
-        };
-        for (var i=0; i<t.permaLines.length; i++) {
-            var it = t.permaLines[i];
-            if (it && it.geometry) it.geometry.verticesNeedUpdate = true;
-        };
-
-
-        t.renderer.render( t.scene, t.camera );
-    }
-
-    rotate (event, t) {
-        t.controlsKey = 6;
-        t.controls = t.zapitem(t.controls);
-        t.createcontrols(t, t.evt3);
-        t.pathAnimation.play(0);
-    }
-    rotate2 (event, t) {
-        t.controlsKey = 6;
-        t.controls = t.zapitem(t.controls);
-        t.createcontrols(t, t.evt3);
-        t.pathAnimation2.play(0);
-    }
-    rotate3 (event, t) {
-        t.controlsKey = 6;
-        t.controls = t.zapitem(t.controls);
-        t.createcontrols(t, t.evt3);
-        t.pathAnimation3.play(0);
-    }
-
-    onMouseMove(event, t) {
-        if (!t.renderer || !t.renderer.domElement) return;
-
-        const rect = t.renderer.domElement.getBoundingClientRect();
-        t.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        t.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-        t.camera.updateMatrixWorld(true);
-        t.raycaster.layers.enableAll();
-
-        // Force update all matrices
-        t.scene.traverse(obj => {
-            if (obj.updateMatrixWorld) obj.updateMatrixWorld(true);
-        });
-
-            const intersects = t.raycaster.intersectObjects(t.s2, true);  // recursive = true is important!
-
-            console.log('Intersects found:', intersects.length);
-
-            if (intersects.length > 0) {
-                let obj = intersects[0].object;
-                while (obj && !obj.it) obj = obj.parent;   // walk up to find your data
-
-                if (obj && obj.it) {
-                    t.hovered = obj;
-                    console.log('Hovered:', obj.it.name);
-                    // your hover UI code here
-                }
-            } else {
-                if (t.hovered) {
-                    t.hovered = null;
-                    // clear hover UI
-                }
-            }
-    }
-
-    onPointerUp( event, t ) {
-        t.lookClock = -1;
-
-        //var delta = t.clock.getDelta();
-        //t.flyControls.update (delta);
-
-        t.flyControls.enabled = false;
-        t.flyControls.movementSpeed = 1000;
-        t.controls.enabled = t.useCameraControls && t.controlsEnabled;
-        t.orbitControls.enabled = true;
-
-        // adjust camera position
-        if (false) {
-            t.orbitControls.object.position.x = t.flyControls.object.position.x;
-            t.orbitControls.object.position.y = t.flyControls.object.position.y;
-            t.orbitControls.object.position.z = t.flyControls.object.position.z;
-        }
-
-        // adjust view angle
-        var tar = t.controls._targetEnd.clone();
-        tar.set(0,0,-1).applyQuaternion(t.camera.quaternion).add(t.camera.position);
-        /*
-        tar
-            .set(0,0,-1)
-            .applyQuaternion(t.flyControls.object.quaternion)
-            .add(t.camera.position);
-        */
-
-        if (false) {
-            t.orbitControls.target.x = tar.x;
-            t.orbitControls.target.y = tar.y;
-            t.orbitControls.target.z = tar.z;
-        }
-
-
-        //if (t.useCameraControls)
-        if (false)
-        t.controls.setLookAt (
-            t.flyControls.object.position.x,
-            t.flyControls.object.position.y,
-            t.flyControls.object.position.z,
-            tar.x,
-            tar.y,
-            tar.z,
-            false
-        );
-
-        var delta = t.clock.getDelta();
-        //t.orbitControls.update (delta, t.camera.quaternion);
-
-        /*
-        let sphericalTarget = new THREE.Spherical(1, Math.PI / 2 - t.camera.quaternion.y, t.camera.quaternion.x)
-        let target = new THREE.Vector3().setFromSpherical(sphericalTarget)
-        t.orbitControls.target = target;
-        t.orbitControls.saveState();
-        */
-
-        //from my understanding, this is setting the axis priorities
-        //some variables for convinience
-        const rad90 = Math.PI/2;//90 degrees in radians
-        let maxCamDist = 3;//your maximum camera distance from the target
-
-        //on update/animate
-        if (false) {
-            t.camera.position.setFromSphericalCoords(maxCamDist, rad90 + t.camera.rotation.x, t.camera.rotation.y);
-            t.camera.position.add(tar);
-        }
-
-        /*
-        t.flyControls.enabled = true;
-        delta = t.clock.getDelta();
-        t.flyControls.update (delta);
-        */
-    }
-
-
-    onMouseWheel( event, t ) {
     }
 
     onclick_node (t, node) {
@@ -1224,156 +443,6 @@ debugger;
             na.site.startUIvisuals('fileListing');
             done = true;
         }
-
-
-    }
-    onclick (t, event) {
-        const intersects = t.raycaster.intersectObjects (t.s2);
-        if (intersects[0] && intersects[0].object.type!=="Line")
-        for (var i=0; i<1/*intersects.length <-- this just gets an endless
-        series of hits from camera into the furthest reaches of what"s visible
-        behind the mouse pointer */; i++) {
-            var cit/*clickedItem*/ = intersects[i].object, done = false;
-            while (cit && !done) {
-                var html = "", j = 0;
-                for (var file in cit.it.parent.data.files) {
-                    if (file.match(/\.mp3$/)) {
-                        var
-                        path = cit.it.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
-                        file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3");
-                        html += '<div id="'+file+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'">'+file2+'</div>';
-                        j++;
-                    }
-                };
-                $("#fileListing").html(html).delay(50);
-                done = true;
-            }
-        }
-
-    }
-    onclick_double (t, event) {
-        const intersects = t.raycaster.intersectObjects (t.s2);
-        if (intersects[0] && intersects[0].object.type!=="Line")
-        for (var i=0; i<1/*intersects.length <-- this just gets an endless
-        series of hits from camera into the furthest reaches of what"s visible
-        behind the mouse pointer */; i++) {
-            var cit/*clickedItem*/ = intersects[i].object, done = false;
-            while (cit && !done) {
-                /*var dbg = {
-                    pos : cit.it.model.position,
-                    "p.column" : t.items[cit.it.parent.idx].column,
-                    "p.maxColumnIta.maxColumn":t.items[cit.it.parent.idx].maxColumnIta.maxColumn,
-                    "p.columnOffsetValue":t.items[cit.it.parent.idx].columnOffsetValue,
-                    "p.leftRight" : t.items[cit.it.parent.idx].leftRight,
-                    "p.row" :  t.items[cit.it.parent.idx].row,
-                    "p.maxColumnIta.maxRow":t.items[cit.it.parent.idx].maxColumnIta.maxRow,
-                    "p.rowOffsetValue":t.items[cit.it.parent.idx].rowOffsetValue,
-                    "p.upDown" :t.items[cit.it.parent.idx].upDown,
-                    "it.column":cit.it.column,
-                    "it.maxColumnIta.maxColumn":cit.it.maxColumnIta.maxColumn,
-                    "it.row":cit.it.row,
-                    "it.maxRowIta.maxRow":cit.it.maxColumnIta.maxRow
-                },
-                msg = JSON.stringify(dbg,undefined,4).replace(/\n/g, "<br/>").replace(/\s/g, "&nbsp;");
-                na.site.setStatusMsg (msg, true, 10 * 1000);*/
-
-                var html =
-                    '<div class="vividButton" style="position:relative; font-size : small;">'
-                    +cit.it.name.replace(/\-[\-\w]+\.mp3/, ".mp3")
-                    +"</div>";
-                $(".naAudioPlayerPlaylist").append(html);
-
-                var
-                el2 = $(".naAudioPlayerPlaylist .vividButton").last();
-                el2.attr("filepath", cit.it.filepath.replace(/\/0\/filesAtRoot\/folders/,"").replace(/\/folders/g,"")+"/"+cit.it.name);
-
-                na.mediaPlayer.bindPlaylistClickHandlers();
-
-                done = true;
-            }
-        }
-    }
-    onclick_triple (t, event) {
-            var
-            ol = 10 * 1000,
-            numPoints = 720,
-            radius = 10*1000;
-
-
-
-            t.curve4b = new THREE.CatmullRomCurve3( [
-                new THREE.Vector3 (t.camera.position.x, t.camera.position.y, t.camera.position.z),
-                new THREE.Vector3 (t.winners.west - ol, 0, ol),
-                new THREE.Vector3 (t.winners.west - ol, 0, t.winners.front - ol),
-                new THREE.Vector3 (t.winners.east + ol, 0, t.winners.front - ol),
-                new THREE.Vector3 (t.winners.east + ol, 0, ol),
-                new THREE.Vector3 (0, 0, -ol),
-            ]);
-            var first = {x:0,y:0,z:-ol};
-            var last = {x:0,y:0,z:-ol};
-            t.points4b = t.curve4b.getPoints(numPoints);
-            t.curves4a = [
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z),
-                new THREE.Vector3(first.x,first.y,first.z)
-            ];
-            t.curve4a = new THREE.CatmullRomCurve3(t.curves4a);
-            t.points4a = t.curve4a.getPoints(50);
-            t.curves4z = [
-                new THREE.Vector3(last.x,last.y,last.z),
-                new THREE.Vector3(t.cameraOrigin.x,t.cameraOrigin.y,t.cameraOrigin.z)
-            ];
-            t.curve4z = new THREE.CatmullRomCurve3(t.curves4z);
-            t.points4z = t.curve4z.getPoints(50);
-
-            t.curves4x = t.points4a.concat (t.points4b, t.points4z);
-            t.curve4 = new THREE.CatmullRomCurve3(t.curves1x);
-            t.points4 = t.curve4.getPoints(numPoints);
-
-            t._tmp4 = new THREE.Vector3();
-            t.animationProgress4 = { value: 0 };
-            t.pathAnimation4 = gsap.fromTo(
-                t.animationProgress,
-                {
-                    value: 0,
-                },
-                {
-                    value: 1,
-                    duration: t.animationDuration,
-                    overwrite: true,
-                    paused: true,
-                    onUpdateParams: [ t.animationProgress4 ],
-                    onUpdate( { value } ) {
-
-                        if ( ! this.isActive() ) return;
-
-                        t.curve4.getPoint ( value, t._tmp4);
-                        t.controls.setLookAt(
-                            t._tmp.x,
-                            t._tmp.y,
-                            t._tmp.z,
-                            t.middle.x,
-                            t.middle.y,
-                            t.middle.z,
-                            false, // IMPORTANT! disable cameraControls"s transition and leave it to gsap.
-                        );
-
-                    },
-                    onStart() {
-                        t.animPlaying = true;
-                    },
-                    onComplete() {
-                        t.fpControls.enabled = true;
-                        t.controls.enabled = false;
-                        t.animPlaying = false;
-                        t.onresize_postDo(t);
-                    }
-                }
-            );
-
-            t.fpControls.enabled = false;
-            t.controls.enabled = true;
-            t.pathAnimation4.play(0);
-
     }
 
     async initializeItems (t) {
@@ -3066,8 +2135,7 @@ debugger;
 
         t.graph
             .width(width)
-            .height(height)
-            .zoomToFit(600, 50);
+            .height(height);
 
         t.resizing = false;
 
@@ -3289,6 +2357,7 @@ export class na3D_demo_models {
    
         t.items = [];
         
+
         t.scene = new THREE.Scene();
         t.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
         
@@ -3362,11 +2431,12 @@ export class na3D_demo_models {
         t.mouse.x = 0;
         t.mouse.y = 0;
 
-        t.animate(this);
+        //t.animate(this);
     }
     
+    /*
     animate(t) {
-        requestAnimationFrame( function() { t.animate (t) } );
+        requestAnimationFrame( function() { t.st) } );
         
         t.raycaster.setFromCamera (t.mouse, t.camera);
 
@@ -3380,7 +2450,7 @@ export class na3D_demo_models {
         }
         
         t.renderer.render( t.scene, t.camera );
-    }
+    }*/
     
     
     updateTextureEncoding (t, content) {
@@ -3560,7 +2630,8 @@ export class na3D_demo_cube {
             console.log('Intersects:', intersects.length, intersects[0] ? intersects[0].object.it?.name : null);
     }
     
-    
+
+    /*
     animate(t) {
         requestAnimationFrame( function() { t.animate (t) } );
         //t.cube.rotation.x += 0.02;
@@ -3572,6 +2643,6 @@ export class na3D_demo_cube {
             intersects[i].object.rotation.y += 0.02;
         }
         t.renderer.render( t.scene, t.camera );
-    }
+    }*/
 }
 

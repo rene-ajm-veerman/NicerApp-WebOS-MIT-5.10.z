@@ -231,6 +231,12 @@ export class na3D_fileBrowser {
             sprite.textHeight = 5;
             sprite.fontFace = 'Arial';
             sprite.position.set(0, 18, 0);
+
+            // Optional: make sure it renders in front
+            sprite.material.depthWrite = false;
+            sprite.material.depthTest = false;
+
+
             t.graph.scene().add(sprite);
             return sprite;
 
@@ -256,8 +262,10 @@ export class na3D_fileBrowser {
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 5;
                 t.hoverLabel.fontFace = 'Arial';
-                t.hoverLabel.fontWeight = 'bold';
+                t.hoverLabel.fontWeight = 'bold';c
                 t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                t.hoverLabel.material.depthWrite = false;
+                t.hoverLabel.material.depthTest = false;
                 t.graph.scene().add(t.hoverLabel);
 
                 // Get all nodes to highlight

@@ -109,50 +109,6 @@ export class na3D_fileBrowser {
         t.itemsFolders.push (fit);
 
 
-        var sideLength = t.meshLength, length = sideLength, width = sideLength;
-        var
-        materials2 = [
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            }),
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            }),
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            }),
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            }),
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            }),
-            new THREE.MeshBasicMaterial({
-                color : it.color ? it.color : "rgb(0,0,255)",
-                opacity : 0.5,
-                wireframe : t.wireframe,
-                transparent : true
-            })
-
-        ];
-        var cube = new THREE.Mesh( new THREE.BoxGeometry( t.meshLength, t.meshLength, t.meshLength ), materials2 );
-        it.model = cube;
-        
         t.lines = []; // onhover lines only in here
         t.permaLines = []; // permanent lines, the lines that show all of the parent-child connections.
         t.s2 = []; // search array filled with the files and folders three.js models, used by raycaster.intersectObjects()
@@ -210,6 +166,10 @@ export class na3D_fileBrowser {
         na.threeD = t;
 
         t.initializeItems (t);
+        t.maxLevel = 0;
+        for (var i=0; i<t.items.length; i++) {
+            if (it.level > t.maxLevel) t.maxLevel = it.level;
+        }
 
         t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
         na.apps.loaded.threed_fileExplorer = t;
@@ -259,7 +219,7 @@ export class na3D_fileBrowser {
             return defaultColor;
 
         })
-        .warmupTicks(500)      // or more
+        .warmupTicks(20)      // or more
         .cooldownTicks(0)
 
         // === Custom Nodes & Links ===
@@ -311,7 +271,7 @@ export class na3D_fileBrowser {
                    var depth = n.item?.level ?? n.depth ?? 0;
                    depth = depth / 2 + 1;
                    if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(depth);
-                   return '#aaffff'; // connected nodes
+                   return 'rgba(150,150,150,0.5)';
 
                 })
                 .linkColor(link => {
@@ -434,7 +394,7 @@ export class na3D_fileBrowser {
                     var
                     path = cit.item.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
                     file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3");
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+path+'/'+node.item.name+'/'+file2+'\')"><span>'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+path+'/'+node.item.name+'/'+file2+'\')"><span>'+path+'/'+node.item.name+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -888,6 +848,7 @@ export class na3D_fileBrowser {
             height : $("#siteContent .vividDialogContent").height()
         });
 
+        /*
         na.m.log (1555, fncn+' : BEGIN coloring');
         for (var path in t.ld3) {
             t.ld4.push(path);
@@ -941,11 +902,12 @@ export class na3D_fileBrowser {
                         +Math.round(50+Math.random()*205)+","
                         +Math.round(50+Math.random()*205)+","
                         +Math.round(50+Math.random()*205)+")";
-                */
+                * /
                 t.ld3[t.ld4[i]].p1 = p1;
                 //debugger;
             //}, i + (Math.random() * 200), p1, i);
         }
+        */
         na.m.waitForCondition("onresize_do_phase2()", function() {
             /*
             for (var i=0; i<t.ld4.length; i++) {
@@ -1031,8 +993,8 @@ export class na3D_fileBrowser {
             child.position.copy(center).add(direction.multiplyScalar(radius));
 
             // Orient outward (uncomment if needed)
-            // const outwardTarget = center.clone().add(direction.multiplyScalar(radius * 2));
-            // child.lookAt(outwardTarget);
+            const outwardTarget = center.clone().add(direction.multiplyScalar(radius * 2));
+            child.lookAt(outwardTarget);
         }
 
         // Recurse: For each child, project ITS children around ITS new position
@@ -1052,10 +1014,12 @@ export class na3D_fileBrowser {
         if (!node || !node.item?.idxPath) return new Set();
 
         const ancestors = new Set();
+        ancestors.add(0); // don't forget to add the innermost root folder
         const path = node.item.idxPath;
 
-        if (typeof path === 'string') {
+        if (node.name!=='music' && typeof path === 'string') {
             const parts = path.substr(1,path.length-2).split('/');
+            debugger;
             for (let i = 0; i < parts.length; i++) {
                 var current_t_items_N_idx = parseInt(parts[i]);
                 ancestors.add(current_t_items_N_idx);           // add partial paths
@@ -1209,13 +1173,14 @@ export class na3D_fileBrowser {
             '#51cf66',   // 1 - light green
             '#ffd43b',   // 2 - yellow
             '#ff922b',   // 3 - orange
-            '#f06595',   // 4 - pink
+            '#ffbbdd',   // 4 - pink
             '#9775fa',   // 5 - purple
             '#74c0fc',   // 6
             '#63e6be',
             'lime',
             'cyan',
             'red',
+            '#f06595', // PINK
             'white',
             'ivory',
             'grey'
@@ -1279,853 +1244,6 @@ export class na3D_fileBrowser {
         return { nodes, links };
     }
 
-    onresize_do_phase2_OLDnBUGGY(t, callback) {
-        let fncn = 'na3D.js::onresize_do_phase2_OLDnBUGGY()';
-        na.m.log (1555, fncn+' : BEGIN .pos calculations');
-
-        for (var path in t.ld3) {
-            path = path.replace(/\/.*?/,'');
-            var ld3 = t.ld3['/'+path];
-
-            // calculate x,y,z as grid positions in the scene,
-            // to be translated later in this function into scene coordinates.
-            if (path!=="") {
-                for (var i=0; i<ld3.items.length; i++) {
-                    var
-                    it = t.items[ld3.items[i].idx];
-
-                    ld3.rowColumnCount = Math.floor(Math.sqrt(ld3.itemCount));
-                    ld3.cubeSideLengthCount = Math.floor(Math.cbrt(ld3.itemCount));
-                    ld3.rowColumnCount = Math.floor(Math.sqrt(ld3.cubeSideLengthCount));
-
-                    var
-                    pos = { x : 0, xField : 0, y : 0, yField : 0, z : 0 },
-
-                    // 2D view
-                    columnField = 0,
-                    rowField = 0,
-
-                    // 3D view
-                    column = 0,
-                    row = 0,
-                    depth = 0;
-
-                    //if (it.filepath=="siteMedia/backgrounds/tiled/active") debugger;
-                    for (var j=0; j<ld3.items.length; j++) {
-                        var it2 = t.items[ld3.items[j].idx];
-                        if (
-                            (it.parent ? it.parent.idx === it2.parent.idx : false)
-                            && it2.levelIdx <= it.levelIdx
-                        ) {
-                            if (
-                                column >= ld3.cubeSideLengthCount
-                                && row >= ld3.cubeSideLengthCount
-                            ) {
-                                pos.z++;
-                                depth++;
-
-                                column = 0;
-                                row = 0;
-                            } else if (row >= ld3.cubeSideLengthCount) {
-                                pos.z++;
-                                depth++;
-
-                                column = 0;
-                                row = 0;
-
-                                pos.y = 0;
-                                pos.x++;
-                            } else if (column >= ld3.cubeSideLengthCount) {
-                                pos.y++;
-                                pos.x = 0;
-                                row++;
-                                column = 0;
-                            } else {
-                                column++;
-                                pos.x++;
-                            }
-
-                            if (columnField >= ld3.cubeSideLengthCount) {
-                                pos.yField++;
-                                pos.xField = 0;
-                                rowField++;
-                                columnField = 0;
-                            } else {
-                                columnField++;
-                                pos.xField++;
-                            }
-
-                        }
-
-                    };
-
-                    // do NOT move this finalized code...
-                    it.rowField = rowField;
-                    it.columnField = columnField;
-                    it.row = row;
-                    it.column = column;
-                    it.depth = depth;
-                    it.pos = pos;
-                    it.ld3 = ld3;
-                    //console.log ('t334', it.filepath.replace('/0/filesAtRoot/folders','').replace(/\/folders/g,'')+'/'+it.name, columnField, rowField, column, row, depth, pos);
-                    //if (it.name=="gull" || it.name=="owl") debugger;
-                }
-            }
-            //debugger;
-        }
-        na.m.log (1555, fncn+' : END .pos calculations');
-
-        var
-        its = $.extend( [], t.items ),
-        its2 = [],
-        compare = function (a, b) {
-            return a.parent-b.parent;
-        },
-        compare1 = function (a, b) {
-            if (a.it && b.it) {
-                return a.it.level-b.it.level;
-            } else return 0;
-        };
-
-        its.sort (compare1);
-
-
-        var
-        maxLevel = 0;
-
-        na.m.log (1555, fncn+' : BEGIN scene items position calculations');
-        for (var i=0; i<its.length; i++) {
-            if (!t.showFiles && its[i].name.substr(its[i].name.length-4,4)=='.mp3') continue;
-            if (maxLevel < its[i].level) maxLevel = its[i].level;
-            for (var j=0; j<its.length; j++) {
-
-                var
-                name = "",
-                parent = t.hovered || t.items[0];
-
-                while (parent) {
-                    //$("#site3D_label")[0].textContent =
-                    //  t.hovered.object.it.name.replace(/-\s*[\w]+\.mp3/, ".mp3");
-                    /*
-                    var li =
-                        parent.object.it.filepath
-                            .replace("/0/filesAtRoot/folders/","")
-                            .replace("/0/filesAtRoot/folders","");
-                    if (li!=="") li+= "/";
-                    li += parent.object.it.name.replace(/\s*-\s*[-_\w]+\.mp3$/,".mp3")
-                    //l += " ("+parent.object.it.parent.rndz+")";
-                    li = li.replace(/folders\//g, "");
-                    */
-                    var li = its[i].filepath + '/' + its[i].name;
-
-                    /*
-                    var lj =
-                        its[j].filepath
-                            .replace("/0/filesAtRoot/folders/","")
-                            .replace("/0/filesAtRoot/folders","");
-                    if (lj!=="") lj+= "/";
-                    lj += its[j].name.replace(/\s*\-\s*[-_\w]+\.mp3$/,".mp3");
-                    //l += " ("+parent.object.it.parent.rndz+")";
-                    lj = lj.replace(/folders\//g, "");
-                    */
-                    var lj = its[j].filepath + '/' + its[j].name;
-
-                    parent = parent.parent;
-                }
-
-                if (
-                    //its[i].idxPath+"/"+its[i].idx === its[j].idxPath+"/"+its[j].idx
-                    //its[i].idxPath === its[j].idxPath
-                    //its[i].filepath === its[j].filepath
-                    //&& its[i].name === its[j].name
-                    /*
-                    its[i].pos.x === its[j].pos.x
-                    && its[i].pos.y === its[j].pos.y
-                    && its[i].pos.z === its[j].pos.z*/
-                    li === lj
-                ) {
-                    //console.log ('t780', li);
-                    var
-                    ita = {
-                        level: its[i].level,
-                        maxColumn : Math.max( its[i].columnField, its[j].columnField ),
-                        maxRow : Math.max( its[i].rowField, its[j].rowField ),
-                        maxDepth : Math.max ( its[i].depth, its[j].depth )
-                    };
-                    if (ita.maxColumn === its[i].columnField) ita.maxColumnIt = its[i]; else ita.maxColumnIt = its[j];
-                    if (ita.maxRow === its[i].rowField) ita.maxRowIt = its[i]; else ita.maxRowIt = its[j];
-                    if (ita.maxDepth === its[i].depth) ita.maxDepthIt = its[i]; else ita.maxDepthIt = its[j];
-                    its[i].ita = ita;
-                    its[j].ita = ita;
-                    break;
-                    /*
-                    its[i].maxColumnIta = ita;
-                    its[i].maxRowIta = ita;
-                    its[i].maxDepthIta = ita;
-                    its[j].maxColumnIta = ita;
-                    its[j].maxRowIta = ita;
-                    its[j].maxDepthIta = ita;
-                    */
-                    //if (!its2.includes(ita)) its2.push (ita);
-                }
-                if (its[i].ita) continue;
-            }
-        }
-        na.m.log (1555, fncn+' : END scene items position calculations');
-
-        var
-        /*
-        compare2 = function (a,b) {
-            var x = b.maxColumn - a.maxColumn;
-            if (x === 0) return b.maxRow - a.maxRow; else return x;
-        },
-        compare3 = function(a,b) {
-            return a.name < b.name;
-        },
-        */
-        its2 = its;
-
-        // calculate directional offset values
-        // from cube/sphere XYZ grouping field
-        var pp = null;
-        var pox = {}, poy = {}, poz = {}, pd = {};
-        var prevIt = null;
-        //if (t.initialized) //EVUL
-
-        na.m.log (1555, fncn+' : Do final position calculations for '+t.items.length+' scene items.');
-        debugger;
-        var r = 1.0;
-        for (var i=0; i<t.items.length; i++) {
-            if (!t.showFiles && t.items[i].name.substr(t.items[i].name.length-4,4)=='.mp3') continue;
-
-            var
-            offsetXY = 200,
-            it = t.items[i],
-            p = (it.parent ? it.parent : null);
-            //p1 = (it.parent && it.parent.parent ? it.parent.parent : null),
-
-            //rndMax = (it.ld3 ? (it.ld3.rowColumnCount * 1000) : 0);
-            //rndMax = (p && p.ld3 ? (p.ld3.cubeSideLengthCount * 1000) : 0);
-
-            /*
-             * /*if (!prevMax)* / var prevMax = rndMax;
-
-            r = .75 + Math.random()/4;
-            //var r = Math.random();
-            //while (r < .75) r = Math.random();
-            if (p && !pox[p.idx]) pox[p.idx] = Math.abs(r * prevMax);
-
-            r = .75 + Math.random()/4;
-            //r = Math.random();
-            //while (r < .75) r = Math.random();
-            if (p && !poy[p.idx]) poy[p.idx] = Math.abs(r * prevMax);
-
-            r = .75 + Math.random()/4;
-            //while (r < .75) r = Math.random();
-            if (p && !poz[p.idx]) poz[p.idx] = Math.abs(r * prevMax);
-
-            //if (p && !pox[p.idx]) pox[p.idx] = it.level * p.columnOffsetValue;
-            //if (p && !poy[p.idx]) poy[p.idx] = it.level * p.rowOffsetValue;
-            //if (p && !poz[p.idx]) poz[p.idx] = it.level * 1000;
-
-            if (p) var rndx = pox[p.idx]; else var rndx = 0;
-            if (p) var rndy = poy[p.idx]; else var rndy = 0;
-            if (p) var rndz = poz[p.idx]; else var rndz = 0;
-            it.rndx = rndx;
-            it.rndy = rndy;
-            it.rndz = rndz;
-            */
-
-            /*if (p) {
-                var
-                itmaxc = it.maxColumnIta.maxColumn,
-                itmaxr = it.maxRowIta.maxRow,
-                itmaxd = it.maxRowIta.maxDepth,
-                itmaxc2 = Math.floor(itmaxc/2),
-                itmaxr2 = Math.floor(itmaxr/2),
-                itLeftRight = /*p.leftRight * * /(
-                    it.column-1 == itmaxc / 2
-                    ? 0
-                    : itmaxc===1
-                        ? 0
-                        : itmaxc - it.column == it.column -1
-                            ? 0
-                            : itmaxc - it.column < it.column - 1
-                                ? 1
-                                : -1
-                            ),
-                itUpDown = /*p.upDown * * /(
-                    it.row-1 == itmaxr/2
-                    ? 0
-                    : itmaxr===1
-                        ? 0
-                        : itmaxr - it.row == it.row - 1
-                            ? 0
-                            : itmaxr - it.row < it.row - 1
-                                ? 1
-                                : -1
-                            ),
-                itBackForth = /*p.backForth * * /(
-                    it.depth-1 == itmaxd/2
-                    ? 0
-                    : itmaxd===1
-                        ? 0
-                        : itmaxd - it.depth == it.depth - 1
-                            ? 0
-                            : itmaxr - it.depth < it.depth - 1
-                                ? 1
-                                : -1
-                            ),
-                itc = (itmaxc - 1 - it.columnField),
-                itr = (itmaxr - 1 - it.rowField),
-                itd = (itmaxd - 1 - it.depth);
-                it.columnOffsetValue = itc;//Math.floor(itc);
-                it.rowOffsetValue = itr;//Math.floor(itr);
-                it.depthOffsetValue = itd;//Math.floor(itr);
-                it.leftRight = itLeftRight;
-                it.upDown = itUpDown;
-                it.backForth = itBackForth;
-
-            } else {*/
-                var
-                itmaxc = it.ita.maxColumn,
-                itmaxr = it.ita.maxRow,
-                itmaxd = it.ita.maxDepth,
-                itLeftRight = (
-                    it.column-1 == itmaxc / 2
-                    ? 0
-                    : itmaxc===1
-                        ? 0
-                        : itmaxc - it.column == it.column -1
-                            ? 0
-                            : itmaxc - it.column < it.column - 1
-                                ? 1
-                                : -1
-                            ),
-                itUpDown = (
-                    it.row-1 == itmaxr/2
-                    ? 0
-                    : itmaxr===1
-                        ? 0
-                        : itmaxr - it.row == it.row - 1
-                            ? 0
-                            : itmaxr - it.row < it.row - 1
-                                ? 1
-                                : -1
-                            ),
-                itBackForth = (
-                    it.depth-1 == itmaxd/2
-                    ? 0
-                    : itmaxd===1
-                        ? 0
-                        : itmaxd - it.depth == it.depth - 1
-                            ? 0
-                            : itmaxr - it.depth < it.depth - 1
-                                ? 1
-                                : -1
-                            ),
-                itc = (itmaxc - 1 - it.columnField),
-                itr = (itmaxr - 1 - it.rowField),
-                itd = (itmaxd - 1 - it.depth);
-
-                it.columnOffsetValue = itc;//Math.floor(itc);
-                it.rowOffsetValue = itr;//Math.floor(itr);
-                it.depthOffsetValue = itd;//Math.floor(itr);
-                it.leftRight = itLeftRight;
-                it.upDown = itUpDown;
-                it.backForth = itBackForth;
-                //if (it.name=="landscape") debugger;
-            //};
-
-
-
-            /*
-            var
-            z = (it.level/4) * 1000,//(it.level < 2 ? 1 : it.level-2) * 200 / 2,
-            //z = -1 * it.depthOffsetValue * 2500,
-            //plc = p.columnOffsetValue === 0 ? 0.01 : p.columnOffsetValue,
-            //plr = p.rowOffsetValue === 0 ? 0.01 : p.rowOffsetValue,
-            m = 10 * 1000,
-            ilc = (p?p.columnOffsetValue * m:it.column*m), //it.leftRight * it.column,// * p.columnOffsetValue,
-            ilr = (p?p.rowOffsetValue * m:it.column*m),//it.upDown * it.row,// * p.rowOffsetValue,
-
-            min = 2, m0 = (it.level-2) < 5 ? it.level-2 : 4, m1 = 500, m2 = 500, m1a = 500, m2a =  500, m3a = 500, m3b = 500, m3c = 1000, m3d = 2500, n = 0.5, n1 = 500, n2 = 500, o = 1, s = 1,
-            u = 1 * (p && p.leftRight===0?ilc:(p?p.leftRight:it.leftRight)),
-            v = 1,
-            w = 1 * (p && p.upDown===0?ilr:(p?p.upDown:it.upDown)),
-            x = 1,
-            u2 = (p?p.columnOffsetValue:it.columnOffsetValue),
-            v2 = (p?p.rowOffsetValue:it.rowOffsetValue),
-            w2 = (p?p.depthOffsetValue:it.depthOffsetValue),
-            u2a = it.column,
-            v2a = it.row,
-            w2a = it.depth,
-            divider = 1;
-            if (it.name.match(/delinquentes/i)) debugger;
-            */
-            let divider = 1;
-
-            /*
-            if (p) {
-                u = p.leftRight;
-                w = p.upDown;
-                u2 = -1 * p.columnOffsetValue;
-                v2 = -1 * p.rowOffsetValue;
-                w2 = -1 * p.depthOffsetValue;
-                u2 = p.columnField;
-                v2 = p.rowField;
-                w2 = p.depth;
-            }
-*/
-
-            if (!it.sPos) it.sPos = {};
-
-//if (it.name.match(/becoming insane/i)) debugger;
-            //if (it.model) {
-                if (p) {
-                    if (!t.ld3[p.idxPath]) t.ld3[p.idxPath] = {};
-                    if (!t.ld3[p.idxPath].level) t.ld3[p.idxPath].level = 1;
-                    var
-                    radius = 20,
-                    m = p.levelIdx - (p.row * (ld3.cubeSideLengthCount) - p.column);
-                    if (m<1) m=1;
-
-                    p.c1 = {
-                        a : 0,
-                        b : (360 / m) //* (p.levelIdx+1)
-                    };
-                    p.c1.c = jsem.math.xy.pointOnCircle_angleInDegrees (0,0,radius,p.c1.b);
-
-                    p.c2 = {
-                        a : 0,
-                        b : (360 / t.ld3[it.idxPath].itemCount - m) //* (it.levelIdx+1)
-                    };
-                    p.c2.c = jsem.math.xy.pointOnCircle_angleInDegrees (0, 0, radius, p.c2.b);
-                }
-
-
-                if (!mx) var mx = 1;
-                if (!my) var my = 1;
-                if (!mz) var mz = 1;
-                var
-                mpx = 800, mpy = 800, mpz = 800,
-                mrx = 15, mry = 15, mrz = 15,
-                msx = 400, msy = 400, msz = 400;
-                //if (!rx)
-                    var rx = 1;
-                //if (!ry)
-                    var ry = 1;
-                //if (!rz)
-                    var rz = 1;
-                if (!prx) var prx = rx;
-                if (!pry) var pry = ry;
-                if (!prz) var prz = rz;
-                if (!px) var px = 0;
-                if (!py) var py = 0;
-                if (!pz) var pz = 0;
-                if (!rax) var rax = 0;
-                if (!ray) var ray = 0;
-                if (!raz) var raz = 0;
-
-                if (it.name=='gregorian') debugger;
-                if (it.name=='gregoriano') debugger;
-                /*if (it && it.parent && it.parent.px) {
-                    px = it.parent.px;
-                    py = it.parent.py;
-                    pz = it.parent.pz;
-                } else */if (it && it.parent && !it.parent.px && p/*&& prevIt && prevIt.parent && it.parent.idx!==prevIt.parent.idx*/) {
-                    px = p.sPos.x
-                        //+ (p.column*mpx*p.c1.c.x)
-                        + (p.level * mpx);
-                    py = p.sPos.y
-                        //+ (p.row*mpy*p.c1.c.y)
-                        + (p.level * mpy);
-                    pz = p.sPos.z
-                        //+ (p.depth*mpz*p.c2.c.y)
-                        + (p.level * mpz);
-
-                    it.parent.px = px;
-                    it.parent.py = py;
-                    it.parent.pz = pz;
-                    /*rx += 2 * mrx * c1.c.x;
-                    ry += 2 * mry * c1.c.y;
-                    rz += 2 * mrz * c1.c.y;*/
-                    rx += p.c1.c.x;
-                    ry += p.c1.c.y;
-                    rz += p.c2.c.y;
-
-                    rax = 2* mpx * Math.random();
-                    ray = 2 * mpy * Math.random();
-                    raz = 2 * mpz * Math.random();
-
-
-                } else if (it && it.parent){
-                    px = it.parent.px || px;
-                    py = it.parent.py || py;
-                    pz = it.parent.pz || pz;
-
-                    it.parent.px = px;
-                    it.parent.py = py;
-                    it.parent.pz = pz;
-
-                    px = it.parent.rax || rax;
-                    py = it.parent.ray || ray;
-                    pz = it.parent.raz || raz;
-
-                    rx += p.c1.c.x;
-                    ry += p.c1.c.y;
-                    rz += p.c2.c.y;
-
-                    it.parent.rax = rax;
-                    it.parent.ray = ray;
-                    it.parent.raz = raz;
-                };
-
-
-                prevIt = it;
-                mx = 1; my = 1; mz = 1;
-                var mplier = 1.5;
-
-
-
-
-
-                // calculate folders' and files' x,y,z position in the scene
-                /*if (!t.showFiles || it.name.substr(it.name.length-4,4)=='.mp3') {
-                } else*/ if (it.model && p) {
-                    it.sPos.x = //Math.round( (
-                        mx * (
-                            px
-                            + (p.column * mpx * mplier)
-                            //+ ( (it.level+1) * rx )
-                            + (it.level+1) * 5 * rx
-                            //+ rx
-                            //+ rax
-                            //+ (p.column * p.c1.c.x)
-                            //+ -1 * (Math.sin(it.column) * Math.cos(it.row) * it.depth)
-                            //+ -1 * (Math.sin(it.column) * it.depth)
-                            //+ (mpx * c1.c.x)
-                            //+ mpx
-                            + (it.column * msx)
-                            //+ (it.columnOffsetValue * mpx)
-                        )
-
-                    //) / divider);
-                    it.sPos.y = // Math.round( (
-                        my * (
-                            py
-                            + (p.row * mpy * mplier)
-                            //+ ( (it.level+1) * ry)
-                            + (it.level+1) * 5 * ry
-                            //+ ry
-                            //+ ray
-                            //+ (p.row * p.c1.c.y)
-                            //+ Math.cos(it.column) * Math.cos(it.row) * it.depth
-                            //+ Math.cos(it.row) * it.depth
-                            //+ (mpy * c1.c.y)
-                            //+ mpy
-                            + (it.row * msy)
-                            //+ (it.rowOffsetValue * mpy)
-                        )
-                    //) / divider);
-                    it.sPos.z = // Math.round( (
-                        mz * (
-                            pz
-                            + ( p.depth * mpz * mplier)
-                            //+ ( (it.level+1) * rz )
-                            + (it.level+1) * 5 * rz
-                            //+ rz
-                            //+ raz
-                            //+ Math.cos(it.column) * Math.sin(it.row) * it.depth
-                            //+ (it.level * mpz)
-                            //+ msz
-                            //+ (mpz * c1.c.y)
-                            + (it.depth * msz)
-                            //+ (it.depthOffsetValue * mpz)
-                        )
-                    //) / divider;
-                        if (it.name=='Garbage') debugger;
-                        if (it.name=='') debugger;
-
-                    //console.log (fncn+' : adding mesh : ', it.filepath + "/" + it.name, it.column, it.row, it.depth, it.sPos, p.sPos);
-
-                } else if (it.model) {
-                    /*
-                    it.sPos.x = it.columnOffsetValue * mpx;
-                    it.sPos.y = it.rowOffsetValue * mpy;
-                    it.sPos.z = it.depthOffsetValue * mpz;
-
-                    it.sPos.x = it.column * mpx * c1.c.x;
-                    it.sPos.y = it.row * mpy * c1.c.y;
-                    it.sPos.z = it.depth * mpz * c1.c.z;
-                    */
-
-                    it.sPos.x = it.column * mpx;
-                    it.sPos.y = it.row * mpy;
-                    it.sPos.z = it.depth * mpz;
-
-                }
-                if (false) {
-                    it.sPos.x = Math.abs(it.sPos.x);
-                    it.sPos.y = Math.abs(it.sPos.y);
-                    it.sPos.z = Math.abs(it.sPos.z);
-                }
-        //    }
-
-            if (it.model) {
-                var dbg = {
-                    x : it.sPos.x,
-                    y : it.sPos.y,
-                    z : it.sPos.z,
-                    p : p,
-                    it : it
-                };
-                console.log ('onresize_do_phase2() : '+it.filepath+'/'+it.name, dbg);
-            }
-
-        }
-
-        var
-        sideLength = 300,
-        length = sideLength,
-        width = sideLength,
-        shape = new THREE.Shape();
-        shape.moveTo( 0,0 );
-        shape.lineTo( 0, width );
-        shape.lineTo( length, width );
-        shape.lineTo( length, 0 );
-        shape.lineTo( 0, 0 );
-
-        var extrudeSettings = {
-        steps: 40,
-        depth: sideLength,
-        bevelEnabled: true,
-        bevelThickness: 40,
-        bevelSize: 40,
-        bevelOffset: 0,
-        bevelSegments: 40
-        };
-
-        na.m.log (1555, fncn+' : Add scene items to scene.');
-        for (var j=0; j<t.items.length; j++) {
-            var p7a = t.items[j].idxPath;
-
-            if (false) {
-                var p7b = p7a.substr(1).split("/");
-                p7b.pop();
-                var p7a1 = '/'+p7b.join('/');
-                if (p7a1==='/') p7a1 = p7a;
-            } else {
-                var p7a1 = p7a;
-            }
-
-            if (t.ld3 && t.ld3[p7a1]) {
-                var
-                color = t.ld3[p7a1].color,
-                list = t.ld3[p7a1].colorList,
-                p1 = t.ld3[p7a1].p1,
-                it = t.items[j];
-                if (it && !it.name.match(/\/.mp3$/)) {
-                    //if (it.name.match(/SABATON/)) debugger;
-                    if (color) it.color = color; else {
-                        if (it.parent && it.parent) {
-                            for (var k=0; k<list.length; k++) {
-                                if (p1[k]==it.parent.idx) {
-                                    it.color = list[k].color;
-                                }
-                            }
-                        }
-                        if (!it.color && list) {
-                            for (var k=0; k<list.length; k++) {
-                                if (p1[k]==it.idx)
-                                    it.color = list[k].color;
-                            }
-                        }
-                        if (!it.color) {
-                            it.color = "rgb(0,0,255)";
-                        }
-                    }
-
-                    //console.log ("t321", it.name, it.color);
-
-                    var sideLength = 300, length = sideLength, width = sideLength, oc = 0.555;
-                    var
-                    materials2 = [
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        })
-
-                    ];
-                    if (it.parent) {
-                        // parent/current folder :
-                        if (it.name.substr(it.name.length-4,4)=='.mp3') {
-                            if (t.showFiles)
-                            var cube = t.createSphere (t.meshLength * 3, it.color);
-                        } else {
-                            var cube = new THREE.Mesh( new THREE.BoxGeometry( t.meshLength, t.meshLength, t.meshLength ), materials2 );
-                        }
-                        if (it.sPos)
-                        if (!t.showFiles || it.name.substr(it.name.length-4,4)!=='.mp3') {
-                            cube.it = it;
-                            cube.position.x = it.sPos.x;
-                            cube.position.y = it.sPos.y;
-                            cube.position.z = it.sPos.z;
-                            t.scene.remove(it.model);
-                            //if (it.name.match("SABATON")) debugger;
-                            it.model = cube;
-                            t.scene.add( cube );
-                            //t.items.push (it);
-                        }
-                        t.s2.push(cube);
-                    } else {
-                        var cube = new THREE.Mesh( new THREE.BoxGeometry( t.meshLength, t.meshLength, t.meshLength ), materials2 );
-                        cube.it = it;
-                        cube.position.x = it.sPos.x;
-                        cube.position.y = it.sPos.y;
-                        cube.position.z = it.sPos.z;
-                        it.model = cube;
-                        t.scene.add( cube );
-                        t.s2.push(cube);
-                    }
-                }
-            }
-        }
-
-        // Assuming the na3D instance is accessible (often on window or via na. namespace)
-        const threeInst = t;/* find your instance, e.g. na3D_instance or similar */;
-        debugger;
-        if (threeInst) {
-            const canvas = threeInst.renderer.domElement;
-            $(canvas).off('mousemove click'); // remove old bindings
-
-            $(canvas).on('mousemove', function(e) {
-                threeInst.onMouseMove(e, threeInst);
-                console.log('mousemove captured');
-            });
-
-            $(canvas).on('click', function(e) {
-                console.log('click captured, detail:', e.detail);
-                threeInst.onclick(threeInst, e);
-            });
-
-            console.log('Re-bound events. t.s2 length:', threeInst.s2 ? threeInst.s2.length : 0);
-        }
-
-
-
-        t.initialized = true;
-        var x = t.items;
-        t.onresize_postDo(t, true);
-    }
-
-    createSphere (size, color) {
-        const geometry = new THREE.SphereGeometry( size/3, size/3, size/3 );
-        const material = new THREE.MeshBasicMaterial( { color: color } );
-        const sphere = new THREE.Mesh( geometry, material );
-
-        return sphere;
-    }
-
-
-    createDodecahedron (size, color) {
-        var g = new THREE.DodecahedronGeometry(size);
-
-        const base = new THREE.Vector2(0, 0.5);
-        const center = new THREE.Vector2();
-        const angle = THREE.MathUtils.degToRad(72);
-        var baseUVs = [
-            base.clone().rotateAround(center, angle * 1).addScalar(0.5),
-            base.clone().rotateAround(center, angle * 2).addScalar(0.5),
-            base.clone().rotateAround(center, angle * 3).addScalar(0.5),
-            base.clone().rotateAround(center, angle * 4).addScalar(0.5),
-            base.clone().rotateAround(center, angle * 0).addScalar(0.5)
-        ];
-
-        var uvs = [];
-        var sides = [];
-        for (var i = 0; i < 12; i++) {
-            uvs.push(
-                baseUVs[1].x, baseUVs[1].y,
-                baseUVs[2].x, baseUVs[2].y,
-                baseUVs[0].x, baseUVs[0].y,
-
-                baseUVs[2].x, baseUVs[2].y,
-                baseUVs[3].x, baseUVs[3].y,
-                baseUVs[0].x, baseUVs[0].y,
-
-                baseUVs[3].x, baseUVs[3].y,
-                baseUVs[4].x, baseUVs[4].y,
-                baseUVs[0].x, baseUVs[0].y
-            );
-            sides.push(i, i, i, i, i, i, i, i, i);
-        };
-        g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
-        g.setAttribute("sides", new THREE.Float32BufferAttribute(sides, 1));
-
-        var m = new THREE.MeshStandardMaterial({
-            roughness: 0.25,
-            metalness: 0.75,
-            color : (color?color:"#0000FF"),
-            emissive : (color?color:"#00FF00"),
-            opacity : 0.5,
-            transparent : true
-        });
-        var o = new THREE.Mesh(g, m);
-        return o;
-    }
-
-    createTexture(){
-        let c = document.createElement("canvas");
-        let step = 250;
-        c.width = step * 16;
-        c.height = step;
-        let ctx = c.getContext("2d");
-        ctx.fillStyle = "#7f7f7f";
-        ctx.fillRect(0, 0, c.width, c.height);
-        ctx.font = "40px Arial";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "aqua";
-        ctx.textBaseline = "middle";
-        for (let i = 0; i < 12; i++){
-            ctx.fillText(i + 1, step * 0.5 + step * i, step * 0.5);
-        }
-
-        return new THREE.CanvasTexture(c);
-    }
-
     onresize_postDo (t, animate=false) {
         //t.drawLines(t);
         //t.controls._camera.lookAt (t.s2[0].position);
@@ -2141,12 +1259,10 @@ export class na3D_fileBrowser {
 
         if (!t.started4) {
             t.started4 = true;
-            //t.onresize(t);
         };
         if (typeof callback=="function") callback(t);
     }
     
-
 
     toggleShowLines () {
         var t = this;
@@ -2166,179 +1282,6 @@ export class na3D_fileBrowser {
         }
     }
     
-    drawLines (t) {
-        //debugger;
-        if (!t.showLines) return false;
-        for (var i=0; i<t.permaLines.length; i++) {
-            var l = t.permaLines[i];
-            t.scene.remove(l.line);
-            l.geometry.dispose();
-            l.material.dispose();
-        };
-        t.lineColors = {};
-        for (var i=1; i<t.items.length; i++) {
-            var 
-            it = t.items[i];
-
-//            debugger;
-            if (it.parent) {
-                var
-                parent = it.parent,
-                haveThisLineAlready = false;
-
-                if (it.name.match(/\.mp3$/)) continue;
-                if (!it.model) continue;
-
-                for (var j=0; j<t.permaLines.length; j++) {
-                    if (t.permaLines[j].it === it) {
-                        haveThisLineAlready = true;
-                        break;
-                    }
-                };
-
-                for (var p1 in t.ld3) {
-                    if (p1==it.idxPath) {
-                        var p1s = p1.split("/");
-                        var idx = p1s[p1s.length-2];
-                        if (typeof idx=="number") var color = t.items[parseInt(idx)].color; else var color = null;
-                    }
-                }
-
-                var
-                p1 = it.model.position,
-                p2 = parent.model.position;
-
-                //if (p1.x===0 && p1.y===0 && p1.z===0) continue;
-                //if (p2.x===0 && p2.y===0 && p2.z===0) continue;
-
-                const points = [];
-                points.push( new THREE.Vector3( p1.x, p1.y, p1.z ) );
-                points.push( new THREE.Vector3( p2.x, p2.y, p2.z ) );
-
-                var
-                geometry = new THREE.BufferGeometry().setFromPoints (points);
-                if (!t.lineColors) t.lineColors = {};
-                if (!t.lineColors[it.parent.idx] && color) {
-                    t.lineColors[it.parent.idx] = color;
-                } else {
-                    var color = t.lineColors[it.parent.idx];
-                }
-
-                if (!color) color = "rgb(255,255,255)";
-
-                var
-                material = new THREE.LineBasicMaterial({ color: color, linewidth :1, opacity : 0.5, transparent : true }),
-                line = new THREE.Line( geometry, material );
-                t.scene.add(line);
-
-                t.permaLines.push ({
-                    line : line,
-                    geometry : geometry,
-                    material : material,
-                    it : it
-                });
-            }
-        }
-        //$.cookie("3DFDM_lineColors", JSON.stringify(t.lineColors), na.m.cookieOptions());
-    }
-    
-    useNewArrangement () {
-        var t = this;
-        t.onresize_do(t, t.posDataToDatabase);
-    }
-    
-    useNewColors () {
-        var t = this;
-        for (var i=0; i<t.permaLines.length; i++) {
-            t.scene.remove (t.permaLines[i].line);
-            t.permaLines[i].geometry.dispose();
-            t.permaLines[i].material.dispose();
-        }
-        t.permaLines = [];
-        delete t.lineColors;
-        setTimeout (function () {
-            t.drawLines (t);
-        }, 500);
-    }
-    
-    toggleAutoRotate () {
-        var t = this;
-        t.controls.autoRotate = !t.controls.autoRotate;
-        if (t.controls.autoRotate) $("#autoRotate").removeClass("vividButton").addClass("vividButtonSelected");
-        else $("#autoRotate").removeClass("vividButtonSelected").addClass("vividButton");
-    }
-    
-    updateTextureEncoding (t, content) {
-        /*const encoding = t.state.textureEncoding === "sRGB"
-        ? sRGBEncoding
-        : LinearEncoding;*/
-        const encoding = LinearEncoding;
-        t.traverseMaterials(content, (material) => {
-            if (material.map) material.map.encoding = encoding;
-            if (material.emissiveMap) material.emissiveMap.encoding = encoding;
-            if (material.map || material.emissiveMap) material.needsUpdate = true;
-        });
-    }
-    
-    traverseMaterials (object, callback) {
-        object.traverse((node) => {
-            if (!node.isMesh) return;
-            const materials = Array.isArray(node.material)
-                ? node.material
-                : [node.material];
-            materials.forEach(callback);
-        });
-    }
-    
-    updateEnvironment (t) {
-        /*
-        const environment = {
-            id: "venice-sunset",
-            name: "Venice Sunset",
-            path: "/NicerAppWebOS/3rd-party/3D/assets/environment/venice_sunset_1k.hdr",
-            format: ".hdr"
-        };*/
-        const environment = {
-            id: "footprint-court",
-            name: "Footprint Court (HDR Labs)",
-            path: "/NicerAppWebOS/3rd-party/3D/assets/environment/footprint_court_2k.hdr",
-            format: ".hdr"
-        }
-
-        t.getCubeMapTexture( environment ).then(( { envMap } ) => {
-
-            /*if ((!envMap || !t.state.background) && t.activeCamera === t.defaultCamera) {
-                t.scene.add(t.vignette);
-            } else {
-                t.scene.remove(t.vignette);
-            }*/
-
-            t.scene.environment = envMap;
-            //t.scene.background = t.state.background ? envMap : null;
-
-        });
-
-    }    
-    
-    getCubeMapTexture ( environment ) {
-        const { path } = environment;
-
-        // no envmap
-        if ( ! path ) return Promise.resolve( { envMap: null } );
-
-        return new Promise( ( resolve, reject ) => {
-            new RGBELoader()
-                .setDataType( UnsignedByteType )
-                .load( path, ( texture ) => {
-
-                    const envMap = t.pmremGenerator.fromEquirectangular( texture ).texture;
-                    t.pmremGenerator.dispose();
-
-                    resolve( { envMap } );
-
-                }, undefined, reject );
-        });
-    }
 }
 
 

@@ -59,6 +59,7 @@ import { DragControls } from '/NicerAppWebOS/3rd-party/3D/libs/three.js/examples
 
                 // and when the data has loaded, do the following.. :
                 na.site.closeAll_3D_apps();
+                if (na.backgrounds.settings.backgroundSearchKey!=='3Dee') na.backgrounds.next('#siteBackground', '3Dee');
 
                 var
                 fncn = '/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer/main.js::Filesystem index loaded = true',
@@ -87,44 +88,6 @@ import { DragControls } from '/NicerAppWebOS/3rd-party/3D/libs/three.js/examples
 
                 });
 
-                na.backgrounds.next('#siteBackground', '3Dee');
-                
-                var 
-                html = 
-                    '<h2 id="titleHowTo" class="vividTextCSS">How To</h2>'
-                    + '<p class="vividTextCSS backdropped">Drag and drop folders to re-arrange them.<br/>'
-                   // + 'Your folder-arrangement will be saved for your next visit to this page.</p>'
-                    + '<p class="vividTextCSS backdropped">Hold the left mouse button and drag to manually rotate the data.</p>'
-                    + '<p class="vividTextCSS backdropped">Hold the right mouse button and drag to manually pan the camera.</p>'
-                    + '<p class="vividTextCSS backdropped">Double click a mouse button to toggle automatic rotation of the data.</p>'
-                    + '<p class="vividTextCSS backdropped">Triple click a mouse button to reverse direction for automatic rotation of the data.</p>'
-                    + '<p class="vividTextCSS backdropped">Use the mouse wheel to zoom in or out.</p>'
-                    + '<div id="threedfm_buttons">'
-                    + '<div id="newColors" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id]; td.useNewColors(); }">New Colors</div>'
-                    + '<div id="newArrangement" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id]; td.useNewArrangement(); }">New Arrangement</div>'
-                    + '<div id="rotate" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id];debugger; td.rotate(event,td); }">Rotate I</div>'
-                    + '<div id="rotate2" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id]; td.rotate2(event,td); }">Rotate II</div>'
-                    + '<div id="rotate3" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id]; td.rotate3(event,td); }">Rotate III</div>'
-                    +'<div id="showLines" class="vividButton" theme="dark" style="position:relative;" onclick="for (var id in na.site.settings.na3D) { var td = na.site.settings.na3D[id]; td.toggleShowLines(); }">Show Lines</div>'
-                    +'</div>';
-                //$('#siteToolbarRight .vividDialogContent').html (html);
-                //$('#siteToolbarRight').css({width:'fit-content'});
-
-
-
-                //na.site.c.buttons['#newColors'] = new naVividButton ($('#newColors')[0]);
-                
-                /*
-                var vividTextCmd = {
-                        el : jQuery('#titleHowTo')[0],
-                        theme : na.cg.themes.naColorgradientSchemeOrangeYellow, 
-                        animationType : na.vividText.globals.animationTypes[0],
-                        animationSpeed : 4 * 1000
-                };
-                na.vividText.initElement (vividTextCmd);
-                */
-            }, 100
-        );
-
+            }, 100);
     }, 100);
- 
+

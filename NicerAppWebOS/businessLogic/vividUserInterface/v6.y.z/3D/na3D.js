@@ -219,25 +219,26 @@ export class na3D_fileBrowser {
             return defaultColor;
 
         })
-        .warmupTicks(20)      // or more
+        .warmupTicks(100)
         .cooldownTicks(0)
 
         // === Custom Nodes & Links ===
         .nodeThreeObjectExtend(true)
-        .linkThreeObjectExtend(true)
+        .nodeThreeObject(node => {
+            const text = node.name;//`${node.item.filepath}/${pp}/${node.name}`;
+            const sprite = new SpriteText(text);
+            sprite.color = 'rgba(255,255,255,0.7)';
+            sprite.textHeight = 5;
+            sprite.fontFace = 'Arial';
+            sprite.position.set(0, 18, 0);
+            t.graph.scene().add(sprite);
+            return sprite;
+
+        })
 
         // Custom Link Labels
-        .linkThreeObject(link => {
-            const targetItem = t.items[parseInt(link.target)];
-            if (!targetItem) return false;
-
-            const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
-            const sprite = new SpriteText(text);
-            sprite.color = '#aaaaaa';
-            sprite.textHeight = 2.8;
-            sprite.fontFace = 'Arial';
-            return sprite;
-        })
+        .linkThreeObjectExtend(false)
+        .linkThreeObject(null)
 
         // === INTERACTIONS ===
         .onNodeHover(node => {
@@ -253,7 +254,7 @@ export class na3D_fileBrowser {
                 const text = (node.item?.filepath || '') + '/' + node.name;
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
-                t.hoverLabel.textHeight = 4.8;
+                t.hoverLabel.textHeight = 5;
                 t.hoverLabel.fontFace = 'Arial';
                 t.hoverLabel.fontWeight = 'bold';
                 t.hoverLabel.position.set(node.x, node.y + 18, node.z);
@@ -551,275 +552,6 @@ export class na3D_fileBrowser {
         //console.log ("initializeItems_walkValue", "cd", cd);
     }
 
-    initializeFolderList (t, data) {
-        var p = { t : t, ld2 : {}, data2 : t.itemsFolders };
-        na.m.walkArray (data, data, t.initializeFolderView_walkKey, null, false, p);
-        t.initializeFolderView (t, p.data2);
-    }
-
-    initializeFolderView_walkKey (cd) {
-        var ps = cd.path.split("/");
-        if (ps[ps.length-1]=="files") {
-            //console.log ("initializeItems_walkKey", "files", cd);
-        } else if (ps[ps.length-1]=="folders") {
-            var
-            lastParent = cd.params.t.itemsFolders[0],
-            pk = cd.path;
-            if (!cd.params.ld2[pk]) cd.params.ld2[pk] = { levelIdx : 0 };
-            for (var i=0; i<cd.params.t.itemsFolders.length; i++) {
-                var it2 = cd.params.t.itemsFolders[i];
-                if (it2.filepath+"/"+it2.name+"/folders" === cd.path) {
-                    lastParent = it2;
-                }
-            }
-
-
-            //debugger;
-            if (cd.level <= 4) {
-                cd.params.idxPath = "/0";// + cd.params.t.itemsFolders.length;
-            } else {
-                var
-                il1 = (cd.level - 4) / 2,
-                il2 = cd.params.idxPath.split("/"),
-                il3 = null,
-                j = il2.length;
-
-                for (var i=0; i<j; i++) {
-                    if (parseInt(il2[i])===lastParent.idx) il3 = lastParent.idx;
-                    if (typeof il3=="number") il2.pop();
-                }
-
-                cd.params.idxPath = il2.join("/") + "/" + lastParent.idx;
-                cd.params.idxPath2 = cd.params.idxPath;
-            };
-            //debugger;
-            var fit = {
-                type : "naFolder",
-                id : na.m.randomString(),
-                parent : lastParent.id,
-                text : cd.k,
-                idx : cd.params.t.itemsFolders.length - 1,
-                idxPath : cd.params.idxPath
-            };
-
-            if (!cd.params.t.fd3) cd.params.t.fd3 = {};
-            if (!cd.params.t.fd3[fit.idxPath]) cd.params.t.fd3[fit.idxPath] = { itemCount : 0, itemsFolders : [] };
-            cd.params.t.fd3[fit.idxPath].itemCount++;
-            cd.params.t.fd3[fit.idxPath].itemsFolders.push (fit);
-            //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
-            cd.params.t.itemsFolders.push (fit);
-
-            cd.params.data2.push (fit);
-        }
-    }
-    
-    initializeFolderView(t, foldersListForJStree) {
-        var fv = $(".naFoldersList");
-        if (!fv.is(".jstree"))
-            fv.jstree ({
-                core : {
-                    data : foldersListForJStree,
-                    check_callback : true
-                },
-                types : {
-                    "naSystemFolder" : {
-                        "icon" : "/siteMedia/na.view.tree.naSystemFolder.png",
-                        "valid_children" : []
-                    },
-                    "naUserRootFolder" : {
-                        "max_depth" : 14,
-                        "icon" : "/siteMedia/na.view.tree.naUserRootFolder.png",
-                        "valid_children" : ["naFolder", "naMediaAlbum", "naDocument"]
-                    },
-                    "naGroupRootFolder" : {
-                        "max_depth" : 14,
-                        "icon" : "/siteMedia/na.view.tree.naGroupRootFolder.png",
-                        "valid_children" : ["naFolder", "naMediaAlbum", "naDocument"]
-                    },
-                    "naFolder" : {
-                        "icon" : "/siteMedia/na.view.tree.naFolder.png",
-                        "valid_children" : ["naFolder", "naMediaAlbum", "naDocument"]
-                    },
-                    "naDialog" : {
-                        "icon" : "/siteMedia/na.view.tree.naSettings.png",
-                        "valid_children" : []
-                    },
-                    "naSettings" : {
-                        "icon" : "/siteMedia/na.view.tree.naSettings.png",
-                        "valid_children" : []
-                    },
-                    "naTheme" : {
-                        "icon" : "/siteMedia/na.view.tree.naVividThemes.png",
-                        "valid_children" : []
-                    },
-                    "naVividThemes" : {
-                        "icon" : "/siteMedia/na.view.tree.naVividThemes.png",
-                        "valid_children" : []
-                    },
-                    "naMediaAlbum" : {
-                        "icon" : "/siteMedia/na.view.tree.naMediaAlbum.png",
-                        "valid_children" : [ "naMediaAlbum" ]
-                    },
-                    "naDocument" : {
-                        "icon" : "/siteMedia/na.view.tree.naDocument.png",
-                        "valid_children" : []
-                    },
-                    "saApp" : {
-                        "icon" : "/siteMedia/na.view.tree.naApp.png",
-                        "valid_children" : []
-                    }
-                },
-                plugins : [
-                    "contextmenu", "dnd", "search", "state", "types", "wholerow"
-                ]
-            }).on("ready.jstree", function (e, data) {
-                var tree = $(".naFoldersList").jstree(true);
-                for (var i=0; i<tree.settings.core.data.length; i++) {
-                    var it = tree.settings.core.data[i];
-                    if (it.state && it.state.selected) tree.select_node(it._id);
-                }
-            }).on("open_node.jstree", function (e, data) {
-                na.cms.onchange_folderStatus_openOrClosed(e, data);
-
-            }).on("close_node.jstree", function (e, data) {
-                na.cms.onchange_folderStatus_openOrClosed(e, data);
-
-            }).on("rename_node.jstree", function (e, data) {
-                na.cms.onchange_rename_node(e, data);
-
-            }).on("changed.jstree", function (e, data) {
-
-                if (
-                    //data.action!=="ready"
-                    //&&
-                    /*data.action!=="model"
-                    && */data.action!=="select_node"
-                ) return false;
-
-                $("#siteContent .vividTabPage").fadeOut("fast");
-                clearTimeout(na.cms.settings.timeout_changed);
-                na.cms.settings.timeout_changed = setTimeout (function(data) {
-                    var l = data.selected.length, rec = null;
-                    for (var i=0; i<l; i++) {
-                        var d = data.selected[i], rec2 = data.instance.get_node(d);
-                        if (rec2 && rec1.original) rec = rec2;
-                    }
-
-                    if (
-                        na.cms.settings.current.selectedTreeNode
-                        && rec
-                        && na.cms.settings.current.selectedTreeNode.id!==rec.id
-                        && na.cms.settings.current.selectedTreeNode.type=="naDocument"
-                    ) na.cms.saveEditorContent(na.cms.settings.current.selectedTreeNode, function(){
-                        na.cms.settings.current.selectedTreeNode = rec;
-                        //na.cms.onchange_selectedNode (settings, data, rec, function() {
-                            //na.cms.refresh(function() {
-                        //      na.cms.onchange_jsTreeNode(settings, data,rec);
-                            //});
-                        //});
-                    })
-                    else if (rec) na.cms.onchange_jsTreeNode(settings, data, rec);
-
-                    if (rec && rec.type=="naDocument") $("#document").fadeIn("slow");
-                    if (rec && rec.type=="naMediaAlbum") $("#upload").fadeIn("slow");
-                    if (
-                        rec
-                        && (
-                            rec.type=="naDocument"
-                            || rec.type=="naMediaAlbum"
-                        )
-                    ) {
-                        if ($(window).width() < 400) {
-                            na.cms.settings.current.activeDialog = "#siteContent";
-                            arrayRemove(na.desktop.settings.visibleDivs, "#siteToolbarLeft");
-                            arrayRemove(na.desktop.settings.visibleDivs, "#siteContent");
-                            na.desktop.settings.visibleDivs.push("#siteContent");
-                            na.desktop.resize();
-                        } else {
-                            na.cms.settings.current.activeDialog = "#siteContent";
-                            arrayRemove(na.desktop.settings.visibleDivs, "#siteToolbarLeft");
-                            arrayRemove(na.desktop.settings.visibleDivs, "#siteContent");
-                            na.desktop.settings.visibleDivs.push("#siteToolbarLeft");
-                            na.desktop.settings.visibleDivs.push("#siteContent");
-                            na.desktop.resize();
-                        };
-                    }
-
-                    na.site.settings.buttons["#btnAddUser"].disable();
-                    na.site.settings.buttons["#btnAddGroup"].disable();
-                    na.site.settings.buttons["#btnAddFolder"].disable();
-                    na.site.settings.buttons["#btnAddDocument"].disable();
-                    na.site.settings.buttons["#btnAddMediaAlbum"].disable();
-                    na.site.settings.buttons["#btnDeleteRecord"].disable();
-
-                    if (rec && rec.type=="naSystemFolder" && rec.text=="Users")
-                        na.site.settings.buttons["#btnAddUser"].enable();
-
-
-                    if (rec && rec.type=="naSystemFolder" && rec.text=="Groups")
-                        na.site.settings.buttons["#btnAddGroup"].enable();
-
-
-                    if (rec &&
-                        (
-                            rec.type=="naUserRootFolder"
-                            || rec.type=="naGroupRootFolder"
-                            || rec.type=="naFolder"
-                        )
-                    ) na.site.settings.buttons["#btnAddFolder"].enable();
-
-
-                    if (rec &&
-                        (
-                            rec.type=="naFolder"
-                        )
-                    ) {
-                        na.site.settings.buttons["#btnAddDocument"].enable();
-                        na.site.settings.buttons["#btnAddMediaAlbum"].enable();
-                    }
-
-                    if (rec &&
-                        (
-                            rec.type=="naFolder"
-                            || rec.type=="naDocument"
-                            || rec.type=="naMediaAlbum"
-                        )
-                    ) na.site.settings.buttons["#btnDeleteRecord"].enable();
-                }, 500, data);
-
-                //clearTimeout (na.cms.settings.current.timeoutRefresh);
-                //na.cms.settings.current.timeoutRefresh = setTimeout(na.cms.refresh,1000);
-
-            }).on("move_node.jstree", function (e, data) {
-
-                var
-                tree = $("#jsTree").jstree(true),
-                oldPath = na.cms.currentPath(tree.get_node(data.old_parent)),
-                newPath = na.cms.currentPath(tree.get_node(data.parent)),
-                url2 = "/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/NicerAppWebOS/cmsManager/ajax_moveNode.php",
-                ac = {
-                    type : "POST",
-                    url : url2,
-                    data : {
-                        database : data.node.original.database,
-                        oldParent : data.old_parent,
-                        oldPath : oldPath,
-                        newParent : data.parent,
-                        newPath : newPath,
-                        target : data.node.original._id || original.id
-                    },
-                    success : function (data, ts, xhr) {
-                    },
-                    error : function (xhr, textStatus, errorThrown) {
-                        na.site.ajaxFail(fncn, url2, xhr, textStatus, errorThrown);
-                    }
-                };
-                $.ajax(ac);
-
-            });
-
-    }
-
    onresize (t, levels) {
         var t = this;
         //debugger;
@@ -848,66 +580,6 @@ export class na3D_fileBrowser {
             height : $("#siteContent .vividDialogContent").height()
         });
 
-        /*
-        na.m.log (1555, fncn+' : BEGIN coloring');
-        for (var path in t.ld3) {
-            t.ld4.push(path);
-        }
-        for (var i=0; i<t.ld4.length; i++) {
-            var p1 = t.ld4[i].substr(1).split("/");
-
-            //setTimeout (function(p1, i) {
-                var colorGradientScheme = {
-                    themeName: "naColorgradientScheme_custom__"+p1.join("_"),
-                    cssGeneration: {
-                        colorTitle : "yellow",
-                        colorLegend : "#00BBBB",
-                        colorLegendHREF : "#00EEEE",
-                        colorStatus : "goldenrod",
-                        colorStatusHREF : "yellow",
-                        colorLevels: {
-                        0: {
-                            background: "#7A95FF",
-                            color: "rgb("
-                                +(50+Math.random()*205)+","
-                                +(50+Math.random()*205)+","
-                                +(50+Math.random()*205)+")"
-                        },
-                        100: {
-                            background: "white",
-                            color: "rgb("
-                                +(50+Math.random()*205)+","
-                                +(50+Math.random()*205)+","
-                                +(50+Math.random()*205)+")"
-                        }
-                        }
-                    },
-                    htmlTopLevelTableProps: ' cellspacing="5"',
-                    htmlSubLevelTableProps: ' cellspacing="5"',
-                    showFooter: true,
-                    showArrayKeyValueHeader: false,
-                    showArrayStats: true,
-                    showArrayPath: true,
-                    showArraySiblings: true,
-                    jQueryScrollTo: {
-                        duration: 900
-                    }
-                    }
-
-                var list = naCG.generateList_basic (colorGradientScheme, p1.length);
-                t.ld3[t.ld4[i]].colorList = list;
-
-                /*t.ld3[t.ld4[i]].color =
-                    "rgb("
-                        +Math.round(50+Math.random()*205)+","
-                        +Math.round(50+Math.random()*205)+","
-                        +Math.round(50+Math.random()*205)+")";
-                * /
-                t.ld3[t.ld4[i]].p1 = p1;
-                //debugger;
-            //}, i + (Math.random() * 200), p1, i);
-        }
-        */
         na.m.waitForCondition("onresize_do_phase2()", function() {
             /*
             for (var i=0; i<t.ld4.length; i++) {
@@ -925,89 +597,6 @@ export class na3D_fileBrowser {
 
     }
 
-    projectChildrenOnSphere = function(t,parentMesh, childMeshes, radius, offset = 0) {
-        const numChildren = childMeshes.length;
-        if (numChildren === 0) return;
-
-        const center = parentMesh.position;
-        const goldenRatio = (1 + Math.sqrt(5)) / 2;
-        const increment = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
-
-        childMeshes.forEach((child, i) => {
-            // Fibonacci sphere algorithm for uniform distribution
-            const y = (i * (2 / numChildren)) - 1 + (1 / numChildren); // from -1 to +1
-            const r = Math.sqrt(1 - y * y);
-            const phi = (i * increment) % (Math.PI * 2);
-
-            const x = Math.cos(phi) * r;
-            const z = Math.sin(phi) * r;
-
-            const direction = new THREE.Vector3(x, y, z).normalize();
-
-            // Position on sphere surface
-            child.position.copy(center).add(direction.multiplyScalar(radius));
-
-            // Optional outward offset to avoid clipping
-            if (offset > 0) {
-                child.position.add(direction.multiplyScalar(offset));
-            }
-
-            // Orient child to face radially outward
-            const outwardTarget = center.clone().add(direction.multiplyScalar(radius * 2));
-            //child.lookAt(outwardTarget);
-
-            // Optional: lock "up" direction to world Y to prevent unwanted roll
-            // child.up.set(0, 1, 0);
-            // child.lookAt(outwardTarget); // re-apply if using custom up
-
-            // Add as child of parent (or scene.add(child) if you want world space)
-            //parentMesh.add(child);
-            t.scene.add(child);
-        });
-    }
-
-    projectHierarchy(t, item, radius, radiusFromParent) {
-        const parentMesh = item.model;
-        const childrenItems = t.getChildren(item);
-        if (childrenItems.length === 0) return;
-        if (!radiusFromParent) radiusFromParent = radius * 3;
-
-        const childMeshes = childrenItems.map(it => it.model);
-
-        // Project direct children around this parent (your Fibonacci logic)
-        const numChildren = childMeshes.length;
-        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-
-        for (let i = 0; i < numChildren; i++) {
-            const phi = Math.acos(1 - 2 * (i + 0.5) / numChildren);
-            const theta = goldenAngle * i;
-
-            const x = Math.cos(theta) * Math.sin(phi);
-            const y = Math.sin(theta) * Math.sin(phi);
-            const z = Math.cos(phi);
-
-            const direction = new THREE.Vector3(x, y, z);
-            const center = parentMesh.position.clone();
-
-            const child = childMeshes[i];
-            child.position.copy(center).add(direction.multiplyScalar(radius));
-
-            // Orient outward (uncomment if needed)
-            const outwardTarget = center.clone().add(direction.multiplyScalar(radius * 2));
-            child.lookAt(outwardTarget);
-        }
-
-        // Recurse: For each child, project ITS children around ITS new position
-        const clv = (
-            (childrenItems.length/100) > 0.5
-            ? (childrenItems.length/100)
-            : 0.5
-        )
-        const childRadius = (radius / 1.5) * clv; // Scale down for sub-levels; adjust factor (e.g., /2 for tighter nesting)
-        for (let childItem of childrenItems) {
-            t.projectHierarchy(t, childItem, childRadius);
-        }
-    }
 
     // Returns all ancestor IDs up to the root
     getAllAncestors (node) {
@@ -1019,7 +608,6 @@ export class na3D_fileBrowser {
 
         if (node.name!=='music' && typeof path === 'string') {
             const parts = path.substr(1,path.length-2).split('/');
-            debugger;
             for (let i = 0; i < parts.length; i++) {
                 var current_t_items_N_idx = parseInt(parts[i]);
                 ancestors.add(current_t_items_N_idx);           // add partial paths
@@ -1073,98 +661,29 @@ export class na3D_fileBrowser {
         window.process.env.NODE_ENV = 'production';   // or 'development'
 
 
-        /* does not preserve
-        background transparency :
-            // not a good idea for dense trees :
-            const bloomPass = new UnrealBloomPass();
-            bloomPass.strength = 2;
-            bloomPass.radius = 1;
-            bloomPass.threshold = 0;
-            Graph.postProcessingComposer().addPass(bloomPass);
-            */
-            // Instead of three.js EffectComposer + UnrealBloomPass
-
-            // const composer = new EffectComposer(t.renderer);
-            // composer.addPass(new RenderPass(t.scene, t.camera));
-            //
-            // const bloom = new BloomEffect({
-            //     intensity: 1.2,           // ≈ strength
-            //     luminanceThreshold: 0.9,  // ≈ threshold
-            //     luminanceSmoothing: 0.1,
-            //     // radius is not directly there, but mipmapBlur + scale approximates it
-            //     mipmapBlur: true,
-            //     // levels, kernelSize etc. for tuning blur spread
-            // });
-            // composer.addPass(new EffectPass(t.camera, bloom));
-
-            // const Graph = ForceGraph3D()
-            // .backgroundColor('rgba(0,0,0,0)')
-            // .nodeLabel('name')
-            // .nodeAutoColorBy('id')
-            // .enablePointerInteraction(true)
-            // .onNodeHover(node => console.log('hover:', node ? node.name : 'none'))
-            // .graphData(dat2)(t.el)
-            // .onNodeClick(node => {
-            //     // Aim at node from outside it
-            //     const distance = 100;
-            //     const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
-            //
-            //     const newPos = node.x || node.y || node.z
-            //     ? { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }
-            //     : { x: 0, y: 0, z: distance }; // special case if node is in (0,0,0)
-            //
-            // Graph.cameraPosition(
-            //     newPos, // new position
-            //     node, // lookAt ({ x, y, z })
-            // 3000  // ms transition duration
-            // );
-            //
-            // node.item.data.files.sort();
-            // debugger;
-            // let html = '';
-            // for (let i=0; i<node.item.data.files.length; i++) {
-            //     let it = node.item.data.files[i];
-            //     if (it.match(/.mp3$/)) {
-            //         let path =
-            //         node.item.filepath.replace(/'/g, '\\\'').replace(/#/g,'\\#').replace(/&amp;/g,'&')
-            //         +'/'+node.item.name.replace(/'/g, '\\\'').replace(/#/g,'\\#').replace(/&amp;/g,'&')
-            //         +'/'+it.replace(/'/g, '\\\'').replace(/#/g,'\\#').replace(/&amp;/g,'&');
-            //         html += '<li style="margin-right:10px;"><div id="filesList_'+i+'" class="vividButton" style="position:relative;"><a href="javascript:na.apps.loaded.threed_fileExplorer.play($(\'#filesList_'+i+'\')[0], \''+path+'\')" style="font-size:medium">'+it+'</a></div></li>';
-            //     }
-            // }
-            // $('#fileListing').append(html);
-            $('#fileListing, #playlist').css({overflowY:'auto'});
-            // $("#playlist li div, #fileListing li div").css({lineHeight:'1em'});
-            //
-            // na.site.startUIvisuals();
-            // $( "#fileListing li" ).draggable({
-            //     connectToSortable: "#playlist",
-            //     helper: "clone",
-            //     revert: "invalid"
-            // });
-            // $( "#playlist, #playlist li, #fileListing, #fileListing li" ).disableSelection();
-            //
-            //
-            // });;
-
-            /*
-
-        const Graph = ForceGraph3D(t.el, {
-            dagMode : 'radialout',
-            nodeLabel : 'name',
-            nodeAutoColorBy : 'type',
-            nodeOpacity : 0.5,
-            linkOpacity : 0.3,
-            rendererConfig : {
-                antialias: true,
-                alpha: true
-            }
-        });
-        Graph.graphData(dat2);*/
-
+        $('#fileListing, #playlist').css({overflowY:'auto'});
         t.initialized = true;
         var x = t.items;
         t.onresize_postDo(t, true);
+    }
+
+    onresize_postDo (t, animate=false) {
+        //t.drawLines(t);
+        //t.controls._camera.lookAt (t.s2[0].position);
+
+        const width = t.el.clientWidth;
+        const height = t.el.clientHeight;
+
+        t.graph
+        .width(width)
+        .height(height);
+
+        t.resizing = false;
+
+        if (!t.started4) {
+            t.started4 = true;
+        };
+        if (typeof callback=="function") callback(t);
     }
 
     getHierarchicalColor(depth) {
@@ -1243,26 +762,6 @@ export class na3D_fileBrowser {
 
         return { nodes, links };
     }
-
-    onresize_postDo (t, animate=false) {
-        //t.drawLines(t);
-        //t.controls._camera.lookAt (t.s2[0].position);
-
-        const width = t.el.clientWidth;
-        const height = t.el.clientHeight;
-
-        t.graph
-            .width(width)
-            .height(height);
-
-        t.resizing = false;
-
-        if (!t.started4) {
-            t.started4 = true;
-        };
-        if (typeof callback=="function") callback(t);
-    }
-    
 
     toggleShowLines () {
         var t = this;

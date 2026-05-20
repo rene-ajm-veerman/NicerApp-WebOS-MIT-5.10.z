@@ -8,7 +8,7 @@
 
     $fp = $naRoot.'/NicerAppWebOS/siteCache/app.3D.fileBrowser.json';
     $fp = $naWebOS->domainPath.'/siteCache/app.3D.fileBrowser.json';
-    if (file_exists($fp)) unlink ($fp);
+    //if (file_exists($fp)) unlink ($fp);
     if (file_exists($fp)) readfile($fp);
     else {
         $mi = [];

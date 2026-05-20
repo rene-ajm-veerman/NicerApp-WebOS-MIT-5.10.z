@@ -72,6 +72,9 @@ if (!na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/news'])
                                     && na.site
                                     && na.site.s.c
                                     && na.site.s.c.booted
+                                    && na.desktop
+                                    && !na.desktop.settings.animating
+
 
 
                                     /*$('#jsPageSpecific').length > 0

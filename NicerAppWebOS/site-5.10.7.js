@@ -1671,7 +1671,7 @@ na.site = {
      */
         //if (typeof startLogo=='function') startLogo('neCompanyLogo', 'countryOfOriginColors');
 
-        if (!divID) var el = $('body')[0]; else var el = $('#'+divID)[0];
+        if (!divID) var el = $('body')[0]; else var el = $(divID)[0];
 
 
         na.site.startTooltips();

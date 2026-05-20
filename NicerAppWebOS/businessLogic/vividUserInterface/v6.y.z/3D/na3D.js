@@ -272,11 +272,6 @@ export class na3D_fileBrowser {
             var innerHeight = $("#siteContent .vividDialogContent").height();// - $("#header").position().top - $("#header").height();
 
             t.renderer.setSize(innerWidth, innerHeight);
-            na.m.waitForCondition ('3D camera available (1)?', function() { return t.camera; },
-                function () {
-                    t.camera.aspect = innerWidth / innerHeight;
-                    t.camera.updateProjectionMatrix();
-                }, 100);
         }, 100);
 
         /*
@@ -292,9 +287,196 @@ export class na3D_fileBrowser {
         t.clock = new THREE.Clock();
         t.lookClock = -1;
 
-        setTimeout(function() {
-            t.initializeItems (t);
+        //setTimeout(function() {
+  //      debugger;
+        t.initializeItems (t);
             //t.initializeFolderList (t, t.data);
+
+
+            //na.m.waitForCondition (fncn + ' : t.items ready?', function() {
+              //  return t.itemsInitialized ;// && t.items.length > 20 && t.items[0].model;
+            //}, function () {
+                t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
+                na.apps.loaded.threed_fileExplorer = t;
+//debugger;
+                t.graph = ForceGraph3D({
+                    rendererConfig: { antialias: true, alpha: true }
+                })(t.el)
+
+                .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
+                .width(t.el.clientWidth || 1000)
+                .height(t.el.clientHeight || 700)
+                .dagMode('radialout')
+                .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
+
+                .nodeLabel(null)
+                .nodeOpacity(0.9)
+                .linkOpacity(0.1)
+                .linkColor('#FFF')
+                .nodeColor(n => {
+                    const depth = n.item.level ?? 0;
+                    return t.getHierarchicalColor(depth);
+                })
+                .warmupTicks(250)      // or more
+                .cooldownTicks(0)
+
+                // === Custom Nodes & Links ===
+                .nodeThreeObjectExtend(true)
+                .linkThreeObjectExtend(true)
+
+                // Custom Link Labels
+                .linkThreeObject(link => {
+                    const targetItem = t.items[parseInt(link.target)];
+                    if (!targetItem) return false;
+
+                    const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
+                    const sprite = new SpriteText(text);
+                    sprite.color = '#aaaaaa';
+                    sprite.textHeight = 2.8;
+                    sprite.fontFace = 'Arial';
+                    return sprite;
+                })
+
+                // === INTERACTIONS ===
+                .onNodeHover(node => {
+                    t.currentHoverNode = node;
+
+                    // Remove old hover label
+                    if (t.hoverLabel) {
+                        t.graph.scene().remove(t.hoverLabel);
+                        t.hoverLabel = null;
+                    }
+
+                    if (node) {
+                        // Big hover label
+                        const text = (node.item?.filepath || '') + '/' + node.name;
+                        t.hoverLabel = new SpriteText(text);
+                        t.hoverLabel.color = '#ffff88';
+                        t.hoverLabel.textHeight = 4.8;
+                        t.hoverLabel.fontFace = 'Arial';
+                        t.hoverLabel.fontWeight = 'bold';
+                        t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                        t.graph.scene().add(t.hoverLabel);
+
+                        // Get all nodes to highlight
+                        const ancestors = t.getAllAncestors(node);
+                        const descendants = t.getAllDescendants(t, node);
+                        const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
+
+                        t.graph
+                        // .nodeColor(n => {
+                        //     if (n === node) return '#ffff44';                    // hovered node
+                        //     if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
+                        //     const depth = n.item?.level ?? n.depth ?? 0;
+                        //     return t.getHierarchicalColor(depth);
+                        // })
+                        .linkColor(link => {
+                            const hovered = t.currentHoverNode;
+                            if (!hovered) return 'rgba(255,255,255,0.2)';
+
+                            const hoveredAncestors = t.getAllAncestors(hovered);
+                            const sourceAncestors = t.getAllAncestors(link.source);
+                            var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+                            //sourceDepth = Math.round(sourceDepth / 2) + 1;
+
+                            const targetAncestors = t.getAllAncestors(link.target);
+                            var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+                            //targetDepth = Math.round(targetDepth / 2) + 1;
+
+                            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+
+                            const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
+                            const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
+
+
+                            if (ancestors.has(sourceId) && ancestors.has(targetId)) {
+                                return t.getHierarchicalColor(sourceDepth);
+                            }
+                            // Direct children
+                            if (isDescendantLink) {
+                                return t.getHierarchicalColor(targetDepth);
+                            }
+
+                            return 'rgba(255,255,255,0.1)';
+
+                        })
+                        // .linkOpacity(link => {
+                        //     const hovered = t.currentHoverNode;
+                        //     if (!hovered) return 0.35;
+                        //
+                        //     const ancestors = t.getAllAncestors(hovered);
+                        //     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                        //     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                        //
+                        //     if (ancestors.has(sourceId) && ancestors.has(targetId)) return 0.7;
+                        //     if (sourceId === (hovered.id || hovered)) return 0.7;
+                        //
+                        //     return 0.4;
+                        // })
+                        .linkWidth(link => {
+                            const hovered = t.currentHoverNode;
+                            if (!hovered) return 1;
+
+                            const sourceId = link.source?.id ?? link.source;
+                            const targetId = link.target?.id ?? link.target;
+                            const hoverId  = hovered.id ?? hovered;
+
+                            return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
+                        });
+                    }
+                    else {
+                        // Reset when hover ends
+                        t.graph.nodeColor(n => {
+                            const depth = n.item?.level ?? n.depth ?? 0;
+                            return t.getHierarchicalColor(depth);
+                        });
+
+                        t.graph.linkColor(() => '#555555')
+                        .linkOpacity(0.35)
+                        .linkWidth(1.2);
+                    }
+                })
+
+                .onNodeClick(node => {
+                    if (!node) return;
+                    console.log('Clicked node:', node.name);
+
+                    // Camera focus
+                    const distance = 180;
+                    const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
+
+                    t.graph.cameraPosition(
+                        {
+                            x: (node.x||0) * distRatio,
+                                           y: (node.y||0) * distRatio,
+                                           z: (node.z||0) * distRatio
+                        },
+                        node,
+                        1600
+                    );
+
+                    // Your existing file listing logic
+                    if (typeof t.onclick_node === 'function') {
+                        t.onclick_node(t, node);
+                    }
+                })
+
+                .onBackgroundClick(() => {
+                    t.graph.nodeColor(null); // reset highlights
+                })
+                .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
+                .nodeRelSize(7);
+
+
+                t.graph
+                .d3Force('charge').strength(-280);   // stronger repulsion
+
+
+ //           }, 200);
+
+
 
             //t.camera.lookAt (t.s2[0].position);
             //t.controls._camera.lookAt (t.s2[0].position);
@@ -403,8 +585,8 @@ export class na3D_fileBrowser {
                 //t.camera.position.set(t.middle.x, t.middle.y, t.winners.front);
                 //t.animate(t, null);
             }, 250);
-            */
-        }, 250);
+            *
+        }, 250);*/
 
     }
     /*
@@ -1528,7 +1710,7 @@ export class na3D_fileBrowser {
     async initializeItems (t) {
         var p = { t : t, ld2 : {} };
         t.s2 = [];
-        na.m.walkArray_async (t.data[0]['filesAtRoot'], t.data[0]['filesAtRoot'], t.initializeItems_walkKey, t.initializeItems_walkValue, false, p);
+        na.m.walkArray (t.data[0]['filesAtRoot'], t.data[0]['filesAtRoot'], t.initializeItems_walkKey, t.initializeItems_walkValue, false, p);
         t.itemsInitialized = true;
 
         var innerWidth = $("#siteContent .vividDialogContent").width();
@@ -2177,498 +2359,8 @@ export class na3D_fileBrowser {
 
     onresize_do_phase2(t, callback) {
         let fncn = 'na3D.js::onresize_do_phase2()';
-        na.m.log (1555, fncn+' : BEGIN .pos calculations');
-
-
-        /*
-        for (var path in t.ld3) {
-            path = path.replace(/\/.*?/,'');
-            var ld3 = t.ld3['/'+path];
-
-            // calculate x,y,z as grid positions in the scene,
-            // to be translated later in this function into scene coordinates.
-            if (path!=="") {
-                for (var i=0; i<ld3.items.length; i++) {
-                    var
-                    it = t.items[ld3.items[i].idx];
-
-                    ld3.rowColumnCount = Math.floor(Math.sqrt(ld3.itemCount));
-                    ld3.cubeSideLengthCount = Math.floor(Math.cbrt(ld3.itemCount));
-                    ld3.rowColumnCount = Math.floor(Math.sqrt(ld3.cubeSideLengthCount));
-
-                    var
-                    pos = { x : 0, xField : 0, y : 0, yField : 0, z : 0 },
-
-                    // 2D view
-                    columnField = 0,
-                    rowField = 0,
-
-                    // 3D view
-                    column = 0,
-                    row = 0,
-                    depth = 0;
-
-                    //if (it.filepath=="siteMedia/backgrounds/tiled/active") debugger;
-                    for (var j=0; j<ld3.items.length; j++) {
-                        var it2 = t.items[ld3.items[j].idx];
-                        if (
-                            (it.parent ? it.parent.idx === it2.parent.idx : false)
-                            && it2.levelIdx <= it.levelIdx
-                        ) {
-                            if (
-                                column >= ld3.cubeSideLengthCount
-                                && row >= ld3.cubeSideLengthCount
-                            ) {
-                                pos.z++;
-                                depth++;
-
-                                column = 0;
-                                row = 0;
-                            } else if (row >= ld3.cubeSideLengthCount) {
-                                pos.z++;
-                                depth++;
-
-                                column = 0;
-                                row = 0;
-
-                                pos.y = 0;
-                                pos.x++;
-                            } else if (column >= ld3.cubeSideLengthCount) {
-                                pos.y++;
-                                pos.x = 0;
-                                row++;
-                                column = 0;
-                            } else {
-                                column++;
-                                pos.x++;
-                            }
-
-                            if (columnField >= ld3.cubeSideLengthCount) {
-                                pos.yField++;
-                                pos.xField = 0;
-                                rowField++;
-                                columnField = 0;
-                            } else {
-                                columnField++;
-                                pos.xField++;
-                            }
-
-                        }
-
-                    };
-
-                    // do NOT move this finalized code...
-                    it.rowField = rowField;
-                    it.columnField = columnField;
-                    it.row = row;
-                    it.column = column;
-                    it.depth = depth;
-                    it.pos = pos;
-                    it.ld3 = ld3;
-                    //console.log ('t334', it.filepath.replace('/0/filesAtRoot/folders','').replace(/\/folders/g,'')+'/'+it.name, columnField, rowField, column, row, depth, pos);
-                    //if (it.name=="gull" || it.name=="owl") debugger;
-                }
-            }
-            //debugger;
-        }
-        na.m.log (1555, fncn+' : END .pos calculations');
-        */
-
-
-
-
-
-
-
-        /*
-        var
-        its = $.extend( [], t.items ),
-        its2 = [],
-        compare = function (a, b) {
-            return a.parent-b.parent;
-        },
-        compare1 = function (a, b) {
-            if (a.it && b.it) {
-                return a.it.level-b.it.level;
-            } else return 0;
-        };
-
-        its.sort (compare1);
-
-
-        var
-        maxLevel = 0;
-
-        na.m.log (1555, fncn+' : BEGIN scene items position calculations');
-        for (var i=0; i<its.length; i++) {
-            if (!t.showFiles && its[i].name.substr(its[i].name.length-4,4)=='.mp3') continue;
-            if (maxLevel < its[i].level) maxLevel = its[i].level;
-            for (var j=0; j<its.length; j++) {
-
-                var
-                name = "",
-                parent = t.hovered || t.items[0];
-
-                while (parent) {
-                    //$("#site3D_label")[0].textContent =
-                    //  t.hovered.object.it.name.replace(/-\s*[\w]+\.mp3/, ".mp3");
-                    /*
-                    var li =
-                        parent.object.it.filepath
-                            .replace("/0/filesAtRoot/folders/","")
-                            .replace("/0/filesAtRoot/folders","");
-                    if (li!=="") li+= "/";
-                    li += parent.object.it.name.replace(/\s*-\s*[-_\w]+\.mp3$/,".mp3")
-                    //l += " ("+parent.object.it.parent.rndz+")";
-                    li = li.replace(/folders\//g, "");
-                    * /
-                    var li = its[i].filepath + '/' + its[i].name;
-
-                    /*
-                    var lj =
-                        its[j].filepath
-                            .replace("/0/filesAtRoot/folders/","")
-                            .replace("/0/filesAtRoot/folders","");
-                    if (lj!=="") lj+= "/";
-                    lj += its[j].name.replace(/\s*\-\s*[-_\w]+\.mp3$/,".mp3");
-                    //l += " ("+parent.object.it.parent.rndz+")";
-                    lj = lj.replace(/folders\//g, "");
-                    * /
-                    var lj = its[j].filepath + '/' + its[j].name;
-
-                    parent = parent.parent;
-                }
-
-                if (
-                    //its[i].idxPath+"/"+its[i].idx === its[j].idxPath+"/"+its[j].idx
-                    //its[i].idxPath === its[j].idxPath
-                    //its[i].filepath === its[j].filepath
-                    //&& its[i].name === its[j].name
-                    /*
-                    its[i].pos.x === its[j].pos.x
-                    && its[i].pos.y === its[j].pos.y
-                    && its[i].pos.z === its[j].pos.z* /
-                    li === lj
-                ) {
-                    //console.log ('t780', li);
-                    var
-                    ita = {
-                        level: its[i].level,
-                        maxColumn : Math.max( its[i].columnField, its[j].columnField ),
-                        maxRow : Math.max( its[i].rowField, its[j].rowField ),
-                        maxDepth : Math.max ( its[i].depth, its[j].depth )
-                    };
-                    if (ita.maxColumn === its[i].columnField) ita.maxColumnIt = its[i]; else ita.maxColumnIt = its[j];
-                    if (ita.maxRow === its[i].rowField) ita.maxRowIt = its[i]; else ita.maxRowIt = its[j];
-                    if (ita.maxDepth === its[i].depth) ita.maxDepthIt = its[i]; else ita.maxDepthIt = its[j];
-                    its[i].ita = ita;
-                    its[j].ita = ita;
-                    break;
-                    /*
-                    its[i].maxColumnIta = ita;
-                    its[i].maxRowIta = ita;
-                    its[i].maxDepthIta = ita;
-                    its[j].maxColumnIta = ita;
-                    its[j].maxRowIta = ita;
-                    its[j].maxDepthIta = ita;
-                    * /
-                    //if (!its2.includes(ita)) its2.push (ita);
-                }
-                if (its[i].ita) continue;
-            }
-        }
-        na.m.log (1555, fncn+' : END scene items position calculations');
-
-        var
-        /*
-        compare2 = function (a,b) {
-            var x = b.maxColumn - a.maxColumn;
-            if (x === 0) return b.maxRow - a.maxRow; else return x;
-        },
-        compare3 = function(a,b) {
-            return a.name < b.name;
-        },
-        * /
-        its2 = its;
-
-        // calculate directional offset values
-        // from cube/sphere XYZ grouping field
-        var pp = null;
-        var pox = {}, poy = {}, poz = {}, pd = {};
-        var prevIt = null;
-        //if (t.initialized) //EVUL
-
-        na.m.log (1555, fncn+' : Do final position calculations for '+t.items.length+' scene items.');
-        var r = 1.0, p1 = null, p1m = [];
-        for (var i=0; i<t.items.length; i++) {
-            if (!t.showFiles && t.items[i].name.substr(t.items[i].name.length-4,4)=='.mp3') continue;
-
-            var
-            offsetXY = 200,
-            it = t.items[i],
-            p = (it.parent ? it.parent : null);
-
-                var
-                itmaxc = it.ita.maxColumn,
-                itmaxr = it.ita.maxRow,
-                itmaxd = it.ita.maxDepth,
-                itLeftRight = (
-                    it.column-1 == itmaxc / 2
-                    ? 0
-                    : itmaxc===1
-                        ? 0
-                        : itmaxc - it.column == it.column -1
-                            ? 0
-                            : itmaxc - it.column < it.column - 1
-                                ? 1
-                                : -1
-                            ),
-                itUpDown = (
-                    it.row-1 == itmaxr/2
-                    ? 0
-                    : itmaxr===1
-                        ? 0
-                        : itmaxr - it.row == it.row - 1
-                            ? 0
-                            : itmaxr - it.row < it.row - 1
-                                ? 1
-                                : -1
-                            ),
-                itBackForth = (
-                    it.depth-1 == itmaxd/2
-                    ? 0
-                    : itmaxd===1
-                        ? 0
-                        : itmaxd - it.depth == it.depth - 1
-                            ? 0
-                            : itmaxr - it.depth < it.depth - 1
-                                ? 1
-                                : -1
-                            ),
-                itc = (itmaxc - 1 - it.columnField),
-                itr = (itmaxr - 1 - it.rowField),
-                itd = (itmaxd - 1 - it.depth);
-
-                it.columnOffsetValue = itc;//Math.floor(itc);
-                it.rowOffsetValue = itr;//Math.floor(itr);
-                it.depthOffsetValue = itd;//Math.floor(itr);
-                it.leftRight = itLeftRight;
-                it.upDown = itUpDown;
-                it.backForth = itBackForth;
-                //if (it.name=="landscape") debugger;
-            //};
-
-
-
-            let divider = 1;
-
-
-            if (!it.sPos) it.sPos = {};
-        }
-
-        var
-        sideLength = 300,
-        length = sideLength,
-        width = sideLength,
-        shape = new THREE.Shape();
-        shape.moveTo( 0,0 );
-        shape.lineTo( 0, width );
-        shape.lineTo( length, width );
-        shape.lineTo( length, 0 );
-        shape.lineTo( 0, 0 );
-
-        var extrudeSettings = {
-        steps: 40,
-        depth: sideLength,
-        bevelEnabled: true,
-        bevelThickness: 40,
-        bevelSize: 40,
-        bevelOffset: 0,
-        bevelSegments: 40
-        };
-
-        na.m.log (1555, fncn+' : Add scene items to scene.');
-        for (var j=0; j<t.items.length; j++) {
-            var p7a = t.items[j].idxPath;
-
-            if (false) {
-                var p7b = p7a.substr(1).split("/");
-                p7b.pop();
-                var p7a1 = '/'+p7b.join('/');
-                if (p7a1==='/') p7a1 = p7a;
-            } else {
-                var p7a1 = p7a;
-            }
-
-            if (t.ld3 && t.ld3[p7a1]) {
-                var
-                color = t.ld3[p7a1].color,
-                list = t.ld3[p7a1].colorList,
-                p1 = t.ld3[p7a1].p1,
-                it = t.items[j];
-                if (it && !it.name.match(/\/.mp3$/)) {
-                    //if (it.name.match(/SABATON/)) debugger;
-                    if (color) it.color = color; else {
-                        if (it.parent && it.parent) {
-                            for (var k=0; k<list.length; k++) {
-                                if (p1[k]==it.parent.idx) {
-                                    it.color = list[k].color;
-                                }
-                            }
-                        }
-                        if (!it.color && list) {
-                            for (var k=0; k<list.length; k++) {
-                                if (p1[k]==it.idx)
-                                    it.color = list[k].color;
-                            }
-                        }
-                        if (!it.color) {
-                            it.color = "rgb(0,0,255)";
-                        }
-                    }
-
-                    //console.log ("t321", it.name, it.color);
-
-                    var sideLength = 300, length = sideLength, width = sideLength, oc = 0.555;
-                    var
-                    /*
-                    materials2 = [
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        }),
-                        new THREE.MeshBasicMaterial({
-                            color : it.color ? it.color : "rgb(0,0,255)",
-                            opacity : oc,
-                            wireframe : t.wireframe,
-                            transparent : true
-                        })
-
-                    ],* /
-                    materials2 = [
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        }),
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        }),
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        }),
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        }),
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        }),
-                        new THREE.MeshPhongMaterial({
-                            color : p.color ? p.color : 'rgb(0,0,255)',
-                            transparent : true,
-                            opacity : oc,
-                            specular: 0xffffff,
-                            shininess : 50
-                        })
-                    ];
-                    if (it.parent) {
-                        // parent/current folder :
-                        if (it.name.substr(it.name.length-4,4)=='.mp3') {
-                            if (t.showFiles)
-                            var cube = t.createSphere (t.meshLength * 3, it.color);
-                        } else {
-                            var cube = new THREE.Mesh( new THREE.BoxGeometry( t.meshLength, t.meshLength, t.meshLength ), materials2 );
-                        }
-                        if (it.sPos)
-                        if (!t.showFiles || it.name.substr(it.name.length-4,4)!=='.mp3') {
-                            cube.it = it;
-                            cube.position.set(0,0,0);
-                            t.scene.remove(it.model);
-                            //if (it.name.match("SABATON")) debugger;
-                            it.model = cube;
-                            t.scene.add( cube );
-                            //t.items.push (it);
-                        }
-                        t.s2.push(cube);
-                    } else {
-                        var cube = new THREE.Mesh( new THREE.BoxGeometry( t.meshLength, t.meshLength, t.meshLength ), materials2 );
-                        cube.it = it;
-                        cube.position.set(0,0,0);
-                        it.model = cube;
-                        t.scene.add( cube );
-                        t.s2.push(cube);
-                    }
-                }
-            }
-        }
-        */
-
-
-        /*
-        for (var i=0; i<t.items.length; i++) {
-            var
-            it = t.items[i],
-            p = (it.parent ? it.parent : null);
-
-            if (p) {
-                p1m.push (it.model);
-                if (p1!==p) {
-                    debugger;
-                    t.projectChildrenOnSphere (t, p.model, p1m, 1000, 0);
-                    p1 = p;
-                }
-            }
-        }*/
-
         // NEW: After all meshes added, start recursive projection from root
         //t.projectHierarchy(t, t.items[0], 10*1000); // Start radius ~5000; adjust as needed
-        const dat2 = t.itemsToGraphData(t);
-        na.apps.loaded.threed_fileExplorer = t;
-        na.apps.loaded.threed_fileExplorer.d = dat2;
 
         var textures = {};
 
@@ -2677,195 +2369,7 @@ export class na3D_fileBrowser {
         window.process = window.process || {};
         window.process.env = window.process.env || {};
         window.process.env.NODE_ENV = 'production';   // or 'development'
-        console.log("=== DATA DEBUG ===");
-        console.log("Nodes:", dat2.nodes ? dat2.nodes.length : 0);
-        console.log("Links:", dat2.links ? dat2.links.length : 0);
-        if (dat2.nodes && dat2.nodes.length > 0) {
-            console.log("First node sample:", dat2.nodes[0]);
-        }
 
-        t.graph = ForceGraph3D({
-            rendererConfig: { antialias: true, alpha: true }
-        })(t.el)
-
-        .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
-        .width(t.el.clientWidth || 1000)
-        .height(t.el.clientHeight || 700)
-        .dagMode('radialout')
-        .graphData(dat2)   // { nodes: [...], links: [...] }
-
-        .nodeLabel(null)
-        .nodeOpacity(0.9)
-        .linkOpacity(0.1)
-        .linkColor('#FFF')
-        .nodeColor(n => {
-            const depth = n.item.level ?? 0;
-            return t.getHierarchicalColor(depth);
-        })
-
-
-        // === Custom Nodes & Links ===
-        .nodeThreeObjectExtend(true)
-        .linkThreeObjectExtend(true)
-
-        // Custom Link Labels
-        .linkThreeObject(link => {
-            const targetItem = t.items[parseInt(link.target)];
-            if (!targetItem) return false;
-
-            const text = targetItem ? targetItem.filepath + '/' + targetItem.name : link.target;
-            const sprite = new SpriteText(text);
-            sprite.color = '#aaaaaa';
-            sprite.textHeight = 2.8;
-            sprite.fontFace = 'Arial';
-            return sprite;
-        })
-
-        // === INTERACTIONS ===
-        .onNodeHover(node => {
-            t.currentHoverNode = node;
-
-            // Remove old hover label
-            if (t.hoverLabel) {
-                t.graph.scene().remove(t.hoverLabel);
-                t.hoverLabel = null;
-            }
-
-            if (node) {
-                // Big hover label
-                const text = (node.item?.filepath || '') + '/' + node.name;
-                t.hoverLabel = new SpriteText(text);
-                t.hoverLabel.color = '#ffff88';
-                t.hoverLabel.textHeight = 4.8;
-                t.hoverLabel.fontFace = 'Arial';
-                t.hoverLabel.fontWeight = 'bold';
-                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
-                t.graph.scene().add(t.hoverLabel);
-
-                // Get all nodes to highlight
-                const ancestors = t.getAllAncestors(node);
-                const descendants = t.getAllDescendants(t, node);
-                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
-
-                t.graph
-                // .nodeColor(n => {
-                //     if (n === node) return '#ffff44';                    // hovered node
-                //     if (highlightedNodes.has(n.id || n)) return '#aaffff'; // connected nodes
-                //     const depth = n.item?.level ?? n.depth ?? 0;
-                //     return t.getHierarchicalColor(depth);
-                // })
-                .linkColor(link => {
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return 'rgba(255,255,255,0.2)';
-
-                    const hoveredAncestors = t.getAllAncestors(hovered);
-                    const sourceAncestors = t.getAllAncestors(link.source);
-                    var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                    //sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                    const targetAncestors = t.getAllAncestors(link.target);
-                    var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                    //targetDepth = Math.round(targetDepth / 2) + 1;
-
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-
-                    const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
-                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
-
-
-                     if (ancestors.has(sourceId) && ancestors.has(targetId)) {
-                         return t.getHierarchicalColor(sourceDepth);
-                     }
-                     // Direct children
-                     if (isDescendantLink) {
-                         return t.getHierarchicalColor(targetDepth);
-                     }
-
-                     return 'rgba(255,255,255,0.1)';
-
-                })
-                // .linkOpacity(link => {
-                //     const hovered = t.currentHoverNode;
-                //     if (!hovered) return 0.35;
-                //
-                //     const ancestors = t.getAllAncestors(hovered);
-                //     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                //     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                //
-                //     if (ancestors.has(sourceId) && ancestors.has(targetId)) return 0.7;
-                //     if (sourceId === (hovered.id || hovered)) return 0.7;
-                //
-                //     return 0.4;
-                // })
-                .linkWidth(link => {
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return 1;
-
-                    const sourceId = link.source?.id ?? link.source;
-                    const targetId = link.target?.id ?? link.target;
-                    const hoverId  = hovered.id ?? hovered;
-
-                    return (sourceId === hoverId || targetId === hoverId) ? 3 : 1;
-                });
-            }
-            else {
-                // Reset when hover ends
-                t.graph.nodeColor(n => {
-                    const depth = n.item?.level ?? n.depth ?? 0;
-                    return t.getHierarchicalColor(depth);
-                });
-
-                t.graph.linkColor(() => '#555555')
-                .linkOpacity(0.35)
-                .linkWidth(1.2);
-            }
-        })
-
-        .onNodeClick(node => {
-            if (!node) return;
-            console.log('Clicked node:', node.name);
-
-            // Camera focus
-            const distance = 180;
-            const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
-
-            t.graph.cameraPosition(
-                {
-                    x: (node.x||0) * distRatio,
-                                   y: (node.y||0) * distRatio,
-                                   z: (node.z||0) * distRatio
-                },
-                node,
-                1600
-            );
-
-            // Your existing file listing logic
-            if (typeof t.onclick_node === 'function') {
-                t.onclick_node(t, node);
-            }
-        })
-
-        .onBackgroundClick(() => {
-            t.graph.nodeColor(null); // reset highlights
-        })
-        .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
-        .nodeRelSize(7);
-
-        // Warm up the simulation + show everything
-        setTimeout(() => {
-            t.graph
-            .zoomToFit(1200, 100)        // longer animation + generous padding
-            .d3Force('charge').strength(-280);   // stronger repulsion
-        }, 400);
-
-        // Optional: Extra warm-up ticks
-        setTimeout(() => {
-            if (t.graph._d3ForceSimulation) {
-                t.graph._d3ForceSimulation.alpha(1).restart();
-            }
-        }, 600);
 
         /* does not preserve
         background transparency :
@@ -2878,18 +2382,18 @@ export class na3D_fileBrowser {
             */
             // Instead of three.js EffectComposer + UnrealBloomPass
 
-            const composer = new EffectComposer(t.renderer);
-            composer.addPass(new RenderPass(t.scene, t.camera));
-
-            const bloom = new BloomEffect({
-                intensity: 1.2,           // ≈ strength
-                luminanceThreshold: 0.9,  // ≈ threshold
-                luminanceSmoothing: 0.1,
-                // radius is not directly there, but mipmapBlur + scale approximates it
-                mipmapBlur: true,
-                // levels, kernelSize etc. for tuning blur spread
-            });
-            composer.addPass(new EffectPass(t.camera, bloom));
+            // const composer = new EffectComposer(t.renderer);
+            // composer.addPass(new RenderPass(t.scene, t.camera));
+            //
+            // const bloom = new BloomEffect({
+            //     intensity: 1.2,           // ≈ strength
+            //     luminanceThreshold: 0.9,  // ≈ threshold
+            //     luminanceSmoothing: 0.1,
+            //     // radius is not directly there, but mipmapBlur + scale approximates it
+            //     mipmapBlur: true,
+            //     // levels, kernelSize etc. for tuning blur spread
+            // });
+            // composer.addPass(new EffectPass(t.camera, bloom));
 
             // const Graph = ForceGraph3D()
             // .backgroundColor('rgba(0,0,0,0)')
@@ -2971,17 +2475,21 @@ export class na3D_fileBrowser {
             '#9775fa',   // 5 - purple
             '#74c0fc',   // 6
             '#63e6be',
-            'blue',
+            'lime',
             'cyan',
-            'lime'
+            'red',
+            'white',
+            'ivory',
+            'grey'
         ];
 
-        return colors[Math.min(depth, colors.length - 1)] || '#aaaaaa';
+        var y = Math.min(depth, colors.length - 1);
+        var x = colors[y] || '#aaaaaa';
+        return x;
         //return colors[Math.min(Math.abs(colors.length/depth), colors.length - 1)] || '#aaaaaa';
     }
 
     play (btn, relPath) {
-        debugger;
         let
         fullPath = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
         $('#audioTag')[0].src = fullPath;
@@ -2995,9 +2503,6 @@ export class na3D_fileBrowser {
         $("#playlist li div, #fileListing li div").css({lineHeight:'1em'});
 
         na.site.startUIvisuals();
-
-
-        debugger;
     }
 
     getChildren(item) {
@@ -3884,7 +3389,7 @@ export class na3D_fileBrowser {
     }
 
     onresize_postDo (t, animate=false) {
-        t.drawLines(t);
+        //t.drawLines(t);
         //t.controls._camera.lookAt (t.s2[0].position);
 
         t.winners = {
@@ -3918,6 +3423,7 @@ export class na3D_fileBrowser {
         //t.flyControls.object.lookAt (new THREE.Vector3( t.middle.x, t.middle.y, t.middle.z));
 
 
+        /*
             t.cameraOrigin = {
                 x : t.middle.x,
                 y : t.middle.y,
@@ -4052,7 +3558,7 @@ export class na3D_fileBrowser {
             // Create the final object to add to the scene
             const curveObject2 = new THREE.Line( geometry2, material2 );
             t.scene.add(curveObject2);
-    */
+    * /
 
             t._tmp = new THREE.Vector3();
             t.animationProgress = { value: 0 };
@@ -4330,8 +3836,8 @@ export class na3D_fileBrowser {
                     } );
 
                 };
-            }, 50);*/
-        };
+            }, 50);* /
+        }; */
 
         const width = t.el.clientWidth;
         const height = t.el.clientHeight;
@@ -4339,7 +3845,7 @@ export class na3D_fileBrowser {
         t.graph
             .width(width)
             .height(height)
-            .zoomToFit(300, 50);
+            .zoomToFit(600, 50);
 
         t.resizing = false;
 

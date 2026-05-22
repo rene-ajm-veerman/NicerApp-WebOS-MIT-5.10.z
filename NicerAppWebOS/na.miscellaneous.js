@@ -36,6 +36,12 @@ na.m = {
 		}
     },
 
+    encodeUnicodePath(path) {
+        return path.split('/').map(segment =>
+        encodeURIComponent(segment)
+        ).join('/');
+    },
+
     cssTranslation : function (dID, cssObj) {
         //var cssText = dID+' {\n';
         var cssText = '';

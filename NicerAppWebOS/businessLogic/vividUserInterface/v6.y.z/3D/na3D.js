@@ -166,6 +166,15 @@ export class na3D_fileBrowser {
         na.threeD = t;
 
         t.initializeItems (t);
+
+
+        // === Before creating t.graph ===
+        const maxLevels = 12; // adjust based on your deepest hierarchy
+        t.dagLevelDistances = new Array(maxLevels).fill(0).map((_, level) => {
+            return 100 + (level * 40) + Math.random() * 380;
+        });
+
+
         t.maxLevel = 0;
         for (var i=0; i<t.items.length; i++) {
             if (it.level > t.maxLevel) t.maxLevel = it.level;
@@ -182,7 +191,6 @@ export class na3D_fileBrowser {
         .height(t.el.clientHeight || 700)
         .dagMode('radialout')
         .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
-        //.forceEngine('ngraph')
 
         .nodeLabel(null)
         .nodeOpacity(0.9)
@@ -227,6 +235,7 @@ export class na3D_fileBrowser {
         .nodeThreeObject(node => {
             const text = node.name;//`${node.item.filepath}/${pp}/${node.name}`;
             const sprite = new SpriteText(text);
+            node.sprite = sprite;
             sprite.color = 'rgba(255,255,255,0.7)';
             sprite.textHeight = 5;
             sprite.fontFace = 'Arial';
@@ -236,7 +245,6 @@ export class na3D_fileBrowser {
             sprite.material.depthWrite = false;
             sprite.material.depthTest = false;
 
-
             t.graph.scene().add(sprite);
             return sprite;
 
@@ -245,7 +253,6 @@ export class na3D_fileBrowser {
         // Custom Link Labels
         .linkThreeObjectExtend(false)
         .linkThreeObject(null)
-
         // === INTERACTIONS ===
         .onNodeHover(node => {
             t.currentHoverNode = node;
@@ -253,20 +260,23 @@ export class na3D_fileBrowser {
             // Remove old hover label
             if (t.hoverLabel) {
                 t.graph.scene().remove(t.hoverLabel);
-            }
+            };
 
             if (node) {
                 // Big hover label
+                node.sprite.visibile = false;
+
                 const text = (node.item?.filepath || '') + '/' + node.name;
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 5;
                 t.hoverLabel.fontFace = 'Arial';
-                t.hoverLabel.fontWeight = 'bold';c
+                t.hoverLabel.fontWeight = 'bold';
                 t.hoverLabel.position.set(node.x, node.y + 18, node.z);
                 t.hoverLabel.material.depthWrite = false;
                 t.hoverLabel.material.depthTest = false;
                 t.graph.scene().add(t.hoverLabel);
+                // t.graph.refresh();
 
                 // Get all nodes to highlight
                 const ancestors = t.getAllAncestors(node);
@@ -332,11 +342,12 @@ export class na3D_fileBrowser {
                     } else {
                         return 1;
                     }
-                });
+                })
             }
             else {
                 // Reset when hover ends
                 t.graph.nodeColor(n => {
+                    n.sprite.visibile = true;
                     var depth = n.item?.level ?? n.depth ?? 0;
                     depth = depth / 2 + 1;
                     return t.getHierarchicalColor(depth);
@@ -374,14 +385,11 @@ export class na3D_fileBrowser {
             }
         })
 
-        .onBackgroundClick(() => {
-            t.graph.nodeColor(null); // reset highlights
-        })
-        .dagLevelDistance(200)           // ← Increase spacing between hierarchy levels
         .nodeRelSize(7)
-        //.forceEngine('ngraph')           // often better for >1k nodes
-        .numDimensions(3)
+        .numDimensions(3);
 
+        t.graph.d3Force('charge').strength(-130);
+        t.graph.d3Force('link').distance(link => 90 + Math.random() * 150);
         // t.graph
         // .d3Force('charge').strength(null);   // stronger repulsion
 
@@ -403,7 +411,7 @@ export class na3D_fileBrowser {
                     var
                     path = cit.item.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
                     file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3");
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+path+'/'+node.item.name+'/'+file2+'\')"><span>'+path+'/'+node.item.name+'/'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+path+'/'+node.item.name+'/'+file+'\')"><span>'+path+'/'+node.item.name+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -721,7 +729,8 @@ export class na3D_fileBrowser {
 
     play (btn, relPath) {
         let
-        fullPath = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
+        fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
+        fullPath = new URL(fullPath).pathname;
         $('#audioTag')[0].src = fullPath;
         $('#audioTag')[0].play();
         $('#fileListing .vividButtonSelected').removeClass('vividButtonSelected').addClass('vividButton');
@@ -1072,12 +1081,7 @@ export class na3D_demo_cube {
         var rect = t.renderer.domElement.getBoundingClientRect();
         t.mouse.x = ( ( event.clientX - rect.left ) / ( rect.width - rect.left ) ) * 2 - 1;
         t.mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;        
-
-        debugger;
-            t.raycaster.setFromCamera(t.mouse, t.camera);
-            const intersects = t.raycaster.intersectObjects(t.s2);
-
-            console.log('Intersects:', intersects.length, intersects[0] ? intersects[0].object.it?.name : null);
+        t.raycaster.setFromCamera(t.mouse, t.camera);
     }
     
 

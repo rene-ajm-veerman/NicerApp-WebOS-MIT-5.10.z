@@ -23,14 +23,13 @@ export var naLog = {
                 var
                     c = a._id.split(' '),
                     d = b._id.split(' '),
-                    c1 = new Date(c[1]+' '+c[2]).getTime()/1000 + (parseInt(c[4])*60),
-                    d1 = new Date(d[1]+' '+d[2]).getTime()/1000 + (parseInt(d[4])*60);
-                //debugger;
+                    c1 = new Date(c[1]+' '+c[2]).getTime()/1000 + (parseInt(c[4].replace('m',''))*60),
+                    d1 = new Date(d[1]+' '+d[2]).getTime()/1000 + (parseInt(d[4].replace('m',''))*60);
+                debugger;
                 a.t = c1;
                 b.t = d1;
                 return d1 - c1;
             });
-            debugger;
             for (var i=0; i<dat.length; i++) {
                 var
                 dit = dat[i],

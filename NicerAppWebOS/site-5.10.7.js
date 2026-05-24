@@ -29,7 +29,8 @@ na.site = {
             '2026-04(April)-18(Saturday) 19:41CET (Amsterdam.NL\'s timezone)' : '<p>Rene AJM Veerman : i realized something just now.<br/>it only takes Time for me to reach Wealthy status.</p>',
             '2026-04(Apr)-19(Sunday) 12:55CET (Amsterdam.NL\' timezone)' : '<p>women in political groups are like ice breakers; they move slow, but they always reach their goals.</p>',
             '2026-04(Apr)-19(Sunday) 13:07CET (Amsterdam.NL\' timezone)' : '<p>If you want to be a hero, make sure you\'re not a girl!.</p>',
-            '2026-04(Apr)-19(Sunday) 13:10CET (Amsterdam.NL\' timezone)' : '<p>Whereas it used to be "dont go breaking hearts", it should become "dont go breaking lifeforms at all".</p>'
+            '2026-04(Apr)-19(Sunday) 13:10CET (Amsterdam.NL\' timezone)' : '<p>Whereas it used to be "dont go breaking hearts", it should become "dont go breaking lifeforms at all".</p>',
+            '2026-05(May)-22(Friday) 09:30CET (Amsterdam.NL\' timezone)' : '<p>There is no strongest, no weakest. There are only strong times, and weak times.</p>'
 
         }
     },

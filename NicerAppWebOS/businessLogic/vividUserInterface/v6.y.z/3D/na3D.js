@@ -167,232 +167,235 @@ export class na3D_fileBrowser {
 
         t.initializeItems (t);
 
-
-        // === Before creating t.graph ===
-        const maxLevels = 12; // adjust based on your deepest hierarchy
-        t.dagLevelDistances = new Array(maxLevels).fill(0).map((_, level) => {
-            return 100 + (level * 40) + Math.random() * 380;
-        });
-
-
-        t.maxLevel = 0;
-        for (var i=0; i<t.items.length; i++) {
-            if (it.level > t.maxLevel) t.maxLevel = it.level;
-        }
-
-        t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
-        na.apps.loaded.threed_fileExplorer = t;
-        t.graph = ForceGraph3D({
-            rendererConfig: { antialias: true, alpha: true }
-        })(t.el)
-
-        .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
-        .width(t.el.clientWidth || 1000)
-        .height(t.el.clientHeight || 700)
-        .dagMode('radialout')
-        .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
-
-        .nodeLabel(null)
-        .nodeOpacity(0.9)
-        .linkOpacity(0.1)
-        .linkColor('#FFF')
-        .nodeColor(n => {
-            const ancestors = t.getAllAncestors(n);
-            const descendants = t.getAllDescendants(t, n);
-            const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
-            const defaultColor = 'rgba(255,255,255,0.55)';
-
-            const sourceAncestors = t.getAllAncestors(n);
-            if (sourceAncestors.size===0) return defaultColor;
-            var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-            sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-            const targetAncestors = t.getAllAncestors(n);
-            if (targetAncestors.size===0) return defaultColor;
-            var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-            targetDepth = Math.round(targetDepth / 2) + 1;
-
-            const isAncestorLink =  ancestors.has(n.id);
-            const isDescendantLink = descendants.has(n.id);
+        na.m.waitForCondition ('na3D.js : t.itemsInitialized?', function () {
+            return t.itemsInitialized;
+        }, function () {
+            // === Before creating t.graph ===
+            const maxLevels = 12; // adjust based on your deepest hierarchy
+            t.dagLevelDistances = new Array(maxLevels).fill(0).map((_, level) => {
+                return 100 + (level * 40) + Math.random() * 380;
+            });
 
 
-            if (isAncestorLink) {
-                return t.getHierarchicalColor(sourceDepth);
-            }
-            // Direct children
-            if (isDescendantLink) {
-                return t.getHierarchicalColor(targetDepth);
+            t.maxLevel = 0;
+            for (var i=0; i<t.items.length; i++) {
+                var it = t.items[i];
+                if (it.level > t.maxLevel) t.maxLevel = it.level;
             }
 
-            return defaultColor;
+            t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
+            na.apps.loaded.threed_fileExplorer = t;
+            t.graph = ForceGraph3D({
+                rendererConfig: { antialias: true, alpha: true }
+            })(t.el)
 
-        })
-        .warmupTicks(100)
-        .cooldownTicks(0)
+            .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
+            .width(t.el.clientWidth || 1000)
+            .height(t.el.clientHeight || 700)
+            .dagMode('radialout')
+            .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
 
-        // === Custom Nodes & Links ===
-        .nodeThreeObjectExtend(true)
-        .nodeThreeObject(node => {
-            const text = node.name;//`${node.item.filepath}/${pp}/${node.name}`;
-            const sprite = new SpriteText(text);
-            node.sprite = sprite;
-            sprite.color = 'rgba(255,255,255,0.7)';
-            sprite.textHeight = 5;
-            sprite.fontFace = 'Arial';
-            sprite.position.set(0, 18, 0);
+            .nodeLabel(null)
+            .nodeOpacity(0.9)
+            .linkOpacity(0.1)
+            .linkColor('#FFF')
+            .nodeColor(n => {
+                const ancestors = t.getAllAncestors(n);
+                const descendants = t.getAllDescendants(t, n);
+                const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
+                const defaultColor = 'rgba(255,255,255,0.55)';
 
-            // Optional: make sure it renders in front
-            sprite.material.depthWrite = false;
-            sprite.material.depthTest = false;
+                const sourceAncestors = t.getAllAncestors(n);
+                if (sourceAncestors.size===0) return defaultColor;
+                var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+                sourceDepth = Math.round(sourceDepth / 2) + 1;
 
-            t.graph.scene().add(sprite);
-            return sprite;
+                const targetAncestors = t.getAllAncestors(n);
+                if (targetAncestors.size===0) return defaultColor;
+                var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+                targetDepth = Math.round(targetDepth / 2) + 1;
 
-        })
-
-        // Custom Link Labels
-        .linkThreeObjectExtend(false)
-        .linkThreeObject(null)
-        // === INTERACTIONS ===
-        .onNodeHover(node => {
-            t.currentHoverNode = node;
-
-            // Remove old hover label
-            if (t.hoverLabel) {
-                t.graph.scene().remove(t.hoverLabel);
-            };
-
-            if (node) {
-                // Big hover label
-                node.sprite.visibile = false;
-
-                const text = (node.item?.filepath || '') + '/' + node.name;
-                t.hoverLabel = new SpriteText(text);
-                t.hoverLabel.color = '#ffff88';
-                t.hoverLabel.textHeight = 5;
-                t.hoverLabel.fontFace = 'Arial';
-                t.hoverLabel.fontWeight = 'bold';
-                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
-                t.hoverLabel.material.depthWrite = false;
-                t.hoverLabel.material.depthTest = false;
-                t.graph.scene().add(t.hoverLabel);
-                // t.graph.refresh();
-
-                // Get all nodes to highlight
-                const ancestors = t.getAllAncestors(node);
-                const descendants = t.getAllDescendants(t, node);
-                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
-
-                t.graph
-                .nodeColor(n => {
-                   if (n === node) return '#ffff44';                    // hovered node
-
-                   var depth = n.item?.level ?? n.depth ?? 0;
-                   depth = depth / 2 + 1;
-                   if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(depth);
-                   return 'rgba(150,150,150,0.5)';
-
-                })
-                .linkColor(link => {
-                    const defaultColor = 'rgba(255,255,255,0.2)'
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return defaultColor;
-
-                    const hoveredAncestors = t.getAllAncestors(hovered);
-                    const sourceAncestors = t.getAllAncestors(link.source);
-                    if (sourceAncestors.size===0) return defaultColor;
-                    var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                    sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                    const targetAncestors = t.getAllAncestors(link.target);
-                    if (targetAncestors.size===0) return defaultColor;
-                    var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                    targetDepth = Math.round(targetDepth / 2) + 1;
-
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const isAncestorLink =  ancestors.has(n.id);
+                const isDescendantLink = descendants.has(n.id);
 
 
-                    const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
-                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
+                if (isAncestorLink) {
+                    return t.getHierarchicalColor(t,sourceDepth);
+                }
+                // Direct children
+                if (isDescendantLink) {
+                    return t.getHierarchicalColor(t,targetDepth);
+                }
 
+                return defaultColor;
 
-                    if (ancestors.has(sourceId) && ancestors.has(targetId)) {
-                        return t.getHierarchicalColor(sourceDepth);
-                    }
-                    // Direct children
-                    if (isDescendantLink) {
-                        return t.getHierarchicalColor(targetDepth);
-                    }
+            })
+            .warmupTicks(100)
+            .cooldownTicks(0)
 
-                    return defaultColor;
+            // === Custom Nodes & Links ===
+            .nodeThreeObjectExtend(true)
+            .nodeThreeObject(node => {
+                const text = node.name;//`${node.item.filepath}/${pp}/${node.name}`;
+                const sprite = new SpriteText(text);
+                node.sprite = sprite;
+                sprite.color = 'rgba(255,255,255,0.7)';
+                sprite.textHeight = 5;
+                sprite.fontFace = 'Arial';
+                sprite.position.set(0, 18, 0);
 
-                })
-                .linkWidth(link => {
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return 1;
+                // Optional: make sure it renders in front
+                sprite.material.depthWrite = false;
+                sprite.material.depthTest = false;
 
-                    const sourceId = link.source?.id ?? link.source;
-                    const targetId = link.target?.id ?? link.target;
-                    const hoverId  = hovered.id ?? hovered;
-                    const allRelated = new Set([...ancestors, ...descendants, hoverId]);
+                t.graph.scene().add(sprite);
+                return sprite;
 
-                    if (allRelated.has(sourceId) && allRelated.has(targetId)) {
-                        return 4;
-                    } else {
-                        return 1;
-                    }
-                })
-            }
-            else {
-                // Reset when hover ends
-                t.graph.nodeColor(n => {
-                    n.sprite.visibile = true;
+            })
+
+            // Custom Link Labels
+            .linkThreeObjectExtend(false)
+            .linkThreeObject(null)
+            // === INTERACTIONS ===
+            .onNodeHover(node => {
+                t.currentHoverNode = node;
+
+                // Remove old hover label
+                if (t.hoverLabel) {
+                    t.graph.scene().remove(t.hoverLabel);
+                };
+
+                if (node) {
+                    // Big hover label
+                    node.sprite.visibile = false;
+
+                    const text = (node.item?.filepath || '') + '/' + node.name;
+                    t.hoverLabel = new SpriteText(text);
+                    t.hoverLabel.color = '#ffff88';
+                    t.hoverLabel.textHeight = 5;
+                    t.hoverLabel.fontFace = 'Arial';
+                    t.hoverLabel.fontWeight = 'bold';
+                    t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                    t.hoverLabel.material.depthWrite = false;
+                    t.hoverLabel.material.depthTest = false;
+                    t.graph.scene().add(t.hoverLabel);
+                    // t.graph.refresh();
+
+                    // Get all nodes to highlight
+                    const ancestors = t.getAllAncestors(node);
+                    const descendants = t.getAllDescendants(t, node);
+                    const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
+
+                    t.graph
+                    .nodeColor(n => {
+                    if (n === node) return '#ffff44';                    // hovered node
+
                     var depth = n.item?.level ?? n.depth ?? 0;
                     depth = depth / 2 + 1;
-                    return t.getHierarchicalColor(depth);
-                });
+                    if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(t,depth);
+                    return 'rgba(150,150,150,0.5)';
 
-                t.graph.linkColor(() => '#555555')
-                .linkOpacity(0.35)
-                .linkWidth(1.2);
+                    })
+                    .linkColor(link => {
+                        const defaultColor = 'rgba(255,255,255,0.2)'
+                        const hovered = t.currentHoverNode;
+                        if (!hovered) return defaultColor;
+
+                        const hoveredAncestors = t.getAllAncestors(hovered);
+                        const sourceAncestors = t.getAllAncestors(link.source);
+                        if (sourceAncestors.size===0) return defaultColor;
+                        var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+                        sourceDepth = Math.round(sourceDepth / 2) + 1;
+
+                        const targetAncestors = t.getAllAncestors(link.target);
+                        if (targetAncestors.size===0) return defaultColor;
+                        var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+                        targetDepth = Math.round(targetDepth / 2) + 1;
+
+                        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
 
-            }
-        })
+                        const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
+                        const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
 
-        .onNodeClick(node => {
-            if (!node) return;
-            console.log('Clicked node:', node.name);
 
-            // Camera focus
-            const distance = 180;
-            const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
+                        if (ancestors.has(sourceId) && ancestors.has(targetId)) {
+                            return t.getHierarchicalColor(t,sourceDepth);
+                        }
+                        // Direct children
+                        if (isDescendantLink) {
+                            return t.getHierarchicalColor(t,targetDepth);
+                        }
 
-            t.graph.cameraPosition(
-                {
-                    x: (node.x||0) * distRatio,
-                                    y: (node.y||0) * distRatio,
-                                    z: (node.z||0) * distRatio
-                },
-                node,
-                1600
-            );
+                        return defaultColor;
 
-            // Your existing file listing logic
-            if (typeof t.onclick_node === 'function') {
-                t.onclick_node(t, node);
-            }
-        })
+                    })
+                    .linkWidth(link => {
+                        const hovered = t.currentHoverNode;
+                        if (!hovered) return 1;
 
-        .nodeRelSize(7)
-        .numDimensions(3);
+                        const sourceId = link.source?.id ?? link.source;
+                        const targetId = link.target?.id ?? link.target;
+                        const hoverId  = hovered.id ?? hovered;
+                        const allRelated = new Set([...ancestors, ...descendants, hoverId]);
 
-        t.graph.d3Force('charge').strength(-130);
-        t.graph.d3Force('link').distance(link => 90 + Math.random() * 150);
-        // t.graph
-        // .d3Force('charge').strength(null);   // stronger repulsion
+                        if (allRelated.has(sourceId) && allRelated.has(targetId)) {
+                            return 4;
+                        } else {
+                            return 1;
+                        }
+                    })
+                }
+                else {
+                    // Reset when hover ends
+                    t.graph.nodeColor(n => {
+                        n.sprite.visibile = true;
+                        var depth = n.item?.level ?? n.depth ?? 0;
+                        depth = depth / 2 + 1;
+                        return t.getHierarchicalColor(t,depth);
+                    });
 
+                    t.graph.linkColor(() => '#555555')
+                    .linkOpacity(0.35)
+                    .linkWidth(1.2);
+
+
+                }
+            })
+
+            .onNodeClick(node => {
+                if (!node) return;
+                console.log('Clicked node:', node.name);
+
+                // Camera focus
+                const distance = 180;
+                const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
+
+                t.graph.cameraPosition(
+                    {
+                        x: (node.x||0) * distRatio,
+                                        y: (node.y||0) * distRatio,
+                                        z: (node.z||0) * distRatio
+                    },
+                    node,
+                    1600
+                );
+
+                // Your existing file listing logic
+                if (typeof t.onclick_node === 'function') {
+                    t.onclick_node(t, node);
+                }
+            })
+
+            .nodeRelSize(7)
+            .numDimensions(3);
+
+            t.graph.d3Force('charge').strength(-130);
+            t.graph.d3Force('link').distance(link => 90 + Math.random() * 150);
+            // t.graph
+            // .d3Force('charge').strength(null);   // stronger repulsion
+        });
     }
 
     onclick_node (t, node) {
@@ -405,6 +408,7 @@ export class na3D_fileBrowser {
 
         while (cit && !done) {
             var html = "", j = 0;
+            cit.item.data.files.sort();
             for (var i=0; i<cit.item.data.files.length; i++) {
                 var file = cit.item.data.files[i];
                 if (file.match(/\.mp3$/)) {
@@ -690,7 +694,7 @@ export class na3D_fileBrowser {
         const width = t.el.clientWidth;
         const height = t.el.clientHeight;
 
-        t.graph
+        if (t.graph) t.graph
         .width(width)
         .height(height);
 
@@ -702,7 +706,7 @@ export class na3D_fileBrowser {
         if (typeof callback=="function") callback(t);
     }
 
-    getHierarchicalColor(depth) {
+    getHierarchicalColor(t, depth) {
         const colors = [
             '#4dabf7',   // 0 - root / top level (blue)
             '#51cf66',   // 1 - light green
@@ -716,22 +720,32 @@ export class na3D_fileBrowser {
             'cyan',
             'red',
             '#f06595', // PINK
+            'grey',
             'white',
-            'ivory',
-            'grey'
+            'ivory'
         ];
+        const maxDepth = t.maxLevel;
 
+        if (depth <= 0 || maxDepth <= 0) return colors[0];
+
+        // Linear relative mapping - Recommended
+        // Spreads colors evenly from depth 0 to maxDepth
+        const relativeIndex = Math.floor((depth / maxDepth) * (colors.length - 1));
+        return colors[Math.min(relativeIndex, colors.length - 1)];
+
+/*
         var y = Math.min(depth, colors.length - 1);
         var x = colors[y] || '#aaaaaa';
-        return x;
-        //return colors[Math.min(Math.abs(colors.length/depth), colors.length - 1)] || '#aaaaaa';
+        //return x;
+        //return colors[Math.min(Math.abs(colors.length*depth/100), colors.length - 1)] || '#aaaaaa';
+        return colors[depth % colors.length]*/
     }
 
     play (btn, relPath) {
         let
         fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
         fullPath = new URL(fullPath).pathname;
-        $('#audioTag')[0].src = fullPath;
+        $('#audioTag')[0].src = na.m.encodeUnicodePath(fullPath);
         $('#audioTag')[0].play();
         $('#fileListing .vividButtonSelected').removeClass('vividButtonSelected').addClass('vividButton');
         $(btn).addClass('vividButtonSelected');

@@ -38,8 +38,8 @@ na.m = {
 
     encodeUnicodePath(path) {
         return path.split('/').map(segment =>
-        encodeURIComponent(segment)
-        ).join('/');
+        encodeURIComponent(decodeURIComponent(segment))
+        ).join('/').replace("'", "\''");
     },
 
     cssTranslation : function (dID, cssObj) {

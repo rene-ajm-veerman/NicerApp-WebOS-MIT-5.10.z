@@ -160,6 +160,7 @@ function filePathToURL ($filepath) {
 
 function safeLoadJSONfile($filePath, $mustExist=true, $flush=true) {
     $debug = true;
+    //echo 't93;'; var_dump ($filePath);
     if (!file_exists($filePath)) {
     //echo $filePath; echo '<br/>'; die();
         if (!$mustExist) return []; else { echo backtrace(); trigger_error ('File "'.$filePath.'" does not exist.', E_USER_ERROR); }
@@ -2276,7 +2277,6 @@ function &goodResult(&$r) {
 	return $r2;
 }
 
-/*
 function safeJSONload($filePath, $exampleFilepath='[NOT_SPECIFIED]') {
     $fncn = 'safeJSONload("'.$filePath.'")';
     if (!file_exists($filePath)) {
@@ -2301,7 +2301,6 @@ function safeJSONload($filePath, $exampleFilepath='[NOT_SPECIFIED]') {
     }
     return $jsonArr;
 }
-*/
 
 function NicerAppWebOS_jsonErrorHandler() {
 // maybe i don't need to write this at all, ever.

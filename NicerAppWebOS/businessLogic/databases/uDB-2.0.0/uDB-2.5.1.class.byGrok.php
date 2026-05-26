@@ -2,11 +2,8 @@
 declare(strict_types=1);
 
 /**
- * uDB2 - Universal Database Layer 2.4.0
- * MongoDB-style API supporting CouchDB + SQL (mysqli)
- *
- * New in 2.4.0: CouchDB Bookmark pagination support
- * Supported query operators: $eq, $gt, $gte, $lt, $lte, $in, $nin, $or, $and
+ * uDB2 - Universal Database Layer 2.5.0
+ * Enhanced with full backward compatibility for NicerApp
  */
 
 class uDB2
@@ -338,7 +335,7 @@ class uDB2
         return $this->config['database'] ?? 'default';
     }
 
-        public function findOne(array $filter = [], array $options = []): ?array
+    public function findOne(array $filter = [], array $options = []): ?array
     {
         $options['limit'] = 1;
         $result = $this->find($filter, $options);
@@ -570,4 +567,132 @@ class uDB2
         }
     }
 
+    // ====================== BACKWARD COMPATIBILITY LAYER ======================
+
+
+    // Core forwarding methods that existed in old database_API
+    public function callAllDataSets($functionName, $params = null) {
+        global $naErr, $naLog;
+        $r = [];
+        $failedAtLeastOne = false;
+        if (is_null($params)) $params = [];
+
+        if ($this->isCouch() && $this->couchConnector) {
+            $x = call_user_func_array([$this->couchConnector, $functionName], $params);
+            $localCheck = $this->standardResultHandling($this, $x);   // using $this as $c
+            $r[] = $localCheck;
+
+            if ($localCheck['result'] !== true) {
+                $failedAtLeastOne = true;
+                $r['origin'] = $functionName;
+                if (
+                    stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'bot') === false &&
+                    stripos($_SERVER['SCRIPT_NAME'] ?? '', 'logs.php') === false
+                ) {
+                    $err = $naErr->addStandardResults($r);
+                    $naLog->add([$err]);
+                }
+            }
+        }
+
+        return $r;
+    }
+
+    public function callDataSet($ct, $functionName, $params = null) {
+        global $naErr, $naLog;
+        $r = [];
+        $failedAtLeastOne = false;
+        if (is_null($params)) $params = [];
+
+        if ($this->isCouch() && $this->couchConnector) {
+            $x = call_user_func_array([$this->couchConnector, $functionName], $params);
+            $localCheck = $this->standardResultHandling($this, $x);
+            $r[] = $localCheck;
+
+            if ($localCheck['result'] !== true) {
+                $failedAtLeastOne = true;
+                $r['origin'] = $functionName;
+                if (
+                    stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'bot') === false &&
+                    stripos($_SERVER['SCRIPT_NAME'] ?? '', 'logs.php') === false
+                ) {
+                    $err = $naErr->addStandardResults($r);
+                    $naLog->add([$err]);
+                }
+            }
+        }
+
+        return $r;
+    }
+
+    public function standardResultHandling($c, $resultValue) {
+        if (
+            is_array($resultValue) &&
+            count($resultValue) > 0 &&
+            (!array_key_exists('result', $resultValue) || $resultValue['result'] === true)
+        ) {
+            return ['c' => $c, 'resultValue' => $resultValue, 'result' => true];
+        }
+
+        if (is_object($resultValue) || is_string($resultValue) || $resultValue === true) {
+            return ['c' => $c, 'resultValue' => $resultValue, 'result' => true];
+        }
+
+        return ['c' => $c, 'resultValue' => $resultValue, 'result' => false];
+    }
+
+    // Simple forwarders for other common methods
+    public function getNewRandomIDs($relTableName, $fieldName) {
+        return $this->isCouch() ? $this->couchConnector->getNewRandomIDs($relTableName, $fieldName) : [];
+    }
+
+    public function getAllDatabases() {
+        return $this->isCouch() ? $this->couchConnector->getAllDatabases() : [];
+    }
+
+    public function clearOutDatabases($dbs) {
+        return $this->callAllDataSets('clearOutDatabases', [$dbs]);
+    }
+
+    public function setGlobals($username) {
+        return $this->callAllDataSets('setGlobals', [$username]);
+    }
+
+    public function createUsers($users, $groups) {
+        return $this->callAllDataSets('createUsers', [$users, $groups]);
+    }
+
+    public function listUsers() {
+        return $this->callAllDataSets('listUsers');
+    }
+
+    public function createDatabases($dbs) {
+        return $this->callAllDataSets('createDatabases', [$dbs]);
+    }
+
+    public function resetDatabases($dbs) {
+        return $this->callAllDataSets('resetDatabases', [$dbs]);
+    }
+
+    public function addLogEntries($entries) {
+        return $this->isCouch() ? $this->couchConnector->addLogEntries($entries) : [];
+    }
+
+    public function testDBconnection() {
+        return $this->isCouch() ? $this->couchConnector->testDBconnection() : ['result' => false];
+    }
+
+    public function editDataSubSet($relTableName = null, $findCommand = null, $recordOverlay = null) {
+        return $this->callDataSet('couchdb', 'editDataSubSet', [$relTableName, $findCommand, $recordOverlay]);
+    }
+
+    // Catch-all magic method
+    public function __call($method, $args) {
+        if ($this->isCouch() && $this->couchConnector && method_exists($this->couchConnector, $method)) {
+            return call_user_func_array([$this->couchConnector, $method], $args);
+        }
+
+        trigger_error("Method {$method}() not found in uDB2 or underlying connector", E_USER_WARNING);
+        return null;
+    }
 }

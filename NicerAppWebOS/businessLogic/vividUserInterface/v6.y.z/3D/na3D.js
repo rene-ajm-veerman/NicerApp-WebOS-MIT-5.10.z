@@ -414,8 +414,8 @@ export class na3D_fileBrowser {
                 if (file.match(/\.mp3$/)) {
                     var
                     path = cit.item.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
-                    file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3");
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+path+'/'+node.item.name+'/'+file+'\')"><span>'+path+'/'+node.item.name+'/'+file2+'</span></a></div>';
+                    file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3").replace('.mp3', '');
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+node.item.name+'/'+file)+'\')"><span>'+path+'/'+node.item.name+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -741,7 +741,7 @@ export class na3D_fileBrowser {
         return colors[depth % colors.length]*/
     }
 
-    play (btn, relPath) {
+    play(btn, relPath) {
         let
         fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
         fullPath = new URL(fullPath).pathname;

@@ -37,7 +37,7 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 
     <li class="todoList"><div>(2026) Add database based caching of wikipedia.org output for /wiki on nicer.app (fairly easy to implement these days actually).</div></li>
 
-    <li class="todoList"><div>(2030) Complete a <a href="/3D">3D folder structure viewer</a>, which will be linked to all sorts of 2D user interface components/widgets.</div></li>
+    <li class="todoList"><div>(2026) Complete a <a href="/3D">3D folder structure viewer</a>, which will be linked to all sorts of 2D user interface components/widgets.</div></li>
 
     <li class="todoList"><div>(2026) Allow log entries (of console.log in the browser, and all database traffic and error messages on the server) to be logged to a different machine on the LAN than the main server.</div></li>
 
@@ -69,7 +69,7 @@ The yearly release stage of a new <a href="https://github.com/rene-ajm-veerman/N
 
     <!--<li class="todoList"><div>Restore the automatic retrieval of new backgrounds download routines for nicerapp via free to use methods of delivery at Google image search and (TODO :)Bing image search.</div></li>-->
 
-    <li class="todoList"><div>Upgrade the news app and vividDialog : add siteToolbarLeft functionality :<br/>
+    <li class="todoList"><div>(2027) Upgrade the news app and vividDialog : add siteToolbarLeft functionality :<br/>
         <ol class="todoList_l1">
             <li class="todoList_l1"><div>add a 'translate' dropdown box to the app-specific options menu</div></li>
             <li class="todoList_l1"><div>add French news sources</div></li>

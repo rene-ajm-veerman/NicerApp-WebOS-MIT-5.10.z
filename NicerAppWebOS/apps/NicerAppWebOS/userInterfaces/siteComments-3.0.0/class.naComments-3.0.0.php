@@ -376,6 +376,8 @@ class class_naComments {
     }
 
     public function addIndexes() {
+        return false;
+
         global $naWebOS;
         $debug = false;
         $db = $naWebOS->dbs->findConnection('couchdb');

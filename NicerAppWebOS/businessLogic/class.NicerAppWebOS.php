@@ -51,35 +51,38 @@ class NicerAppWebOS {
         $p1 = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
         $this->webRootPath = $p1; // You'll need this.
 
+        $p3 = '.';
         if (array_key_exists('DOCUMENT_ROOT',$_SERVER) && $_SERVER['DOCUMENT_ROOT']!=='') {
             $p2a = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..');
             $p2b = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..');
             $p2c = str_replace($p2b.DIRECTORY_SEPARATOR,'', $p2a);
-            $this->path = $p2b;
+            $this->path = $p2a;
             $this->domainFolder = basename($_SERVER['DOCUMENT_ROOT']);//str_replace($p2a.DIRECTORY_SEPARATOR,'', $p2b);
+            //var_dump ($domainFolder); echo PHP_EOL;
             $this->domain = $_SERVER['SERVER_NAME'];
-            $this->webPath = $p2b;
+            $this->webPath = $p2c.'/domains/'.$this->domainFolder;
+            $p3 = '...';
         } else {
-            $p2b = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..');
-	    $this->path = $p2b;
-	    $p3 = explode('/',$_SERVER['PWD']);
-	    if (array_key_exists(5,$p3)) $p3 = $p3[5]; 
-	    else {
-	    	$p3 = explode('/',$_SERVER['PATH_TRANSLATED']);
-	    	if (array_key_exists(5,$p3)) $p3 = $p3[5]; else {
-			$p3 = 'UNKNOWN-FOLDER-in-logic.business..class.NicerAppWebOS.php';
-		}
-		}
+            $p2b = realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..');
+            $this->path = $p2b;
+            $p3 = explode('/',$_SERVER['PWD']);
+            if (array_key_exists(5,$p3)) $p3 = $p3[5];
+            else {
+                $p3 = explode('/',$_SERVER['PATH_TRANSLATED']);
+                if (array_key_exists(5,$p3)) $p3 = $p3[5]; else {
+                    $p3 = 'UNKNOWN-FOLDER-in-logic.business..class.NicerAppWebOS.php';
+                }
+            }
             $this->domainFolder = $this->domain = $this->webPath = $p3;
         }
 
         // You'll need this too.
-        $this->domainPath = $this->webRootPath.'/domains/'.$this->domainFolder;
-
+        $this->domainPath = $this->path.'/domains/'.$this->domainFolder.'/domainConfig';
 
 
         if (false) {
             $dbg = [
+                $p2a, $p2b, $p2c, $p3,
                 $this->path,
                 $this->domainFolder,
                 $this->domain,
@@ -88,7 +91,7 @@ class NicerAppWebOS {
                 $this->domainPath
             ];
             echo '<pre style="color:green;">t12:'; var_dump ($dbg); echo '</pre>'.PHP_EOL;
-            //exit();
+            exit();
         }
 
     }
@@ -97,7 +100,7 @@ class NicerAppWebOS {
         $fncn = $this->cn.'->__construct2()';
         //echo '<pre style="color:blue;">'; var_dump($_GET); echo '</pre>';
 
-        $rp_domain = $this->domainPath.'/domainConfig';
+        $rp_domain = $this->domainPath;
         $this->cssFiles = [
             [ 'indexFile' => $rp_domain.'/index.css.json', 'type' => 'css' ],
             [ 'files' => $this->getVividButtonCSSfiles(), 'type' => 'css' ] //already included in "indexFile".
@@ -118,7 +121,7 @@ class NicerAppWebOS {
         //echo 't34:'; var_dump ($this->domainFolderForDB); echo PHP_EOL;
 
 
-        $fnOwnerInfo = $this->domainPath.'/domainConfig/company.owner.json';
+        $fnOwnerInfo = $this->domainPath.'/company.owner.json';
         //echo $fnOwnerInfo.': '; var_dump (file_exists($fnOwnerInfo)); die();
 
         if (!file_exists($fnOwnerInfo)) {
@@ -136,7 +139,7 @@ class NicerAppWebOS {
         $this->ownerInfo = safeLoadJSONfile($fnOwnerInfo);
 
         $midsFile =
-            $this->path.'/NicerAppWebOS/apps/'
+            $this->path.'/domains/'.$this->domainFolder.'/NicerAppWebOS/apps/'
             .'manufacturerNameForDomainName_'.$this->domainFolder.'_val.txt';
         if (!file_exists($midsFile)) {
             echo '<pre>';
@@ -162,7 +165,7 @@ class NicerAppWebOS {
     }
 
     public function getSite() {
-        $rp_domain = $this->domainPath.'/domainConfig';
+        $rp_domain = $this->domainPath;
         $templateFile = $rp_domain.'/index.template.php';
         $templateCustomer = $rp_domain.'/index.template.byCustomer.php';
         $titleFile = $rp_domain.'/index.title.php';
@@ -187,6 +190,7 @@ class NicerAppWebOS {
             $desktopDefinition = $content['_desktopDefinition'];
         else
             $desktopDefinition = file_get_contents ($rp_domain.'/index.desktopDefinition.default.json');
+        //echo 'tas;'; var_dump($desktopDefinition);
 
         global $naIsBot;
         $replacements = array (
@@ -256,6 +260,7 @@ class NicerAppWebOS {
             // logged in as $cdbConfig['adminUsername']!
             // $this->dbAdmin = new class_NicerAppWebOS_database_API_couchdb_3_2 (clone $this, true);
             $this->dbsAdmin = new class_NicerAppWebOS_database_API ('admin');
+            //echo 't842:'; var_dump ($this->dbsAdmin->connections);
             try {
                 // $this->dbsAdmin = new class_NicerAppWebOS_database_API ('admin');
 
@@ -313,7 +318,7 @@ class NicerAppWebOS {
                     $un = 'Guest';
               }
                 $this->dbs = new class_NicerAppWebOS_database_API ($un);
-                //echo '<pre style="color:blue;">'; var_dump($_COOKIE); echo '</pre>';var_dump ($this->dbs->findConnection('couchdb')->username);exit();
+                //echo '<pre style="color:blue;">'; var_dump ($this->dbs->findConnection('couchdb')->username);echo '</pre>';exit();
 
 /*
                 if (strpos('ajax_login.php',$_SERVER['SCRIPT_NAME'])!==false)
@@ -585,7 +590,7 @@ class NicerAppWebOS {
             //echo $viewID;
             if ($viewID==='/') {
                 // output frontpage.dialog.*.php
-                $folder = $this->domainPath.'/domainConfig/';
+                $folder = $this->domainPath;
                 //$debug = true;
                 $files = getFilePathList($folder, false, '/frontpage.dialog.*\.php/', null, array('file'), 1, 1, true)['files'];
                 if ($debug) { echo '<p style="color:yellow;background:red;margin:10px;padding:5px;border-radius:10px;">'.$folder.'</p><br/><pre style="color:yellow;background:red;margin:10px;padding:5px;border-radius:10px;">$files='.PHP_EOL; var_dump($files); echo '</pre>'.PHP_EOL.PHP_EOL;  };
@@ -735,11 +740,11 @@ class NicerAppWebOS {
                                 //$dbInitPHP = $this->basePath.'/'.$viewsFolder.'/db_init.php';
                                 //if (file_exists($dbInitPHP)) execPHP ($dbInitPHP);
                                 if (is_dir($this->domainPath.$viewsFolder2.'/'.$appFolder))
-                                    $files = getFilePathList ($this->domainPath.$viewsFolder2.'/'.$appFolder, false, '/app\.dialog\..*/', null, array('file'), 1, 1, true);
+                                    $files = getFilePathList ($this->webPath.$viewsFolder2.'/'.$appFolder, false, '/app\.dialog\..*/', null, array('file'), 1, 1, true);
                                 else
-                                    $files = getFilePathList ($this->domainPath.$viewsFolder2, false, '/app\.dialog\..*/', null, array('file'), 1, 1, true);
+                                    $files = getFilePathList ($this->webPath.$viewsFolder2, false, '/app\.dialog\..*/', null, array('file'), 1, 1, true);
                                 //$debug = true;
-                                if ($debug) { echo '<pre style=";color:purple;background:cyan;">'; var_dump ($this->domainPath.$viewsFolder2); var_dump ($files); echo '</pre>'; }
+                                if ($debug) { echo '<pre style=";color:purple;background:cyan;">'; var_dump ($this->webPath.$viewsFolder2); var_dump ($files); echo '</pre>'; }
                                 //$debug = false;
                                 if (!array_key_exists('files', $files)) {
                                     $msg = 'HTTP error 404 : no files matching app.* in "'.$viewsFolder.'"';
@@ -820,13 +825,6 @@ class NicerAppWebOS {
 
             //echo '<pre>t331:'; debug_print_backtrace(); echo '</pre>';
             //$debug = true;
-            if ($debug) {
-                echo '<pre style="color:navy;background:yellow">';
-                echo '</pre>';
-                exit();
-            }
-
-
             return $ret;
 
         }
@@ -1120,7 +1118,7 @@ class NicerAppWebOS {
                     $file = str_replace ($this->path,'',$file);
                     $fp = $this->path.$file;
                 } elseif (strpos($file,'{$domainPath}')!==false) {
-                    $file = str_replace ('{$domainPath}', $this->domainPath, $file);
+                    $file = str_replace ('{$domainPath}', '', $file);
                     $file = str_replace ($this->path,'',$file);
                     $fp = $file;
                 } else {
@@ -1145,8 +1143,8 @@ class NicerAppWebOS {
                         };
 
                     }
-                    $search = array ('{$src}', '{$changed}');
-                    $replace = array ($url, date('Ymd_His', filemtime($fp)));
+                    $search = [ '{$src}', '{$changed}' ];
+                    $replace = [ $url, date('Ymd_His', filemtime($fp)) ];
                     $lines .= str_replace ($search, $replace, $lineSrc);
                 } else {
                     $errMsg = '<p>File "'.$fp.'" is missing (oFile='.$oFile.'), referenced from <span class="naCMS_getLinksFileRec">'.json_encode($fileRec).'</span>.</p>';
@@ -1270,7 +1268,8 @@ class NicerAppWebOS {
     }
 
     public function getVividButtonCSSfiles () {
-        $path = $this->path.'/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/2D/button-4.2.0';
+        $path = str_replace('/domainConfig','',$this->domainPath).'/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/2D/button-4.2.0';
+        //echo 't831:'; var_dump ($path); exit;
         if (!file_exists($path)) {
             $msg = $this->cn.'->getVividButtonCSSfiles() : $path='.$path.' does not exist.';
             trigger_error ($msg, E_USER_ERROR);
@@ -1483,7 +1482,10 @@ class NicerAppWebOS {
             //echo '<pre style="background:purple;color:white;font-weight:bold;">'.$idx.'</pre>'.PHP_EOL;
         }
 
-        if ($debug) {echo '<pre style="color:lime;background:blue;border-radius:10px;">'; var_dump ($selectors2); echo '</pre></pre>'; exit();}
+        if ($debug) {
+            echo '<pre style="color:lime;background:blue;border-radius:10px;">'; var_dump ($selectors2); echo '</pre></pre>';
+
+        }
 
         return [
             'selectors' => $selectors2,
@@ -1500,7 +1502,7 @@ class NicerAppWebOS {
         echo '</pre>';
     }
 
-    public function getPageCSS($js=true, $doSetSpecificity=true, $doIncludeClientOnlyThemes=true, $stickToCurrentSpecificity=false, $specificityName=null) {
+    public function getPageCSS ($js=true, $doSetSpecificity=true, $doIncludeClientOnlyThemes=true, $stickToCurrentSpecificity=false, $specificityName=null) {
         $fncn = $this->cn.'->getPageCSS';
 
         global $naDebugAll;
@@ -1617,6 +1619,7 @@ class NicerAppWebOS {
         }
         foreach ($selectors2 as $idx => $selector) {
             $css = $this->getPageCSS_specific($selector);
+            //echo 't22;'; var_dump($css);
 
             $hasData = false;
             if (is_array($css) && count($css)>0) {
@@ -1641,11 +1644,7 @@ class NicerAppWebOS {
                 $json = execPHP($fn);
                 $this->about = json_decode($json,true);
                 file_put_contents ($fn2, $json);
-            } else {
-                $this->about = json_decode(file_get_contents($fn2),true);
             }
-            $this->version = $this->about;
-
 
             //if (is_array($css)) $css = json_encode($css, JSON_PRETTY_PRINT);
             //$_SESSION['selectorName'] = $selectorNames[$idx];
@@ -1731,7 +1730,7 @@ class NicerAppWebOS {
                 $r .= '</script>'.PHP_EOL;
                 $ret = $r.$ret;
             };
-
+            //echo '<pre>'; var_dump ($css); //exit();
             if ((is_array($css) || is_string($css)) && !$hasCSS) {
                 //echo '<pre>'; var_dump ($css); exit();
                 $hasCSS = true;
@@ -1862,7 +1861,8 @@ class NicerAppWebOS {
             if (is_array($css)) break;
         };
 
-        //echo '<pre>'; var_dump ($d); exit();
+
+        //echo '<pre>t93212:'; var_dump ($css); exit();
         //exit();
         if (isset($css) && is_array($css) && !$hasJS && $js===true) {
                 foreach ($selectors2 as $idx => $selector) {
@@ -1930,6 +1930,11 @@ class NicerAppWebOS {
                     $ret = $r.$ret;
                 }
         };
+        if (!is_array($css) && !is_string($css)) {
+            $ret .=
+            '<script>var naServerMsg = "Could not load theme settings.";</script>';
+        }
+
 
         if ($debug) { echo '$ret='; var_dump(htmlentities($ret)); echo '</pre>'.PHP_EOL.PHP_EOL; };
 

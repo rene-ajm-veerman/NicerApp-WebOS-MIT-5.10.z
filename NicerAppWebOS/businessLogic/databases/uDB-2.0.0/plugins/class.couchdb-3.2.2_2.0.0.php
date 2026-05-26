@@ -31,7 +31,7 @@ class class_NicerAppWebOS_database_API_couchdb_3_2__2_0_0 {
         //$db = $naWebOS->dbs->findConnection('couchdb');
         
         $this->connectionSettings = $cRec;
-        //echo '<pre>t32;'; var_dump ($cRec); echo '</pre>';
+        //echo '<pre>t32:'; var_dump ($cRec); echo '</pre>';
 
         $admin = (
             $username==$this->translate_plainUserName_to_couchdbUserName($naWebOS->ownerInfo['OWNER_NAME'])
@@ -275,13 +275,14 @@ class class_NicerAppWebOS_database_API_couchdb_3_2__2_0_0 {
     public function dataSetName_domainName ($domainName="") {
         $dn = str_replace('.','_',strToLower($domainName));
         if (preg_match('/^\d/', $dn)) {
-            $dn = 'number_'.$dn;
+            $dn = 'ip_'.$dn;
         }
         return $dn;
     }
 
     public function dataSetName ($dbSuffix) {
         global $naWebOS;
+        //echo $naWebOS->domainFolder.'<br/>'.PHP_EOL;
         $domainName = $this->dataSetName_domainName($naWebOS->domainFolder);
         $uDBversion = $this->dataSetName_uDBversion();
         $dataSetName = $uDBversion.$domainName.'___'.str_replace('.','_',$dbSuffix);

@@ -93,52 +93,6 @@ class uDB2
         }
     }
 
-    /**
-     * Translates a CouchDB username (which may contain domain prefix)
-     * back to the plain username
-     */
-    public function translate_couchdbUserName_to_plainUserName($couchdbUsername) {
-        global $naWebOS;
-
-        if (empty($couchdbUsername)) {
-            return '';
-        }
-
-        $prefix = $naWebOS->domainFolderForDB . '___';
-
-        // Remove domain prefix if present
-        if (str_starts_with($couchdbUsername, $prefix)) {
-            return substr($couchdbUsername, strlen($prefix));
-        }
-
-        // Also handle cases with other separators sometimes used
-        if (strpos($couchdbUsername, '___') !== false) {
-            $parts = explode('___', $couchdbUsername, 2);
-            return $parts[1] ?? $couchdbUsername;
-        }
-
-        return $couchdbUsername; // already plain
-    }
-
-    /**
-     * Translates plain username to full CouchDB username with domain prefix
-     */
-    public function translate_plainUserName_to_couchdbUserName($plainUsername) {
-        global $naWebOS;
-
-        if (empty($plainUsername)) {
-            return '';
-        }
-
-        // Avoid double prefixing
-        $prefix = $naWebOS->domainFolderForDB . '___';
-        if (str_starts_with($plainUsername, $prefix)) {
-            return $plainUsername;
-        }
-
-        return $prefix . $plainUsername;
-    }
-
     // ====================== WHERE BUILDER ======================
     private function buildWhere(array $filter): array
     {
@@ -338,7 +292,7 @@ class uDB2
         return $this->config['database'] ?? 'default';
     }
 
-        public function findOne(array $filter = [], array $options = []): ?array
+    public function findOne(array $filter = [], array $options = []): ?array
     {
         $options['limit'] = 1;
         $result = $this->find($filter, $options);

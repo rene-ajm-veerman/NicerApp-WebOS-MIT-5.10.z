@@ -123,11 +123,10 @@ NicerApp WebOS from Nicer Enterprises
 
     global $naIsLatestVersion;
     $naIsLatestVersion = (/*$naWebOS->domain*/$_SERVER['SERVER_NAME']=='new.nicer.app');
-    if (true || $naIsLatestVersion)
-        $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-2.0.0';
-    else
-        $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-1.0.0';
+    $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-2.0.0';
+
     require_once ($rootPath_na_dbs.'/class.database_API.php');
+    require_once ($rootPath_na_dbs.'/uDB-2.5.0.class.byGrok.php');
     //require_once ($rootPath_na_dbs.'/connectors/forFuture_design_coding_debugging_and_usage/class.fileSystemDB-1.0.0.php');
 
     //require_once ($rootPath_na_dbs.'/connectors/forFuture_design_coding_debugging_and_usage/class.adodb5_1.0.0.php');
@@ -424,8 +423,8 @@ NicerApp WebOS from Nicer Enterprises
 
 
 
-    $lanConfigFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.json';
-    $lanConfigExampleFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.EXAMPLE.json';
+    $lanConfigFilepath = $naWebOS->domainPath.'/naLAN.json';
+    $lanConfigExampleFilepath = $naWebOS->domainPath.'/naLAN.EXAMPLE.json';
     if (!file_exists($lanConfigFilepath)) {
         $msg = '"'.$lanConfigFilepath.'" does not exist. See "'.$lanConfigExampleFilepath.'" for a template.';
         echo $msg;

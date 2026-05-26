@@ -966,8 +966,9 @@ function require_return($file, $once = false) {
         return $output !== false ? $output : '';
     } catch (Throwable $e) {
         ob_end_clean();
+        //error_log("require_return error in {$file}: " . $e->getMessage()."\n".json_encode(debug_backtrace(),JSON_PRETTY_PRINT));
         error_log("require_return error in {$file}: " . $e->getMessage());
-        return '<!-- Error in template ' . htmlspecialchars($file) . ': ' . htmlspecialchars($e->getMessage()) . ' -->';
+        return '<!-- Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .json_encode(debug_backtrace(),JSON_PRETTY_PRINT). ' -->';
     }
 }
 

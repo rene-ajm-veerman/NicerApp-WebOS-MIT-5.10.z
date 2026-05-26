@@ -6,8 +6,9 @@ class naDiaries {
         $first1 = true;
         $rp = realpath(dirname(__FILE__).'/../siteData');
         //var_dump($rp); echo '<br/>';
-        if (is_null($dp)) $dp = $naWebOS->domainPath.'/siteData/'.basename($naWebOS->domainPath).'/Diaries/'.$diaryName.'/';
-        //echo '<pre>'; var_dump ($naWebOS); echo '</pre>'; var_dump($dp); echo '<br/>'; var_dump (file_exists($dp)); echo '<br/>';
+        echo '<pre>'; var_dump($dp); echo '<br/>'; var_dump (file_exists($dp)); echo '</pre>';
+        if (is_null($dp)) $dp = str_replace('/domainConfig', '', $naWebOS->domainPath).'/Diaries/'.$diaryName.'/';
+        echo '<pre>'; var_dump($dp); echo '<br/>'; var_dump (file_exists($dp)); echo '</pre>';
         $files = getFilePathList ($dp, true, '/.*/', null, ['file'], null, 1, false, false);
         //echo '<pre>'; var_dump($files); echo '</pre>'; //die();
         $files2 = [];

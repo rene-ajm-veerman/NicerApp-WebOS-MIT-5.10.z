@@ -63,6 +63,13 @@ if (
                 <?php echo json_encode($view, JSON_PRETTY_PRINT); ?>;
         }, 100);
     </script>
+    <div id="na3D_progress" style="display:none; position:absolute; top:10px; left:10px; right:10px; z-index:1000; background:rgba(0,0,0,0.7); padding:8px; border-radius:6px;">
+        <div style="color:#0ff; font-size:13px; margin-bottom:6px;">Initializing 3D File Browser...</div>
+        <div style="height:6px; background:#222; border-radius:3px; overflow:hidden;">
+        <div id="na3D_progressBar" style="height:100%; width:0%; background:linear-gradient(90deg, #0ff, #0f8); transition:width 0.2s ease-out;"></div>
+        </div>
+        <div id="na3D_progressText" style="color:#aaa; font-size:12px; margin-top:4px; text-align:center;">0%</div>
+    </div>
     <div id="site3D_backgroundsBrowser" class="na3D" theme="<?php echo $theme;?>">
     </div>
     <div id="site3D_label" class="label" theme="<?php echo $theme;?>"></div>

@@ -183,7 +183,6 @@ export class na3D_fileBrowser {
                 if (it.level > t.maxLevel) t.maxLevel = it.level;
             }
 
-            t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
             na.apps.loaded.threed_fileExplorer = t;
             t.graph = ForceGraph3D({
                 rendererConfig: { antialias: true, alpha: true }
@@ -426,7 +425,7 @@ export class na3D_fileBrowser {
         }
     }
 
-    async initializeItems (t) {
+    async initializeItems_old_withoutProgressbar (t) {
         var p = { t : t, ld2 : {} };
         t.s2 = [];
         na.m.walkArray (t.data[0]['filesAtRoot'], t.data[0]['filesAtRoot'], t.initializeItems_walkKey, t.initializeItems_walkValue, false, p);
@@ -436,6 +435,62 @@ export class na3D_fileBrowser {
         var innerHeight = $("#siteContent .vividDialogContent").height();// - $("#header").position().top - $("#header").height();
         t.renderer.setSize(innerWidth, innerHeight);
     }
+    async initializeItems(t) {
+        var p = { t: t, ld2: {} };
+        t.s2 = [];
+
+        // Show progress
+        const progressContainer = document.getElementById('na3D_progress');
+        if (progressContainer) progressContainer.style.display = 'block';
+
+        let currentProgress = 5;
+        const updateProgress = (percent, text) => {
+            currentProgress = Math.max(currentProgress, percent);
+            const bar = document.getElementById('na3D_progressBar');
+            const txt = document.getElementById('na3D_progressText');
+            if (bar) bar.style.width = `${currentProgress}%`;
+            if (txt) txt.textContent = text || `${Math.round(currentProgress)}%`;
+        };
+
+        t._progressCallback = updateProgress;
+
+        updateProgress(10, "Walking file tree...");
+
+        // Walk the array with progress
+        na.m.walkArray(
+            t.data[0]['filesAtRoot'],
+            t.data[0]['filesAtRoot'],
+            t.initializeItems_walkKey,
+            t.initializeItems_walkValue,
+            false,
+            p
+        );
+
+        updateProgress(45, "Building graph data...");
+
+        // This can be heavy for large trees
+        t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
+
+        updateProgress(75, "Creating 3D visualization...");
+
+        // Let the browser breathe before heavy ForceGraph creation
+        await new Promise(r => setTimeout(r, 50));
+
+        t.itemsInitialized = true;
+
+        // ... rest of your existing code (renderer size etc.)
+        var innerWidth = $("#siteContent .vividDialogContent").width();
+        var innerHeight = $("#siteContent .vividDialogContent").height();
+        t.renderer.setSize(innerWidth, innerHeight);
+
+        updateProgress(100, "Done!");
+
+        // Hide progress bar after a short delay
+        setTimeout(() => {
+            if (progressContainer) progressContainer.style.display = 'none';
+        }, 800);
+    }
+
     initializeItems_walkKey (cd) {
         var ps = cd.path.split("/");
         if (ps[ps.length-1]=="files") {
@@ -527,6 +582,7 @@ export class na3D_fileBrowser {
             cd.params.ld2[cd.path] = { levelIdx : 1 };
 
             // display files :
+            /*
             if (cd.params.t.showFiles && it.data.files)
             for (var fkey in it.data.files) {
                 //if (fkey.match(/\.mp3$/)) {
@@ -535,7 +591,7 @@ export class na3D_fileBrowser {
                     /*var ps2 = $.extend([],ps);
                     delete ps2[ps2.length-1];
                     var ps2Str = ps2.join("/");
-                    var parent = it.parent;//na.m.chaseToPath (cd.root, ps2Str+"/files/"+fkey, false);*/
+                    var parent = it.parent;//na.m.chaseToPath (cd.root, ps2Str+"/files/"+fkey, false);* /
                     //var level = lastParent.level/2;//ps2.length;
 
 
@@ -565,6 +621,57 @@ export class na3D_fileBrowser {
                     cd.params.t.items.push (it1a);
                 }
             //}
+            */
+                    if (it.data && it.data.files) {
+                        const files = it.data.files;
+                        const totalFiles = Object.keys(files).length;
+                        let processedFiles = 0;
+
+                        for (var fkey in files) {
+                            if (files.hasOwnProperty(fkey)) {
+                                const file = files[fkey];
+
+                                var
+                                pk = cd.path,//+"/"+cd.k+"/"+fkey,
+                                it1a = {
+                                    data : it.data.files[fkey],
+                                    level : cd.level+1,
+                                    name : fkey,
+                                    idx : cd.params.t.items.length,
+                                    idxPath : cd.params.idxPath + '/' + cd.params.t.items.length,
+                                    filepath : path+"/"+cd.k,
+                                    levelIdx : ++cd.params.ld2[pk].levelIdx,
+                                    parent : it,
+                                    leftRight : 0,
+                                    upDown : 0,
+                                    columnOffsetValue : 1000,
+                                    rowOffsetValue : 1000,
+                                    model : { position : new THREE.Vector3(0,0,0) }
+                                };
+
+                                if (!cd.params.t.ld3) cd.params.t.ld3 = {};
+                                if (!cd.params.t.ld3[it1a.idxPath]) cd.params.t.ld3[it1a.idxPath] = { itemCount : 0, items : [] };
+                                cd.params.t.ld3[it1a.idxPath].itemCount++;
+                                cd.params.t.ld3[it1a.idxPath].items.push (it1a);
+                                //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
+                                cd.params.t.items.push (it1a);
+
+                                processedFiles++;
+
+                                // === Progress update (throttled for performance) ===
+                                if (totalFiles > 30 && (processedFiles % Math.max(1, Math.floor(totalFiles / 25)) === 0 || processedFiles === totalFiles)) {
+                                    const progressPercent = 10 + Math.round((processedFiles / totalFiles) * 35); // e.g. 10% → 45%
+
+                                    if (p && p._progressCallback) {
+                                        p._progressCallback(
+                                            progressPercent,
+                                            `Scanning files: ${processedFiles}/${totalFiles} (${key})`
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
         }
         //debugger;
     }
@@ -761,8 +868,101 @@ export class na3D_fileBrowser {
     getChildren(item) {
         return this.items.filter(it => it.parent === item && (this.showFiles || !it.name.endsWith('.mp3')));
     }
-
     itemsToGraphData(t) {
+        const nodes = [];
+        const links = [];
+
+        // Filter items
+        const visibleItems = t.items.filter(it =>
+        t.showFiles || !it.name.endsWith('.mp3')
+        );
+        debugger;
+
+        const total = visibleItems.length;
+        let processed = 0;
+
+        // Use the progress callback set from initializeItems
+        const updateProgress = t._progressCallback || ((percent, text) => {
+            console.log(`[3D Graph] ${percent}% - ${text}`);
+        });
+
+        updateProgress(46, `Building graph nodes (${total} items)...`);
+
+        // === Main loop with progress updates ===
+        visibleItems.forEach((item, index) => {
+            // Create node
+            nodes.push({
+                id: item.idx,
+                name: item.name,
+                type: item.name.endsWith('.mp3') ? 'file' : 'folder',
+                       item: item,
+                       color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
+            });
+
+            // Create link to parent (if exists)
+            if (item.parent && item.parent.idx !== undefined) {
+                links.push({
+                    source: item.parent.idx,
+                    target: item.idx
+                });
+            }
+
+            processed++;
+
+            // === Incremental progress updates ===
+            // Update more frequently for better visual feedback
+            if (total > 50 && (processed % Math.max(1, Math.floor(total / 40)) === 0 || processed === total)) {
+                const progress = 45 + Math.round((processed / total) * 30); // 45% → 75%
+                debugger;
+                updateProgress(
+                    progress,
+                    `Building graph: ${processed}/${total} nodes (${Math.round((processed/total)*100)}%)`
+                );
+            }
+        });
+
+        updateProgress(76, "Finalizing graph data...");
+
+        return { nodes, links };
+    }
+    itemsToGraphData_old_withoutFaultyProgressbar(t) {
+        const nodes = [];
+        const links = [];
+        const visibleItems = t.items.filter(it =>
+        t.showFiles || !it.name.endsWith('.mp3')
+        );
+
+        const total = visibleItems.length;
+        let processed = 0;
+
+        visibleItems.forEach((item, i) => {
+            nodes.push({
+                id: item.idx,                  // Must be unique — your idx is perfect
+                name: item.name,
+                type: item.name.endsWith('.mp3') ? 'file' : 'folder',
+                       item: item,                    // Optional: keep reference to original
+                       // Add any other data you want (color, size, etc.)
+                       color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
+            });
+
+            // Create link if it has a parent
+            if (item.parent && item.parent.idx !== undefined) {
+                links.push({
+                    source: item.parent.idx,   // parent's id
+                    target: item.idx           // child's id
+                });
+            }
+
+            processed++;
+            if (i % Math.ceil(total/20) === 0) { // update ~20 times
+                const percent = 45 + (processed / total * 30); // 45% -> 75%
+                // You could pass a callback to updateProgress if you want live updates
+            }
+        });
+
+        return { nodes, links };
+    }
+    itemsToGraphData_old_withoutProgressbar(t) {
         const nodes = [];
         const links = [];
 

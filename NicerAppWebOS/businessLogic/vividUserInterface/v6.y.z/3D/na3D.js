@@ -63,6 +63,21 @@ export class na3D_fileBrowser {
         t.wireframe = false;
         window.totaldelta = 0;
 
+        // Show progress
+        const progressContainer = document.getElementById('na3D_progress');
+        if (progressContainer) progressContainer.style.display = 'block';
+
+        let currentProgress = 5;
+        const updateProgress = (percent, text) => {
+            currentProgress = Math.max(currentProgress, percent);
+            const bar = document.getElementById('na3D_progressBar');
+            const txt = document.getElementById('na3D_progressText');
+            if (bar) bar.style.width = `${currentProgress}%`;
+            if (txt) txt.textContent = text || `${Math.round(currentProgress)}%`;
+        };
+
+        t._progressCallback = updateProgress;
+
         //na.d.s.visibleDivs.push ("#siteToolbarLeft");
         //na.d.s.visibleDivs.push ("#siteToolbarRight");
         //na.desktop.resize();
@@ -184,6 +199,7 @@ export class na3D_fileBrowser {
             }
 
             na.apps.loaded.threed_fileExplorer = t;
+            debugger;
             t.graph = ForceGraph3D({
                 rendererConfig: { antialias: true, alpha: true }
             })(t.el)
@@ -439,22 +455,7 @@ export class na3D_fileBrowser {
         var p = { t: t, ld2: {} };
         t.s2 = [];
 
-        // Show progress
-        const progressContainer = document.getElementById('na3D_progress');
-        if (progressContainer) progressContainer.style.display = 'block';
-
-        let currentProgress = 5;
-        const updateProgress = (percent, text) => {
-            currentProgress = Math.max(currentProgress, percent);
-            const bar = document.getElementById('na3D_progressBar');
-            const txt = document.getElementById('na3D_progressText');
-            if (bar) bar.style.width = `${currentProgress}%`;
-            if (txt) txt.textContent = text || `${Math.round(currentProgress)}%`;
-        };
-
-        t._progressCallback = updateProgress;
-
-        updateProgress(10, "Walking file tree...");
+        t._progressCallback(10, "Walking file tree...");
 
         // Walk the array with progress
         na.m.walkArray(
@@ -466,27 +467,28 @@ export class na3D_fileBrowser {
             p
         );
 
-        updateProgress(45, "Building graph data...");
+        t._progressCallback(45, "Building graph data...");
 
         // This can be heavy for large trees
-        t.forcegraph3d_data = t.d = t.itemsToGraphData(t);
+        t.forcegraph3d_data = t.d = await t.itemsToGraphData(t);
 
-        updateProgress(75, "Creating 3D visualization...");
+        t._progressCallback(75, "Creating 3D visualization...");
 
         // Let the browser breathe before heavy ForceGraph creation
+        t.itemsInitialized = true;
         await new Promise(r => setTimeout(r, 50));
 
-        t.itemsInitialized = true;
 
         // ... rest of your existing code (renderer size etc.)
         var innerWidth = $("#siteContent .vividDialogContent").width();
         var innerHeight = $("#siteContent .vividDialogContent").height();
         t.renderer.setSize(innerWidth, innerHeight);
 
-        updateProgress(100, "Done!");
+        t._progressCallback(100, "Done!");
 
         // Hide progress bar after a short delay
         setTimeout(() => {
+            const progressContainer = document.getElementById('na3D_progress');
             if (progressContainer) progressContainer.style.display = 'none';
         }, 800);
     }
@@ -868,7 +870,69 @@ export class na3D_fileBrowser {
     getChildren(item) {
         return this.items.filter(it => it.parent === item && (this.showFiles || !it.name.endsWith('.mp3')));
     }
+
     itemsToGraphData(t) {
+        const nodes = [];
+        const links = [];
+
+        const visibleItems = t.items.filter(it =>
+            t.showFiles || (
+                typeof it.data==='string' && !it.data.endsWith('.mp3')
+            )
+        );
+        debugger;
+
+        const total = visibleItems.length;
+        let processed = 0;
+        const chunkSize = 50; // tune this
+
+        const updateProgress = t._progressCallback || (() => {});
+
+        return new Promise((resolve) => {
+            const processChunk = (index) => {
+                const end = Math.min(index + chunkSize, total);
+
+                for (let i = index; i < end; i++) {
+                    const item = visibleItems[i];
+                    nodes.push({
+                        id: item.idx,
+                        name: item.name,
+                        type: item.name.endsWith('.mp3') ? 'file' : 'folder',
+                               item: item,
+                               color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
+                    });
+
+                    // Create link to parent (if exists)
+                    if (item.parent && item.parent.idx !== undefined) {
+                        links.push({
+                            source: item.parent.idx,
+                            target: item.idx
+                        });
+                    }
+
+                    processed++;
+
+                }
+
+                // Update progress
+                const percent = 45 + Math.round((processed / total) * 30);
+                updateProgress(percent, `Building graph: ${processed}/${total}`);
+
+                if (end < total) {
+                    // Yield to browser
+                    setTimeout(() => processChunk(end), 0);
+                    // or better: requestIdleCallback if available
+                } else {
+                    updateProgress(75, "Finalizing...");
+                    debugger;
+                    resolve({ nodes, links });
+                }
+            };
+
+            processChunk(0);
+        });
+    }
+    itemsToGraphData_buggyProgressbar(t) {
         const nodes = [];
         const links = [];
 

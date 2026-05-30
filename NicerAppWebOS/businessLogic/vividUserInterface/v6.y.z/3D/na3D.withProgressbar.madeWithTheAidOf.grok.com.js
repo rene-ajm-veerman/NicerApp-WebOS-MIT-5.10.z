@@ -1,5 +1,5 @@
 /*--- LICENSE : https://opensource.org/licenses/MIT
------ Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com), https://grok.com and https://claude.ai/chat
+----- Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com) and https://grok.com
 ---*/
 
 import * as three from '/NicerAppWebOS/3rd-party/3D/libs/three.js/build/three.module.js';
@@ -85,7 +85,6 @@ export class na3D_fileBrowser {
         var it = {
             id : na.m.randomString(),
             name : "music",
-            data : 'music',
             idx : 0,
             levelIdx : 0,
             level : 0,
@@ -183,11 +182,11 @@ export class na3D_fileBrowser {
 
         t.initializeItems (t);
 
-        /*
-         *        na.m.waitForCondition ('na3D.js : t.itemsInitialized?', function () {
+        na.m.waitForCondition ('na3D.js : t.itemsInitialized?', function () {
             return t.itemsInitialized;
         }, function () {
             na.apps.loaded.threed_fileExplorer = t;
+            /*
             debugger;
             t.graph = ForceGraph3D({
                 rendererConfig: { antialias: true, alpha: true }
@@ -402,17 +401,16 @@ export class na3D_fileBrowser {
             t.graph.d3Force('link').distance(link => 90 + Math.random() * 150);
             // t.graph
             // .d3Force('charge').strength(null);   // stronger repulsion
-        });
         */
+        });
 
     }
 
     onclick_node (t, node) {
-        var cit = t.items[node.id], done = false;
+        var cit = t.items[node.idx], done = false, p = cit.parent;
 
         while (cit && !done) {
             var html = "", j = 0;
-            debugger;
             cit.parent.data.folders[cit.data].files.sort();
             for (var i=0; i<cit.parent.data.folders[cit.data].files.length; i++) {
                 var file = cit.parent.data.folders[cit.data].files[i];
@@ -420,7 +418,7 @@ export class na3D_fileBrowser {
                     var
                     path = cit.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
                     file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3").replace('.mp3', '');
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+cit.data+'/'+file)+'\')"><span>'+path+'/'+cit.data+'/'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+node.data+'/'+file)+'\')"><span>'+path+'/'+node.data+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -727,7 +725,7 @@ export class na3D_fileBrowser {
         ancestors.add(0); // don't forget to add the innermost root folder
         const path = node.idxPath;
 
-        if (typeof path === 'string') {
+        if (node.name!=='music' && typeof path === 'string') {
             const parts = path.substr(1,path.length-2).split('/');
             for (let i = 0; i < parts.length; i++) {
                 var current_t_items_N_idx = parseInt(parts[i]);
@@ -860,7 +858,7 @@ export class na3D_fileBrowser {
     }
 
     getChildren(item) {
-        return this.items.filter(it => it.parent === item && (this.showFiles || it.name.indexOf('.')===-1));
+        return this.items.filter(it => it.parent === item && (this.showFiles || !it.data.endsWith('.mp3')));
     }
 
     async createGraph(t) {
@@ -885,44 +883,30 @@ export class na3D_fileBrowser {
         const data = t.forcegraph3d_data;
         if (!data?.nodes?.length) return;
 
-        // === STRICT FILTER ===
+        // Clean broken links
         const nodeIds = new Set(data.nodes.map(n => n.id));
         const validLinks = data.links.filter(link => {
-            let src = typeof link.source === 'object' ? link.source.id : link.source;
-            let tgt = typeof link.target === 'object' ? link.target.id : link.target;
-
+            const src = link.source?.id ?? link.source;
+            const tgt = link.target?.id ?? link.target;
             return nodeIds.has(src) && nodeIds.has(tgt);
         });
+
         console.log(`Creating graph → ${data.nodes.length} nodes, ${validLinks.length} links`);
 
         t.graph = ForceGraph3D()
-        .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
-        .width(t.el.clientWidth || 1000)
-        .height(t.el.clientHeight || 700)
-        .dagMode('radialout')
-        .nodeId('id')           // ← tell the library which field is the ID
-        .linkSource('source')
-        .linkTarget('target')
-        .graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
-
-        .nodeLabel(null)
-        .nodeOpacity(0.9)
-        .linkOpacity(0.1)
-        .linkColor('#FFF')
-        .warmupTicks(50)
-        .cooldownTicks(300)         // give it more time to settle
         .nodeId('id')
         .linkSource('source')
         .linkTarget('target')
-        .nodeLabel('data')
-        .linkWidth(1)
+        .nodeLabel('name')
+        .nodeRelSize(7)           // smaller = better performance
+        .linkWidth(0.6)
+        .linkOpacity(0.3)
 
         .nodeLabel(null)
         .nodeOpacity(0.9)
         .linkOpacity(0.7)
-        .linkWidth(2.0)
-        .linkColor(() => 'rgba(180, 220, 255, 1)')
-        /*.nodeColor(n => {
+        .linkColor('#FFF')
+        .nodeColor(n => {
             const ancestors = t.getAllAncestors(n);
             const descendants = t.getAllDescendants(t, n);
             const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
@@ -952,20 +936,15 @@ export class na3D_fileBrowser {
 
             return defaultColor;
 
-        })*/
-        .nodeColor(n => {
-            const depth = (n.item?.level ?? 0) / 2 + 1;
-            debugger;
-            return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(7)           // slightly bigger nodes so they don't get lost
-        .linkOpacity(0.25)
-        .d3AlphaDecay(0.02)        // slower cooling = more final spread
+        .warmupTicks(100)
+        .cooldownTicks(0)
+
         // === Custom Nodes & Links ===
         .nodeThreeObjectExtend(true)
         .nodeThreeObject(node => {
             //debugger;
-            const text = node.name;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
+            const text = node.data;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
             const sprite = new SpriteText(text);
             node.sprite = sprite;
             sprite.color = 'rgba(255,255,255,0.7)';
@@ -999,7 +978,7 @@ export class na3D_fileBrowser {
                 node.sprite.visibile = false;
 
                 //debugger;
-                const text = (node?.item?.filepath || '') + '/' + node.name;
+                const text = (node?.filepath || '') + '/' + node.data;
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 5;
@@ -1020,9 +999,9 @@ export class na3D_fileBrowser {
                 .nodeColor(n => {
                     if (n === node) return '#ffff44';                    // hovered node
 
-                    var depth = n?.item?.level ?? n.item.level;
+                    var depth = n.item?.level ?? n.depth ?? 0;
                     depth = depth / 2 + 1;
-                    if (highlightedNodes.has(n.id)) { debugger; return t.getHierarchicalColor(t,depth); };
+                    if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(t,depth);
                     return 'rgba(150,150,150,0.5)';
 
                 })
@@ -1081,10 +1060,15 @@ export class na3D_fileBrowser {
                 // Reset when hover ends
                 t.graph.nodeColor(n => {
                     n.sprite.visibile = true;
-                    var depth = n?.item?.level ?? n.item.level ?? 0;
+                    var depth = n.item?.level ?? n.depth ?? 0;
                     depth = depth / 2 + 1;
                     return t.getHierarchicalColor(t,depth);
                 });
+
+                t.graph.linkColor(() => '#555555')
+                .linkOpacity(0.35)
+                .linkWidth(1.2);
+
 
             }
         })
@@ -1108,26 +1092,31 @@ export class na3D_fileBrowser {
             );
 
             // Your existing file listing logic
+            debugger;
             if (typeof t.onclick_node === 'function') {
                 t.onclick_node(t, node);
             }
         })
 
-        .numDimensions(3)
-        /*.graphData({
-            nodes: data.nodes,
-            links: data.links
-        })*/;
-
+        .nodeRelSize(7)
+        .numDimensions(3);
 
         t.graph(container);
 
+        // Load data
+        t.graph.graphData({
+            nodes: data.nodes,
+            links: validLinks
+        });
+
+        // Final stabilization
         setTimeout(() => {
-            t.graph.d3Force('charge').strength(-1600);
-            t.graph.d3Force('link').distance(1100);
-            console.log("🚀 MAXIMUM SPREAD applied!");
-            t.graph.zoomToFit(1200, 1000);
-        }, 1600);
+            if (t.graph) {
+                t.graph.zoomToFit(2000, 300);
+                // Optional: pause animation completely after settling
+                // t.graph.pauseAnimation();
+            }
+        }, 2500);
     }
 
     async createProgressiveGraph_buggy_slow(t) {
@@ -1151,7 +1140,7 @@ export class na3D_fileBrowser {
 
         t.graph = ForceGraph3D({
             controlType: 'orbit',
-            rendererConfig: { antialias: true, alpha: true }
+            rendererConfig: { antialias: true }
         })
         .nodeId('id')
         .linkSource('source')
@@ -1278,6 +1267,7 @@ export class na3D_fileBrowser {
                 nodes: batchNodes,
                 links: batchLinks
             });
+            debugger;
 
             const percent = 75 + Math.round((end / totalNodes) * 25);
             t.updateProgress?.(percent, `Loading graph: ${end}/${totalNodes} nodes`);
@@ -1298,7 +1288,7 @@ export class na3D_fileBrowser {
         loadNextBatch();
     }
 
-    itemsToGraphData_bugsByGrokPunny(t) {
+    itemsToGraphData(t) {
         return new Promise((resolve) => {
             const nodes = [];
             const links = [];
@@ -1306,13 +1296,13 @@ export class na3D_fileBrowser {
 
             const visibleItems = t.items.filter(it =>
                 t.showFiles || (
-                    typeof it.name == 'string'
-                    && it.name.indexOf('.')===-1
-                    && it.name !== parseInt(it.name)
+                    typeof it.data == 'string'
+                    && it.data.indexOf('.')===-1
                 )
             );
 
             const total = visibleItems.length;
+            debugger;
             let processed = 0;
             const chunkSize = 80;   // tune this (50-150)
 
@@ -1372,20 +1362,6 @@ export class na3D_fileBrowser {
                     }
 
                     t._progressCallback(75, "Finalizing graph...");
-
-                    // === DEBUG - Add this before resolve({ nodes, links }) ===
-                    console.log("=== itemsToGraphData DEBUG ===");
-                    console.log("Nodes created:", nodes.length);
-                    console.log("Links created:", links.length);
-                    if (links.length > 0) {
-                        console.log("Sample link:", links[0]);
-                        console.log("Sample node ID:", nodes[0]?.id);
-                    }
-                    if (nodes.length > 0) {
-                        console.log("First 5 node IDs:", nodes.slice(0,5).map(n => n.id));
-                    }
-                    debugger;
-
                     resolve({ nodes, links });
             }
         };
@@ -1400,7 +1376,7 @@ export class na3D_fileBrowser {
 
         const visibleItems = t.items.filter(it =>
             t.showFiles || (
-                typeof it.name==='string' && it.name.indexOf('.')===-1
+                typeof it.data==='string' && !it.data.endsWith('.mp3')
             )
         );
 
@@ -1446,6 +1422,7 @@ export class na3D_fileBrowser {
                     // or better: requestIdleCallback if available
                 } else {
                     updateProgress(75, "Finalizing...");
+                    debugger;
                     resolve({ nodes, links });
                 }
             };
@@ -1453,18 +1430,13 @@ export class na3D_fileBrowser {
             processChunk(0);
         });
     }
-    itemsToGraphData(t) {
+    itemsToGraphData_buggyProgressbar(t) {
         const nodes = [];
         const links = [];
 
         // Filter items
         const visibleItems = t.items.filter(it =>
-            t.showFiles || (
-                typeof it.data=='string'
-                && it.data.indexOf('.')===-1
-                && it.data !== parseInt(it.data)
-
-            )
+        t.showFiles || !it.data.endsWith('.mp3')
         );
         debugger;
 
@@ -1483,9 +1455,10 @@ export class na3D_fileBrowser {
             // Create node
             nodes.push({
                 id: item.idx,
-                name: item.data,
-                type: item.data.endsWith('.mp3') ? 'file' : 'folder',
-                item: item
+                name: item.name,
+                type: item.name.endsWith('.mp3') ? 'file' : 'folder',
+                       item: item,
+                       color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
             });
 
             // Create link to parent (if exists)
@@ -1502,6 +1475,7 @@ export class na3D_fileBrowser {
             // Update more frequently for better visual feedback
             if (total > 50 && (processed % Math.max(1, Math.floor(total / 40)) === 0 || processed === total)) {
                 const progress = 45 + Math.round((processed / total) * 30); // 45% → 75%
+                debugger;
                 updateProgress(
                     progress,
                     `Building graph: ${processed}/${total} nodes (${Math.round((processed/total)*100)}%)`
@@ -1513,14 +1487,11 @@ export class na3D_fileBrowser {
 
         return { nodes, links };
     }
-    itemsToGraphData_old_n_buggy(t) {
+    itemsToGraphData_old_withoutFaultyProgressbar(t) {
         const nodes = [];
         const links = [];
         const visibleItems = t.items.filter(it =>
-            t.showFiles || (
-                typeof it.name=='string'
-                && it.name.indexOf('.')===-1
-            )
+        t.showFiles || !it.data.endsWith('.mp3')
         );
 
         const total = visibleItems.length;
@@ -1530,8 +1501,10 @@ export class na3D_fileBrowser {
             nodes.push({
                 id: item.idx,                  // Must be unique — your idx is perfect
                 name: item.name,
-                type: item.name.indexOf('.')===-1 ? 'folder' : 'file',
-                item: item                    // Optional: keep reference to original
+                type: item.name.endsWith('.mp3') ? 'file' : 'folder',
+                       item: item,                    // Optional: keep reference to original
+                       // Add any other data you want (color, size, etc.)
+                       color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
             });
 
             // Create link if it has a parent
@@ -1810,6 +1783,7 @@ export class na3D_demo_models {
         // THIS IS THE CRITICAL LINE that was missing after refactor
         t.camera.updateMatrixWorld(true);
         t.raycaster.setFromCamera(t.mouse, t.camera);
+        debugger;
         const intersects = t.raycaster.intersectObjects(t.s2);
 
         console.log('Intersects:', intersects.length, intersects[0] ? intersects[0].object.it?.name : null);

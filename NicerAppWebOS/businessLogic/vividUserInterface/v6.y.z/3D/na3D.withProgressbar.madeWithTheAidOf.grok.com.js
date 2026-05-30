@@ -1302,7 +1302,6 @@ export class na3D_fileBrowser {
             );
 
             const total = visibleItems.length;
-            debugger;
             let processed = 0;
             const chunkSize = 80;   // tune this (50-150)
 

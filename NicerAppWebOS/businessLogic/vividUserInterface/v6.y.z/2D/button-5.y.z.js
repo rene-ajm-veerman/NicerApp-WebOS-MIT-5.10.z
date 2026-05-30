@@ -46,6 +46,7 @@ class vividUserInterface_2D_button {
         } else {
             t.el = el;
         };
+        if (t.el.vividUserInterface_2D_button) return false;
         t.el.vividUserInterface_2D_button = this;
         
         var 

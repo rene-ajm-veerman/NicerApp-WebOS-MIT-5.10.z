@@ -412,7 +412,6 @@ export class na3D_fileBrowser {
 
         while (cit && !done) {
             var html = "", j = 0;
-            debugger;
             cit.parent.data.folders[cit.data].files.sort();
             for (var i=0; i<cit.parent.data.folders[cit.data].files.length; i++) {
                 var file = cit.parent.data.folders[cit.data].files[i];
@@ -420,7 +419,7 @@ export class na3D_fileBrowser {
                     var
                     path = cit.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
                     file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3").replace('.mp3', '');
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+cit.data+'/'+file)+'\')"><span>'+path+'/'+cit.data+'/'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path.replace(/\/\//g,'/')+'/'+cit.data+'/'+file)+'\')"><span>'+path.replace(/\/\//g,'./')+'/'+cit.data+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -886,14 +885,20 @@ export class na3D_fileBrowser {
         if (!data?.nodes?.length) return;
 
         // === STRICT FILTER ===
-        const nodeIds = new Set(data.nodes.map(n => n.id));
+        const nodeIds = new Set(data.nodes/*.map(n => n.id)*/);
         const validLinks = data.links.filter(link => {
-            let src = typeof link.source === 'object' ? link.source.id : link.source;
-            let tgt = typeof link.target === 'object' ? link.target.id : link.target;
-
-            return nodeIds.has(src) && nodeIds.has(tgt);
+            let src = link.source;
+            let tgt = link.target;
+            if (typeof src === 'object' && src !== null) src = src.id;
+            if (typeof tgt === 'object' && tgt !== null) tgt = tgt.id;
+            src = t.items[parseInt(src)];
+            tgt = t.items[parseInt(tgt)];
+            var x = nodeIds.has(src) && nodeIds.has(tgt);
+            if (x) debugger;
+            return x;
         });
         console.log(`Creating graph → ${data.nodes.length} nodes, ${validLinks.length} links`);
+        debugger;
 
         t.graph = ForceGraph3D()
         .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
@@ -906,20 +911,15 @@ export class na3D_fileBrowser {
         .graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
 
         .nodeLabel(null)
-        .nodeOpacity(0.9)
-        .linkOpacity(0.1)
+        .nodeOpacity(0.555)
+        .linkOpacity(0.555)
         .linkColor('#FFF')
-        .warmupTicks(50)
-        .cooldownTicks(300)         // give it more time to settle
+        .warmupTicks(250)
+        .cooldownTicks(500)         // give it more time to settle
         .nodeId('id')
         .linkSource('source')
         .linkTarget('target')
         .nodeLabel('data')
-        .linkWidth(1)
-
-        .nodeLabel(null)
-        .nodeOpacity(0.9)
-        .linkOpacity(0.7)
         .linkWidth(2.0)
         .linkColor(() => 'rgba(180, 220, 255, 1)')
         /*.nodeColor(n => {
@@ -955,11 +955,9 @@ export class na3D_fileBrowser {
         })*/
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
-            debugger;
             return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(7)           // slightly bigger nodes so they don't get lost
-        .linkOpacity(0.25)
+        .nodeRelSize(4)           // slightly bigger nodes so they don't get lost
         .d3AlphaDecay(0.02)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
         .nodeThreeObjectExtend(true)
@@ -999,7 +997,7 @@ export class na3D_fileBrowser {
                 node.sprite.visibile = false;
 
                 //debugger;
-                const text = (node?.item?.filepath || '') + '/' + node.name;
+                const text = ('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 5;
@@ -1123,8 +1121,8 @@ export class na3D_fileBrowser {
         t.graph(container);
 
         setTimeout(() => {
-            t.graph.d3Force('charge').strength(-1600);
-            t.graph.d3Force('link').distance(1100);
+            t.graph.d3Force('charge').strength(-3000);
+            t.graph.d3Force('link').distance(2000);
             console.log("🚀 MAXIMUM SPREAD applied!");
             t.graph.zoomToFit(1200, 1000);
         }, 1600);
@@ -1373,19 +1371,6 @@ export class na3D_fileBrowser {
 
                     t._progressCallback(75, "Finalizing graph...");
 
-                    // === DEBUG - Add this before resolve({ nodes, links }) ===
-                    console.log("=== itemsToGraphData DEBUG ===");
-                    console.log("Nodes created:", nodes.length);
-                    console.log("Links created:", links.length);
-                    if (links.length > 0) {
-                        console.log("Sample link:", links[0]);
-                        console.log("Sample node ID:", nodes[0]?.id);
-                    }
-                    if (nodes.length > 0) {
-                        console.log("First 5 node IDs:", nodes.slice(0,5).map(n => n.id));
-                    }
-                    debugger;
-
                     resolve({ nodes, links });
             }
         };
@@ -1466,7 +1451,6 @@ export class na3D_fileBrowser {
 
             )
         );
-        debugger;
 
         const total = visibleItems.length;
         let processed = 0;
@@ -1685,8 +1669,8 @@ export class na3D_demo_models {
         
         t.updateEnvironment(this);
         
-        el.addEventListener("mousemove", function() { debugger; t.onMouseMove (event, t) });
-        el.addEventListener("pointerup", function() { debugger; t.onPointerUp (event, t) });
+        el.addEventListener("mousemove", function() { t.onMouseMove (event, t) });
+        el.addEventListener("pointerup", function() { t.onPointerUp (event, t) });
 
         t.raycaster = new THREE.Raycaster();
         t.mouse = new THREE.Vector2();

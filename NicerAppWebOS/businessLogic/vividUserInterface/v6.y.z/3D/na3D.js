@@ -83,7 +83,7 @@ export class na3D_fileBrowser {
         //na.desktop.resize();
 
         var it = {
-            id : na.m.randomString(),
+            id : 1,
             name : "music",
             data : 'music',
             idx : 0,
@@ -113,7 +113,7 @@ export class na3D_fileBrowser {
             parentColumOffset : 0,
             model : { position : { x : 0, y : 0, z : 0 } }
         }, fit = {
-            id : na.m.randomString(),
+            id : 1,
             type : "naFolder",
             text : "music",
             parent : "#",
@@ -885,19 +885,22 @@ export class na3D_fileBrowser {
         if (!data?.nodes?.length) return;
 
         // === STRICT FILTER ===
-        const nodeIds = new Set(data.nodes/*.map(n => n.id)*/);
+        // Clean broken links
+        const iterator = data.nodes.keys();//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
+        const nodeIds2 = [];
+        for (var key in iterator) {
+            nodeIds2.push (key);
+        }
+        const nodeIds = new Set(nodeIds2);//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
         const validLinks = data.links.filter(link => {
-            let src = link.source;
-            let tgt = link.target;
-            if (typeof src === 'object' && src !== null) src = src.id;
-            if (typeof tgt === 'object' && tgt !== null) tgt = tgt.id;
-            src = t.items[parseInt(src)];
-            tgt = t.items[parseInt(tgt)];
-            var x = nodeIds.has(src) && nodeIds.has(tgt);
-            if (x) debugger;
-            return x;
+            const src = link.source?.id ?? link.source;
+            const tgt = link.target?.id ?? link.target;
+            return (
+                nodeIds.has(src) && nodeIds.has(tgt)
+            ) || (
+              nodeIds2[tgt] = src
+            );
         });
-        console.log(`Creating graph → ${data.nodes.length} nodes, ${validLinks.length} links`);
         debugger;
 
         t.graph = ForceGraph3D()
@@ -909,6 +912,7 @@ export class na3D_fileBrowser {
         .linkSource('source')
         .linkTarget('target')
         .graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
+        //.graphData(t.forcegraph3d_data)
 
         .nodeLabel(null)
         .nodeOpacity(0.555)
@@ -1111,12 +1115,7 @@ export class na3D_fileBrowser {
             }
         })
 
-        .numDimensions(3)
-        /*.graphData({
-            nodes: data.nodes,
-            links: data.links
-        })*/;
-
+        .numDimensions(3);
 
         t.graph(container);
 
@@ -1124,7 +1123,7 @@ export class na3D_fileBrowser {
             t.graph.d3Force('charge').strength(-3000);
             t.graph.d3Force('link').distance(2000);
             console.log("🚀 MAXIMUM SPREAD applied!");
-            t.graph.zoomToFit(1200, 1000);
+            t.graph.zoomToFit(1000, 1000);
         }, 1600);
     }
 
@@ -1444,10 +1443,18 @@ export class na3D_fileBrowser {
 
         // Filter items
         const visibleItems = t.items.filter(it =>
-            t.showFiles || (
-                typeof it.data=='string'
-                && it.data.indexOf('.')===-1
-                && it.data !== parseInt(it.data)
+            t.showFiles || it.idx===0 || it.idx===1 || (
+                (
+                    typeof it.data=='string'
+                    && it.data.indexOf('.')===-1
+                    && it.data !== parseInt(it.data)
+                ) || (
+                    it.data
+                    && (
+                        it.data.files
+                        || it.data.folders
+                    )
+                )
 
             )
         );
@@ -1468,7 +1475,7 @@ export class na3D_fileBrowser {
             nodes.push({
                 id: item.idx,
                 name: item.data,
-                type: item.data.endsWith('.mp3') ? 'file' : 'folder',
+                type: typeof item.data=='string' && item.data.endsWith('.mp3') ? 'file' : 'folder',
                 item: item
             });
 

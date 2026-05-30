@@ -618,25 +618,29 @@ class naVividButton_icon_svg {
     onclick (evt) {
         var
         t = this;
-        var b = na.ui.vb.settings.buttons['#'+$(evt.currentTarget)[0].id];
-        var selected = (b && b.state == b.btnCode.selectedState);
+        var b =  vui.vividButton.settings.buttons['#'+$(evt.currentTarget)[0].id];
+        if (!b) debugger;
+        var selected = !(b && b.state == b.btnCode.selectedState);
 
-        b.circumstance = 'normal';
-        b.to.circumstance = 'hover';
+        if (!selected) {
+            b.circumstance = 'normal';
+            b.to.circumstance = 'hover';
+        } else {
+            b.to.circumstance = 'normal';
+            b.circumstance = 'hover';
+        }
 
 
         b.state = selected?b.btnCode.startupState:b.btnCode.selectedState;
         selected = (b.state == b.btnCode.selectedState);
-        debugger;
+
 
         if (selected) $(b.el).addClass('selected'); else $(b.el).removeClass('selected');
 
 
         var
-        buttonType = $(b.el).attr('buttonType'),
-        b = t.settings.buttons['#'+b.el.id];
-
-
+        buttonType = $(b.el).attr('buttonType');
+debugger;
         //$('.circleIcon_background', b.el)[0].style.background = ato.steps[0];
         let
         c = b.btnCode.states[b.btnCode.selectedState].circumstances,

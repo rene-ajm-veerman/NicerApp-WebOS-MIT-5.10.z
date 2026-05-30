@@ -2,8 +2,8 @@ if (!vui) var vui = {};
 if (!vui.vividButton) vui.vividButton = { buttonTypes : {} };
 vui.vividButton.buttonTypes['btn_copyAndPaste'] = {
     buttonType : 'btn_copyAndPaste',
-    startupState : 'unmuted',
-    selectedState : 'muted',
+    startupState : 'muted',
+    selectedState : 'unmuted',
     startupCircumstance : 'normal',    
     circumstances : {
         normal : {

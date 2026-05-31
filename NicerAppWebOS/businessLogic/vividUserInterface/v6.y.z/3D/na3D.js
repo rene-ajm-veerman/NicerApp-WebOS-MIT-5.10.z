@@ -1429,12 +1429,15 @@ export class na3D_fileBrowser {
                 const forward = getForwardVector();
                 const delta = forward.multiplyScalar(FLY_SPEED * direction);
                 const pos = t.graph.cameraPosition();
-                t.graph.cameraPosition({
-                    x: pos.x + delta.x,
-                    y: pos.y + delta.y,
-                    z: pos.z + delta.z
-                });
-            }, 16);  // ~60fps
+
+                // Move both camera AND its look target together
+                // so OrbitControls doesn't snap back
+                t.graph.cameraPosition(
+                    { x: pos.x + delta.x, y: pos.y + delta.y, z: pos.z + delta.z },
+                    { x: (pos.lookAt?.x ?? 0) + delta.x, y: (pos.lookAt?.y ?? 0) + delta.y, z: (pos.lookAt?.z ?? 0) + delta.z }
+                    // no duration = instant
+                );
+            }, 16);
         };
 
         const stopFlying = () => {
@@ -1481,17 +1484,34 @@ export class na3D_fileBrowser {
         container.addEventListener('wheel', (e) => {
             e.preventDefault();
             const direction = e.deltaY < 0 ? 1 : -1;
-            const camera = t.graph.camera();
             const forward = getForwardVector();
-            const speed = Math.abs(e.deltaY) * 1.5;  // tune sensitivity
+            const speed = Math.abs(e.deltaY) * 1.5;
             const delta = forward.multiplyScalar(speed * direction);
             const pos = t.graph.cameraPosition();
-            t.graph.cameraPosition({
-                x: pos.x + delta.x,
-                y: pos.y + delta.y,
-                z: pos.z + delta.z
-            });
+            t.graph.cameraPosition(
+                { x: pos.x + delta.x, y: pos.y + delta.y, z: pos.z + delta.z },
+                { x: (pos.lookAt?.x ?? 0) + delta.x, y: (pos.lookAt?.y ?? 0) + delta.y, z: (pos.lookAt?.z ?? 0) + delta.z }
+            );
         }, { passive: false });
+
+        // After graph is created, unlock the internal OrbitControls
+        const internalControls = t.graph.controls();
+        if (internalControls) {
+            internalControls.minDistance = 0;       // can fly right through
+            internalControls.maxDistance = Infinity; // no outer wall
+            internalControls.minPolarAngle = 0;      // no vertical clamping
+            internalControls.maxPolarAngle = Math.PI;
+            internalControls.enablePan = true;
+            internalControls.screenSpacePanning = true;
+        }
+
+        // Also push the camera far plane out so distant nodes don't clip
+        const camera = t.graph.camera();
+        if (camera) {
+            camera.far = 10000000;
+            camera.near = 0.1;
+            camera.updateProjectionMatrix();
+        }
 
         console.log('Flight controls ready — long left-click: fly forward, long right-click: fly backward, scroll: fly in/out');
     }
@@ -1504,6 +1524,7 @@ export class na3D_fileBrowser {
         const seen = new Set();
         const visibleItems = t.items.filter(it => {
             // Always exclude mp3 files unless showFiles is on
+
             if (!t.showFiles) {
                 if (typeof it.name === 'string' && it.name.match(/\.mp3$/i)) return false;
                 if (typeof it.data === 'string' && it.data.match(/\.mp3$/i)) return false;
@@ -1520,6 +1541,7 @@ export class na3D_fileBrowser {
             );
 
             if (r) seen.add(it.idx);
+            if (it.name.match(/\.mp3$/i)) debugger;
             return r;
         });
 

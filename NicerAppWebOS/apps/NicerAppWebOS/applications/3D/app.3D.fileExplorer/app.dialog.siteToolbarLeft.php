@@ -213,12 +213,14 @@ border-top: 1px solid #333;
         if (historyIndex <= 0) return;
         historyIndex--;
         restoreState(history[historyIndex]);
+        updateHistoryUI();
     }
 
     function redo() {
         if (historyIndex >= history.length - 1) return;
         historyIndex++;
         restoreState(history[historyIndex]);
+        updateHistoryUI();
     }
 
     // ==================== BUTTONS & KEYBOARD ====================

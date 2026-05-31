@@ -893,21 +893,27 @@ export class na3D_fileBrowser {
         // Clean broken links
         const iterator = data.nodes.keys();//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
         const nodeIds2 = [];
-        for (var key in iterator) {
-            nodeIds2.push (key);
+        for (var key in data.nodes) {
+            nodeIds2.push (data.nodes[key].id);
         }
         const nodeIds = new Set(nodeIds2);//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
         const validLinks = data.links.filter(link => {
             const src = link.source?.id ?? link.source;
             const tgt = link.target?.id ?? link.target;
-            return (
+            const r = (
                 nodeIds.has(src) && nodeIds.has(tgt)
             ) || (
-              nodeIds2[tgt] = src
+              nodeIds2[src] == tgt
             );
+            if (r) debugger;
+            return r;
         });
+        debugger;
 
-        t.graph = ForceGraph3D()
+        t.graph = ForceGraph3D();
+        t.graph(container);  // mount to DOM immediately
+
+        t.graph
         .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
         .width(t.el.clientWidth || 1000)
         .height(t.el.clientHeight || 700)
@@ -1123,319 +1129,12 @@ export class na3D_fileBrowser {
         t.graph(container);
 
         setTimeout(() => {
-            t.graph.d3Force('charge').strength(-500);
-            t.graph.d3Force('link').distance(250);
+            t.graph.d3Force('charge').strength(-2500);
+            t.graph.d3Force('link').distance(150);
             t.graph.zoomToFit(1400, 1000);
         }, 1000);
     }
 
-    async createProgressiveGraph_buggy_slow(t) {
-        if (t.graph) {
-            t.graph._destructor?.();
-            t.graph = null;
-        }
-
-        const container = t.el;
-        if (!container) return;
-
-        const data = t.forcegraph3d_data;
-        if (!data?.nodes?.length) {
-            console.error("No nodes in data");
-            return;
-        }
-
-        console.log(`Starting progressive load: ${data.nodes.length} nodes, ${data.links.length} links`);
-
-        t.updateProgress?.(75, `Initializing 3D graph (${data.nodes.length} nodes)...`);
-
-        t.graph = ForceGraph3D({
-            controlType: 'orbit',
-            rendererConfig: { antialias: true, alpha: true }
-        })
-        .nodeId('id')
-        .linkSource('source')
-        .linkTarget('target')
-        .nodeLabel('name')
-        .nodeRelSize(5.5)
-        .linkWidth(1)
-
-        .forceEngine('d3')
-        .d3AlphaDecay(0.018)
-        .d3VelocityDecay(0.45)
-        .warmupTicks(40)
-        .cooldownTicks(200)
-        .cooldownTime(4000)
-
-        //.d3Force('charge', (d3) => d3.forceManyBody().strength(-280))   // stronger for your node count
-        //.d3Force('link', (d3) => d3.forceLink().distance(70).strength(0.55))
-        //.d3Force('center', (d3) => d3.forceCenter().strength(0.1))
-
-        .onEngineStop(() => console.log("Simulation stabilized"));
-
-        t.graph(container);
-
-        // === Progressive Loading - Improved ===
-        const batchSize = 80;           // smaller batches = smoother
-        let currentIndex = 0;
-        const totalNodes = data.nodes.length;
-
-        // Pre-sort nodes by id to make link filtering more reliable
-        const sortedNodes = [...data.nodes].sort((a, b) => a.id - b.id);
-
-        const loadNextBatch = () => {
-            const end = Math.min(currentIndex + batchSize, totalNodes);
-            const batchNodes = sortedNodes.slice(0, end);
-
-            // Only include links where BOTH source and target are already in the current batch
-            const batchNodeIds = new Set(batchNodes.map(n => n.id));
-
-            const batchLinks = data.links.filter(link => {
-                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                return batchNodeIds.has(sourceId) && batchNodeIds.has(targetId);
-            });
-
-            t.graph.graphData({
-                nodes: batchNodes,
-                links: batchLinks
-            });
-
-            const percent = 75 + Math.round((end / totalNodes) * 25);
-            t.updateProgress?.(percent, `Loading graph: ${end}/${totalNodes} nodes`);
-
-            currentIndex = end;
-
-            if (currentIndex < totalNodes) {
-                setTimeout(loadNextBatch, 45);   // fast but gentle
-            } else {
-                setTimeout(() => {
-                    t.updateProgress?.(100, "Graph ready!");
-                    t.graph.zoomToFit(1600, 300);
-                }, 900);
-            }
-        };
-
-        loadNextBatch();
-    }
-    async createProgressiveGraph_old_neverWorked(t) {
-        if (t.graph) {
-            t.graph._destructor?.();
-            t.graph = null;
-        }
-
-        const container = t.el;
-        if (!container) return;
-
-        const data = t.forcegraph3d_data;
-        if (!data || !data.nodes.length) return;
-
-        t._progressCallback(75, "Initializing 3D graph...");
-
-        // Initialize empty graph
-        t.graph = ForceGraph3D({
-            controlType: 'orbit',
-            rendererConfig: { antialias: true }
-        })
-        .nodeId('id')
-        .linkSource('source')
-        .linkTarget('target')
-        .nodeLabel('name')
-        .nodeRelSize(5)
-        .linkWidth(1)
-        .linkOpacity(0.5)
-        .nodeColor(() => '#4a9eff')
-        .linkColor(() => 'rgba(100, 180, 255, 0.6)')
-
-        // Strong forces to prevent overlapping
-        .d3Force('charge', d3.forceManyBody().strength(-180))
-        .d3Force('link', d3.forceLink().distance(55).strength(0.7))
-        .d3Force('center', d3.forceCenter().strength(0.08))
-        .d3Force('x', d3.forceX().strength(0.05))
-        .d3Force('y', d3.forceY().strength(0.05))
-
-        .onEngineStop(() => console.log("Simulation stabilized"));
-
-        t.graph(container);
-
-        // === Progressive Loading ===
-        const batchSize = 120;           // nodes per batch
-        let currentIndex = 0;
-        const totalNodes = data.nodes.length;
-
-        const loadNextBatch = () => {
-            const end = Math.min(currentIndex + batchSize, totalNodes);
-            const batchNodes = data.nodes.slice(0, end);
-            const batchLinks = data.links.filter(link => {
-                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                return targetId <= data.nodes[end-1].id;   // simple heuristic
-            });
-
-            t.graph.graphData({
-                nodes: batchNodes,
-                links: batchLinks
-            });
-
-            const percent = 75 + Math.round((end / totalNodes) * 25);
-            t.updateProgress?.(percent, `Loading graph: ${end}/${totalNodes} nodes`);
-
-            currentIndex = end;
-
-            if (currentIndex < totalNodes) {
-                setTimeout(loadNextBatch, 80);   // small delay between batches
-            } else {
-                setTimeout(() => {
-                    t.updateProgress?.(100, "Graph ready!");
-                    t.graph.zoomToFit(1200, 200);
-                }, 600);
-            }
-        };
-
-        // Start loading
-        loadNextBatch();
-    }
-
-    itemsToGraphData_bugsByGrokPunny(t) {
-        return new Promise((resolve) => {
-            const nodes = [];
-            const links = [];
-            const nodeMap = new Map();           // ← important for lookup
-
-            const visibleItems = t.items.filter(it =>
-                t.showFiles || (
-                    typeof it.name == 'string'
-                    && it.name.indexOf('.')===-1
-                    && it.name !== parseInt(it.name)
-                )
-            );
-
-            const total = visibleItems.length;
-            let processed = 0;
-            const chunkSize = 80;   // tune this (50-150)
-
-        const updateProgress = t._progressCallback || (() => {});
-
-        const processChunk = (index) => {
-            const end = Math.min(index + chunkSize, total);
-
-            for (let i = index; i < end; i++) {
-                const item = visibleItems[i];
-
-                // Create node
-                const node = {
-                    id: item.idx,           // MUST match what links use
-                    name: item.name,
-                    // ... add any other properties you need
-                    ...item   // or selectively copy
-                };
-
-                nodes.push(node);
-                nodeMap.set(item.idx, node);
-
-                // Create link if parent exists
-                if (item.parent && item.parent.idx !== undefined) {
-                    links.push({
-                        source: item.parent.idx,   // use the ID (number/string)
-                    target: item.idx
-                    });
-                }
-
-                processed++;
-            }
-
-            const percent = 45 + Math.round((processed / total) * 30);
-            t._progressCallback(percent, `Building graph: ${processed}/${total} items`);
-
-            if (end < total) {
-                setTimeout(() => processChunk(end), 0);
-            } else {
-                // === FINAL VALIDATION (very useful) ===
-                console.log(`Final nodes: ${nodes.length}, links: ${links.length}`);
-
-                // Check for broken links
-                const missing = new Set();
-                links.forEach(link => {
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-                    if (!nodeMap.has(sourceId)) missing.add(sourceId);
-                    if (!nodeMap.has(targetId)) missing.add(targetId);
-                });
-
-                    if (missing.size > 0) {
-                        console.error("Missing node IDs in links:", Array.from(missing));
-                        // Optional: filter out bad links
-                        // links = links.filter(...);
-                    }
-
-                    t._progressCallback(75, "Finalizing graph...");
-
-                    resolve({ nodes, links });
-            }
-        };
-
-        processChunk(0);
-        });
-    }
-
-    itemsToGraphData_old_withFaultyProgressbar(t) {
-        const nodes = [];
-        const links = [];
-
-        const visibleItems = t.items.filter(it =>
-            t.showFiles || (
-                typeof it.name==='string' && it.name.indexOf('.')===-1
-            )
-        );
-
-        const total = visibleItems.length;
-        let processed = 0;
-        const chunkSize = 50; // tune this
-
-        const updateProgress = t._progressCallback || (() => {});
-
-        return new Promise((resolve) => {
-            const processChunk = (index) => {
-                const end = Math.min(index + chunkSize, total);
-
-                for (let i = index; i < end; i++) {
-                    const item = visibleItems[i];
-                    nodes.push({
-                        id: item.idx,
-                        name: item.name,
-                        type: item.name.endsWith('.mp3') ? 'file' : 'folder',
-                               item: item,
-                               color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
-                    });
-
-                    // Create link to parent (if exists)
-                    if (item.parent && item.parent.idx !== undefined) {
-                        links.push({
-                            source: item.parent.idx,
-                            target: item.idx
-                        });
-                    }
-
-                    processed++;
-
-                }
-
-                // Update progress
-                const percent = 45 + Math.round((processed / total) * 30);
-                updateProgress(percent, `Building graph: ${processed}/${total}`);
-
-                if (end < total) {
-                    // Yield to browser
-                    setTimeout(() => processChunk(end), 0);
-                    // or better: requestIdleCallback if available
-                } else {
-                    updateProgress(75, "Finalizing...");
-                    resolve({ nodes, links });
-                }
-            };
-
-            processChunk(0);
-        });
-    }
     itemsToGraphData(t) {
         const nodes = [];
         const links = [];

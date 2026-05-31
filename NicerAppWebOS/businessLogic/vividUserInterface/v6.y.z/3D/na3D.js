@@ -905,10 +905,8 @@ export class na3D_fileBrowser {
             ) || (
               nodeIds2[src] == tgt
             );
-            if (r) debugger;
             return r;
         });
-        debugger;
 
         t.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately

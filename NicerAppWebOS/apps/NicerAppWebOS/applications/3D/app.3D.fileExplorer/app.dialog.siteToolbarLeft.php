@@ -110,7 +110,15 @@ border-top: 1px solid #333;
                 y: window.currentCamera.y ?? 0,
                 z: window.currentCamera.z ?? 0,
                 zoom: window.currentCamera.zoom ?? 1,
-                rotation: window.currentCamera.rotation ?? 0
+                rotation: window.currentCamera.rotation
+                ? {
+                    x: window.currentCamera.rotation.x,
+                    y: window.currentCamera.rotation.y,
+                    z: window.currentCamera.rotation.z,
+                    order: window.currentCamera.rotation.order
+                }
+                : null,
+                pos : window.threed.graph.cameraPosition()
             } : null
         };
 
@@ -138,14 +146,43 @@ border-top: 1px solid #333;
         if (state.camera && window.currentCamera) {
             //delete state.camera.rotation;
 
-            Object.assign(window.currentCamera, state.camera);
+            if (state.camera) {
+                const cam = window.currentCamera;
+                const pos = state.camera.pos;
+                const forward = window.getForwardVector();
+                const delta = forward.multiplyScalar(14);
+
+                if (
+                    typeof state.camera.x === 'number'
+                    && typeof state.camera.y === 'number'
+                    && typeof state.camera.z === 'number'
+                ) {
+                    window.threed.graph.cameraPosition(
+                        state.camera.pos,
+                        {
+                            x: ((pos.lookAt?.x ?? 0) + delta.x),
+                            y: ((pos.lookAt?.y ?? 0) + delta.y),
+                            z: ((pos.lookAt?.z ?? 0) + delta.z)
+                        },
+                        1600
+                    );
+                }
+                if (typeof state.camera.zoom === 'number') cam.zoom = state.camera.zoom;
+                if (state.camera.rotation) {
+                    cam.rotation.set(
+                        state.camera.rotation.x,
+                        state.camera.rotation.y,
+                        state.camera.rotation.z,
+                        state.camera.rotation.order
+                    );
+                }
+            };
+
             if (typeof window.updateCamera === 'function') {
                 window.updateCamera();
             } else if (typeof window.render === 'function') {
                 window.render(); // fallback
             } else if (typeof window.currentCamera.updateProjectionMatrix==='function') {
-                debugger;
-
                 window.currentCamera.updateProjectionMatrix();
                 window.currentCamera.updateMatrixWorld(true);
             }

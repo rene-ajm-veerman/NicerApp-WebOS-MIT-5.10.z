@@ -32,7 +32,7 @@ import SpriteText from "https://esm.sh/three-spritetext";
 
 export class na3D_fileBrowser {
     constructor(el, parent, parameters) {
-        var t = this;
+        var t = window.threed = this;
         t.me = 'na3D.js::na3D_fileBrowser';
         var fncn = t.me + '::constructor(el,parent,parameters)';
 
@@ -1046,7 +1046,7 @@ export class na3D_fileBrowser {
             queue = nextQueue;
         }
 
-        t.graph = ForceGraph3D();
+        t.graph = window.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
 
         t.graph
@@ -1211,9 +1211,11 @@ export class na3D_fileBrowser {
 
         .onNodeClick(node => {
             if (!node) return;
+            t.currentNode = node;
 
             const distance = 180;
             const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
+            window.saveHistoryState(`Node clicked (1) : ${node.data}`);
 
             // If node is at/near origin, approach from current camera direction
             if (nodeDistance < 1) {
@@ -1235,7 +1237,7 @@ export class na3D_fileBrowser {
                 );
             }
 
-            window.saveHistoryState(`Node clicked: ${node.data}`);
+            window.saveHistoryState(`Node clicked (2) : ${node.data}`);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
 
@@ -1414,10 +1416,10 @@ export class na3D_fileBrowser {
         let flyInterval = null;
         let mouseButton = null;
         let holdTimer = null;
-        const HOLD_THRESHOLD = 300;  // ms before long-click activates
-        const FLY_SPEED = 40;        // units per tick — tune this
+        const HOLD_THRESHOLD = 500;  // ms before long-click activates
+        const FLY_SPEED = 20;        // units per tick — tune this
 
-        const getForwardVector = () => {
+        const getForwardVector = window.getForwardVector = () => {
             const camera = window.currentCamera = t.graph.camera();
             const dir = new THREE.Vector3();
             camera.getWorldDirection(dir);  // normalised forward direction

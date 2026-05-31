@@ -731,8 +731,9 @@ export class na3D_fileBrowser {
         ancestors.add(0); // don't forget to add the innermost root folder
         const path = node.item.idxPath;
 
+
         if (typeof path === 'string') {
-            const parts = path.substr(1,path.length-2).split('/');
+            const parts = path.substr(1,path.length-1).split('/');
             for (let i = 0; i < parts.length; i++) {
                 var current_t_items_N_idx = parseInt(parts[i]);
                 ancestors.add(current_t_items_N_idx);           // add partial paths
@@ -740,7 +741,7 @@ export class na3D_fileBrowser {
         }
 
         // Also add the node itself
-        ancestors.add(node.id || node?.idx);
+        ancestors.add(node.id);
 
         return ancestors;
     }
@@ -933,43 +934,12 @@ export class na3D_fileBrowser {
         .nodeLabel('data')
         .linkWidth(2.0)
         .linkColor(() => 'rgba(180, 220, 255, 1)')
-        /*.nodeColor(n => {
-            const ancestors = t.getAllAncestors(n);
-            const descendants = t.getAllDescendants(t, n);
-            const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
-            const defaultColor = 'rgba(255,255,255,0.55)';
-
-            const sourceAncestors = t.getAllAncestors(n);
-            if (sourceAncestors.size===0) return defaultColor;
-            var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-            sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-            const targetAncestors = t.getAllAncestors(n);
-            if (targetAncestors.size===0) return defaultColor;
-            var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-            targetDepth = Math.round(targetDepth / 2) + 1;
-
-            const isAncestorLink =  ancestors.has(n.id);
-            const isDescendantLink = descendants.has(n.id);
-
-
-            if (isAncestorLink) {
-                return t.getHierarchicalColor(t,sourceDepth);
-            }
-            // Direct children
-            if (isDescendantLink) {
-                return t.getHierarchicalColor(t,targetDepth);
-            }
-
-            return defaultColor;
-
-        })*/
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
             return t.getHierarchicalColor(t, depth);
         })
         .nodeRelSize(4)           // slightly bigger nodes so they don't get lost
-        .d3AlphaDecay(0.02)        // slower cooling = more final spread
+        .d3AlphaDecay(0.05)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
         .nodeThreeObjectExtend(true)
         .nodeThreeObject(node => {
@@ -1067,6 +1037,7 @@ export class na3D_fileBrowser {
                         return t.getHierarchicalColor(t,targetDepth);
                     }
 
+                    //debugger;
                     return defaultColor;
 
                 })

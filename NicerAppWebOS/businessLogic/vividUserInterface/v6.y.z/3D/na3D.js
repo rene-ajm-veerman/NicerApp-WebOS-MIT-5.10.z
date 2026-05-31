@@ -419,7 +419,7 @@ export class na3D_fileBrowser {
             }
             if (cit.data.files) var f = cit.data.files.sort(); else var f = cit.parent.data.folders[n].files.sort();
             for (var i=0; i<f.length; i++) {
-                var file = f[i];
+                var file = ''+f[i];
                 if (file.match(/\.mp3$/)) {
                     var
                     path = cit.filepath
@@ -431,7 +431,7 @@ export class na3D_fileBrowser {
                         .replace(/\-[\-\w]+\.mp3/, ".mp3")
                         .replace('.mp3', '');
 
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+n+'/'+file.replace(/\'/g, '\\\''))+'\')"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+n+'/'+file.replace(/\'/g, '\\'))+'\')"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -1235,10 +1235,12 @@ export class na3D_fileBrowser {
                 );
             }
 
+            window.saveHistoryState(`Node clicked: ${node.data}`);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
 
         .numDimensions(3);
+        window.currentCamera = t.graph.camera();
 
         // === BATCH LOADING ===
         const batchSize = 333;          // tune to taste
@@ -1413,10 +1415,10 @@ export class na3D_fileBrowser {
         let mouseButton = null;
         let holdTimer = null;
         const HOLD_THRESHOLD = 300;  // ms before long-click activates
-        const FLY_SPEED = 80;        // units per tick — tune this
+        const FLY_SPEED = 40;        // units per tick — tune this
 
         const getForwardVector = () => {
-            const camera = t.graph.camera();
+            const camera = window.currentCamera = t.graph.camera();
             const dir = new THREE.Vector3();
             camera.getWorldDirection(dir);  // normalised forward direction
             return dir;
@@ -1872,7 +1874,54 @@ export class na3D_demo_models {
     }
 }
 
+na3D_fileBrowser.prototype.history = {
+    stack: [],
+    redoStack: [],
+    maxSize: 50
+};
 
+na3D_fileBrowser.prototype.pushHistory = function(state) {
+    this.history.stack.push(JSON.parse(JSON.stringify(state))); // deep clone
+    if (this.history.stack.length > this.history.maxSize) this.history.stack.shift();
+    this.history.redoStack = []; // clear redo on new action
+};
+
+na3D_fileBrowser.prototype.undo = function() {
+    if (this.history.stack.length === 0) return;
+
+    const currentState = this.history.stack.pop();
+    this.history.redoStack.push(currentState);
+
+    const previousState = this.history.stack[this.history.stack.length - 1];
+    if (previousState) this.restoreState(previousState);
+};
+
+na3D_fileBrowser.prototype.redo = function() {
+    if (this.history.redoStack.length === 0) return;
+
+    const state = this.history.redoStack.pop();
+    this.history.stack.push(state);
+    this.restoreState(state);
+};
+
+na3D_fileBrowser.prototype.restoreState = function(state) {
+    // Restore camera position, selected nodes, current folder, graph data, etc.
+    // Example:
+    this.graph.cameraPosition(state.cameraPos);
+    // ... other restorations
+};
+
+// Keyboard handler
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+            na.apps.loaded.threed_fileExplorer.redo();
+        } else {
+            na.apps.loaded.threed_fileExplorer.undo();
+        }
+    }
+});
 
 
 

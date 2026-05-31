@@ -417,9 +417,9 @@ export class na3D_fileBrowser {
             } else {
                 var n = cit.data;
             }
-            cit.parent.data.folders[n].files.sort();
-            for (var i=0; i<cit.parent.data.folders[n].files.length; i++) {
-                var file = cit.parent.data.folders[n].files[i];
+            if (cit.data.files) var f = cit.data.files.sort(); else var f = cit.parent.data.folders[n].files.sort();
+            for (var i=0; i<f.length; i++) {
+                var file = f[i];
                 if (file.match(/\.mp3$/)) {
                     var
                     path = cit.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
@@ -884,6 +884,7 @@ export class na3D_fileBrowser {
             if (it.level > t.maxLevel) t.maxLevel = it.level;
         }
 
+        /*
         const container = t.el;
         if (!container) return;
 
@@ -904,10 +905,53 @@ export class na3D_fileBrowser {
             const r = (
                 nodeIds.has(src) && nodeIds.has(tgt)
             ) || (
-              nodeIds2[src] == tgt
+              nodeIds2[tgt] == src
             );
+            //if (r) debugger;
             return r;
         });
+        debugger;
+        */
+
+        const container = t.el;
+        if (!container) return;
+
+        const data = t.forcegraph3d_data;
+        if (!data?.nodes?.length) return;
+
+        const nodeIds = new Set(data.nodes.map(n => n.id));
+        const validLinks = data.links.filter(link => {
+            let src = typeof link.source === 'object' ? link.source.id : link.source;
+            let tgt = typeof link.target === 'object' ? link.target.id : link.target;
+            return nodeIds.has(src) && nodeIds.has(tgt);
+        });
+
+        // Pre-cache depth + color on each node
+        data.nodes.forEach(node => {
+            const ancestors = t.getAllAncestors(node.item);
+            const deepest = Array.from(ancestors)[ancestors.size - 1];
+            node._depth = Math.round((t.items[deepest]?.level ?? 0) / 2) + 1;
+            node._color = t.getHierarchicalColor(t, node._depth);
+        });
+
+        // Pre-build child map for fast descendant lookup
+        t._childMap = new Map();
+        validLinks.forEach(link => {
+            const src = typeof link.source === 'object' ? link.source.id : link.source;
+            const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+            if (!t._childMap.has(src)) t._childMap.set(src, []);
+            t._childMap.get(src).push(tgt);
+        });
+
+        // Pre-position nodes on a Fibonacci sphere so sim starts untangled
+        // data.nodes.forEach((node, idx) => {
+        //     const phi   = Math.acos(-1 + (2 * idx) / data.nodes.length);
+        //     const theta = Math.sqrt(data.nodes.length * Math.PI) * phi;
+        //     const r = 800;
+        //     node.x = r * Math.sin(phi) * Math.cos(theta);
+        //     node.y = r * Math.sin(phi) * Math.sin(theta);
+        //     node.z = r * Math.cos(phi);
+        // });
 
         t.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
@@ -920,46 +964,48 @@ export class na3D_fileBrowser {
         .nodeId('id')           // ← tell the library which field is the ID
         .linkSource('source')
         .linkTarget('target')
-        .graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
+        //.graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
+        .graphData({ nodes: [], links: [] })
 
         .nodeLabel(null)
         .nodeOpacity(0.4)
         .linkOpacity(0.3)
         .linkColor('#FFF')
-        .warmupTicks(250)
-        .cooldownTicks(500)         // give it more time to settle
+        .warmupTicks(5)
+        .cooldownTicks(5)
         .nodeId('id')
         .linkSource('source')
         .linkTarget('target')
         .nodeLabel('data')
-        .linkWidth(2.0)
+        .linkWidth(1)
         .linkColor(() => 'rgba(180, 220, 255, 1)')
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
             return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(4)           // slightly bigger nodes so they don't get lost
-        .d3AlphaDecay(0.05)        // slower cooling = more final spread
+        .nodeRelSize(8)           // slightly bigger nodes so they don't get lost
+        .d3AlphaDecay(0.5)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
-        .nodeThreeObjectExtend(true)
-        .nodeThreeObject(node => {
-            //debugger;
-            const text = node.name;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
-            const sprite = new SpriteText(text);
-            node.sprite = sprite;
-            sprite.color = 'rgba(255,255,255,0.7)';
-            sprite.textHeight = 5;
-            sprite.fontFace = 'Arial';
-            sprite.position.set(0, 18, 0);
+         .nodeThreeObjectExtend(true)
+         .nodeThreeObject(node => {
+        //     //debugger;
+        //
+             const text = node.name;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
+             const sprite = new SpriteText(text);
+             node.sprite = sprite;
+             sprite.color = 'rgba(255,255,255,0.7)';
+             sprite.textHeight = 5;
+             sprite.fontFace = 'Arial';
+             sprite.position.set(0, 18, 0);
+        //
+        //     // Optional: make sure it renders in front
+             sprite.material.depthWrite = false;
+             sprite.material.depthTest = false;
+        //
+        //     //t.graph.scene().add(sprite);
+             return sprite;
 
-            // Optional: make sure it renders in front
-            sprite.material.depthWrite = false;
-            sprite.material.depthTest = false;
-
-            t.graph.scene().add(sprite);
-            return sprite;
-
-        })
+         })
 
         // Custom Link Labels
         .linkThreeObjectExtend(false)
@@ -971,11 +1017,13 @@ export class na3D_fileBrowser {
             // Remove old hover label
             if (t.hoverLabel) {
                 t.graph.scene().remove(t.hoverLabel);
+                t.hoverLabel.material.dispose();  // ← add this
+                t.hoverLabel = null;
             };
 
             if (node) {
                 // Big hover label
-                node.sprite.visibile = false;
+                //node.sprite.visibile = false;
 
                 //debugger;
                 const text = ('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
@@ -1060,7 +1108,6 @@ export class na3D_fileBrowser {
             else {
                 // Reset when hover ends
                 t.graph.nodeColor(n => {
-                    n.sprite.visibile = true;
                     var depth = n?.item?.level ?? n.item.level ?? 0;
                     depth = depth / 2 + 1;
                     return t.getHierarchicalColor(t,depth);
@@ -1095,13 +1142,95 @@ export class na3D_fileBrowser {
 
         .numDimensions(3);
 
-        t.graph(container);
+        // === BATCH LOADING ===
+        const batchSize = 50;          // tune to taste
+        const sorted = [...data.nodes.sort((a,b)=>{return b.level - a.level;})]; // preserve original order, or sort if you want
+        let j = 0;
 
-        setTimeout(() => {
-            t.graph.d3Force('charge').strength(-2500);
-            t.graph.d3Force('link').distance(150);
-            t.graph.zoomToFit(1400, 1000);
-        }, 1000);
+        /*
+        const loadBatch = () => {
+            const end = Math.min(j + batchSize, data.nodes.length);
+            const currentNodes = sorted.slice(0, end);
+
+            // Only include links where both endpoints are already loaded
+            const loadedIds = new Set(currentNodes.map(n => n.id));
+            const currentLinks = validLinks.filter(link => {
+                const src = typeof link.source === 'object' ? link.source.id : link.source;
+                const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+                return loadedIds.has(src) && loadedIds.has(tgt);
+            });
+
+            t.graph.graphData({ nodes: currentNodes, links: currentLinks });
+
+            t._progressCallback?.(
+                75 + Math.round((end / data.nodes.length) * 24),
+                                  `Loading graph: ${end} / ${data.nodes.length} nodes`
+            );
+
+            j = end;
+
+            if (j < data.nodes.length) {
+                setTimeout(loadBatch, 16);   // ~30fps cadence, tune down for faster load
+            } else {
+                t._progressCallback?.(100, 'Done!');
+                setTimeout(() => {
+                    t.graph.d3Force('charge').strength(-4000);
+                    t.graph.d3Force('link').distance(800);
+                    t.graph.zoomToFit(1200, 1000);
+                }, 1600);
+            }
+        };
+        */
+        const loadedIds = new Set();
+        const loadBatch = () => {
+            const end = Math.min(j + batchSize, data.nodes.length);
+            sorted.slice(j, end).forEach(n => loadedIds.add(n.id));  // incremental, not rebuilt
+
+            const currentNodes = sorted.slice(0, end);
+            const currentLinks = validLinks.filter(link => {
+                const src = typeof link.source === 'object' ? link.source.id : link.source;
+                const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+                return loadedIds.has(src) && loadedIds.has(tgt);
+            });
+            t.graph.pauseAnimation();
+            t.graph.graphData({ nodes: currentNodes, links: currentLinks });
+
+            t._progressCallback?.(
+                75 + Math.round((end / data.nodes.length) * 24),
+                                  `Loading graph: ${end} / ${data.nodes.length} nodes`
+            );
+
+            j = end;
+
+            if (j < data.nodes.length) {
+                setTimeout(loadBatch, 0);   // no delay needed since we're not animating
+            } else {
+                // All data loaded — now assign positions, THEN start simulation
+                /*
+                t.graph.graphData().nodes.forEach((node, idx) => {
+                    // Spread nodes in a sphere so force sim starts from a good state
+                    const phi   = Math.acos(-1 + (2 * idx) / data.nodes.length);
+                    const theta = Math.sqrt(data.nodes.length * Math.PI) * phi;
+                    const r = 800;
+                    node.fx = node.fy = node.fz = undefined;  // unpin
+                    node.x = r * Math.sin(phi) * Math.cos(theta);
+                    node.y = r * Math.sin(phi) * Math.sin(theta);
+                    node.z = r * Math.cos(phi);
+                });
+                */
+
+                t.graph.resumeAnimation();
+
+                setTimeout(() => {
+                    t.graph.d3Force('charge').strength(-2000);
+                    t.graph.d3Force('link').distance(500);
+                    t.graph.zoomToFit(1200, 1000);
+                    t._progressCallback?.(100, 'Done!');
+                }, 100);
+            }
+        };
+
+        loadBatch();   // kick off
     }
 
     itemsToGraphData(t) {
@@ -1109,22 +1238,28 @@ export class na3D_fileBrowser {
         const links = [];
 
         // Filter items
-        const visibleItems = t.items.filter(it =>
-            t.showFiles || it.idx===0 || it.idx===1 || (
+        const visibleItems = t.items.filter(it => {
+            let r = t.showFiles || it.idx===0 || it.idx===1 || (
                 (
                     typeof it.data=='string'
                     && it.data.indexOf('.')===-1
-                    && it.data !== parseInt(it.data)
+                    && it.data != parseInt(it.data)
                 ) || (
+                    typeof it.name=='string'
+                    && it.name.indexOf('.')===-1
+                    && it.name != parseInt(it.name)
+                )/* || (
                     it.data
                     && (
                         it.data.files
                         || it.data.folders
                     )
-                )
+                )*/
 
-            )
-        );
+            );
+            //if (r) debugger;
+            return r;
+        });
 
         const total = visibleItems.length;
         let processed = 0;
@@ -1179,76 +1314,6 @@ export class na3D_fileBrowser {
 
         return { nodes, links };
     }
-    itemsToGraphData_old_n_buggy(t) {
-        const nodes = [];
-        const links = [];
-        const visibleItems = t.items.filter(it =>
-            t.showFiles || (
-                typeof it.name=='string'
-                && it.name.indexOf('.')===-1
-            )
-        );
-
-        const total = visibleItems.length;
-        let processed = 0;
-
-        visibleItems.forEach((item, i) => {
-            nodes.push({
-                id: item.idx,                  // Must be unique — your idx is perfect
-                name: item.name,
-                type: item.name.indexOf('.')===-1 ? 'folder' : 'file',
-                item: item                    // Optional: keep reference to original
-            });
-
-            // Create link if it has a parent
-            if (item.parent && item.parent.idx !== undefined) {
-                links.push({
-                    source: item.parent.idx,   // parent's id
-                    target: item.idx           // child's id
-                });
-            }
-
-            processed++;
-            if (i % Math.ceil(total/20) === 0) { // update ~20 times
-                const percent = 45 + (processed / total * 30); // 45% -> 75%
-                // You could pass a callback to updateProgress if you want live updates
-            }
-        });
-
-        return { nodes, links };
-    }
-    itemsToGraphData_old_withoutProgressbar(t) {
-        const nodes = [];
-        const links = [];
-
-        // Filter out items you don't want to show (optional)
-        const visibleItems = t.items.filter(it =>
-            t.showFiles || !it.data.endsWith('.mp3')
-        );
-
-        // Create nodes
-        visibleItems.forEach(item => {
-            nodes.push({
-                id: item.idx,                  // Must be unique — your idx is perfect
-                name: item.name,
-                type: item.name.endsWith('.mp3') ? 'file' : 'folder',
-                item: item,                    // Optional: keep reference to original
-                // Add any other data you want (color, size, etc.)
-                color: item.color || (item.name.endsWith('.mp3') ? '#ff6666' : '#66ccff')
-            });
-
-            // Create link if it has a parent
-            if (item.parent && item.parent.idx !== undefined) {
-                links.push({
-                    source: item.parent.idx,   // parent's id
-                    target: item.idx           // child's id
-                });
-            }
-        });
-
-        return { nodes, links };
-    }
-
     toggleShowLines () {
         var t = this;
         t.showLines = !t.showLines;

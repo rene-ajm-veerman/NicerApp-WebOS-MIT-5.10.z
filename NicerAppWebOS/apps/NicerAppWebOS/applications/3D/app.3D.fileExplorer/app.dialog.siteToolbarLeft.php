@@ -210,42 +210,36 @@ border-top: 1px solid #333;
     }
 
     function undo() {
-        if (historyIndex <= 0) return;
+        if (historyIndex < 0) return;
         historyIndex--;
         restoreState(history[historyIndex]);
         updateHistoryUI();
     }
 
     function redo() {
-        if (historyIndex >= history.length - 1) return;
+        if (historyIndex > history.length - 1) return;
         historyIndex++;
         restoreState(history[historyIndex]);
         updateHistoryUI();
     }
 
     // ==================== BUTTONS & KEYBOARD ====================
-
     function initHistoryControls() {
-        const btnUndo = document.getElementById('btnUndo');
-        const btnRedo = document.getElementById('btnRedo');
-
-        if (btnUndo) btnUndo.addEventListener('click', undo);
-        if (btnRedo) btnRedo.addEventListener('click', redo);
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    redo();
-                } else {
-                    undo();
-                }
-            } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-                e.preventDefault();
-                redo();
-            }
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'btnUndo') undo();
+            if (e.target.id === 'btnRedo') redo();
         });
+
+            // keyboard shortcuts stay the same
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                    e.preventDefault();
+                    if (e.shiftKey) redo(); else undo();
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+            });
     }
 
     // Expose for easy calling from onclick_node() etc.

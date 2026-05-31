@@ -1237,7 +1237,9 @@ export class na3D_fileBrowser {
                 );
             }
 
-            window.saveHistoryState(`Node clicked (2) : ${node.data}`);
+            setTimeout (function(node) {
+                window.saveHistoryState(`Node clicked (2) : ${node.data}`);
+            }, 1700, node);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
 

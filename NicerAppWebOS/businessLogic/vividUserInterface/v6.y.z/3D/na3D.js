@@ -422,9 +422,16 @@ export class na3D_fileBrowser {
                 var file = f[i];
                 if (file.match(/\.mp3$/)) {
                     var
-                    path = cit.filepath.replace(/\/0\/filesAtRoot\/folders/, "").replace(/\/folders/g,""),
-                    file2 = file.replace(/\-[\-\w]+\.mp3/, ".mp3").replace('.mp3', '');
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path.replace(/\/\//g,'/')+'/'+n+'/'+file)+'\')"><span>'+path.replace(/\/\//g,'./')+'/'+n+'/'+file2+'</span></a></div>';
+                    path = cit.filepath
+                        .replace(/\/0\/filesAtRoot\/folders/, "")
+                        .replace(/\/folders/g,"")
+                        .replace(/\/\//g,'/')
+                        .replace(/\'/g, '\\'),
+                    file2 = file
+                        .replace(/\-[\-\w]+\.mp3/, ".mp3")
+                        .replace('.mp3', '');
+
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+n+'/'+file.replace(/\'/g, '\\\''))+'\')"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -919,12 +926,14 @@ export class na3D_fileBrowser {
         const data = t.forcegraph3d_data;
         if (!data?.nodes?.length) return;
 
+
         const nodeIds = new Set(data.nodes.map(n => n.id));
         const validLinks = data.links.filter(link => {
             let src = typeof link.source === 'object' ? link.source.id : link.source;
             let tgt = typeof link.target === 'object' ? link.target.id : link.target;
             return nodeIds.has(src) && nodeIds.has(tgt);
         });
+
 
         // Pre-cache depth + color on each node
         data.nodes.forEach(node => {
@@ -935,23 +944,107 @@ export class na3D_fileBrowser {
         });
 
         // Pre-build child map for fast descendant lookup
-        t._childMap = new Map();
+        // Build parent->children map and nodeMap (same as before)
+        const childMap = new Map();
+        const parentMap = new Map();
         validLinks.forEach(link => {
             const src = typeof link.source === 'object' ? link.source.id : link.source;
             const tgt = typeof link.target === 'object' ? link.target.id : link.target;
-            if (!t._childMap.has(src)) t._childMap.set(src, []);
-            t._childMap.get(src).push(tgt);
+            if (!childMap.has(src)) childMap.set(src, []);
+            childMap.get(src).push(tgt);
+            parentMap.set(tgt, src);
         });
 
-        // Pre-position nodes on a Fibonacci sphere so sim starts untangled
-        // data.nodes.forEach((node, idx) => {
-        //     const phi   = Math.acos(-1 + (2 * idx) / data.nodes.length);
-        //     const theta = Math.sqrt(data.nodes.length * Math.PI) * phi;
-        //     const r = 800;
-        //     node.x = r * Math.sin(phi) * Math.cos(theta);
-        //     node.y = r * Math.sin(phi) * Math.sin(theta);
-        //     node.z = r * Math.cos(phi);
-        // });
+        const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
+
+        // Find root
+        const targetIds = new Set(validLinks.map(l => typeof l.target === 'object' ? l.target.id : l.target));
+        const rootNode = data.nodes.find(n => !targetIds.has(n.id));
+        const rootId = rootNode?.id ?? 0;
+
+        const root = nodeMap.get(rootId);
+        if (root) { root.x = 0; root.y = 0; root.z = 0; }
+
+        // Give root children initial directions using Fibonacci sphere
+        const rootChildren = childMap.get(rootId) || [];
+        rootChildren.forEach((childId, i) => {
+            const node = nodeMap.get(childId);
+            if (!node) return;
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+            const phi   = Math.acos(1 - 2 * (i + 0.5) / rootChildren.length);
+            const theta = 2 * Math.PI * i / goldenRatio;
+            // Store direction vector on node for children to inherit
+            node._dir = {
+                x: Math.sin(phi) * Math.cos(theta),
+                             y: Math.sin(phi) * Math.sin(theta),
+                             z: Math.cos(phi)
+            };
+            const r = 400;
+            node.x = r * node._dir.x;
+            node.y = r * node._dir.y;
+            node.z = r * node._dir.z;
+        });
+
+        // BFS outward — each node's children spread in a small sphere
+        // around the parent's outward direction point
+        const levelStep = 350;      // how far each level steps outward — tune this
+        const siblingSpread = 120;  // radius of sibling sphere around direction point — tune this
+
+        const visited = new Set([rootId]);
+        let queue = rootChildren.slice();
+        queue.forEach(id => visited.add(id));
+
+        while (queue.length > 0) {
+            const nextQueue = [];
+
+            queue.forEach(parentId => {
+                const parentNode = nodeMap.get(parentId);
+                if (!parentNode) return;
+
+                const children = (childMap.get(parentId) || []).filter(id => !visited.has(id));
+                if (children.length === 0) return;
+
+                // Parent's outward direction (normalised)
+                const dir = parentNode._dir || { x: 0, y: 1, z: 0 };
+                const len = Math.sqrt(dir.x**2 + dir.y**2 + dir.z**2) || 1;
+                const nd = { x: dir.x/len, y: dir.y/len, z: dir.z/len };
+
+                // Centre point for this group of siblings — one step further out
+                const cx = parentNode.x + nd.x * levelStep;
+                const cy = parentNode.y + nd.y * levelStep;
+                const cz = parentNode.z + nd.z * levelStep;
+
+                // Distribute siblings in a Fibonacci sphere around that centre point
+                children.forEach((childId, i) => {
+                    const node = nodeMap.get(childId);
+                    if (!node) return;
+
+                    visited.add(childId);
+                    nextQueue.push(childId);
+
+                    const count = children.length;
+                    const goldenRatio = (1 + Math.sqrt(5)) / 2;
+                    const phi   = count > 1 ? Math.acos(1 - 2 * (i + 0.5) / count) : 0;
+                    const theta = 2 * Math.PI * i / goldenRatio;
+
+                    // Spread radius shrinks slightly with more siblings so clusters stay tight
+                    const spread = Math.min(siblingSpread, siblingSpread * Math.sqrt(10 / Math.max(count, 10)));
+
+                    const ox = spread * Math.sin(phi) * Math.cos(theta);
+                    const oy = spread * Math.sin(phi) * Math.sin(theta);
+                    const oz = spread * Math.cos(phi);
+
+                    node.x = cx + ox;
+                    node.y = cy + oy;
+                    node.z = cz + oz;
+
+                    // Inherit parent's direction so grandchildren continue outward
+                    node._dir = { x: nd.x + ox * 0.01, y: nd.y + oy * 0.01, z: nd.z + oz * 0.01 };
+                });
+            });
+
+            queue = nextQueue;
+        }
 
         t.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
@@ -971,26 +1064,26 @@ export class na3D_fileBrowser {
         .nodeOpacity(0.4)
         .linkOpacity(0.3)
         .linkColor('#FFF')
-        .warmupTicks(5)
-        .cooldownTicks(5)
+        .warmupTicks(2)
+        .cooldownTicks(2)
         .nodeId('id')
         .linkSource('source')
         .linkTarget('target')
         .nodeLabel('data')
-        .linkWidth(1)
-        .linkColor(() => 'rgba(180, 220, 255, 1)')
+        .linkWidth(2)
+        .linkColor(() => 'rgba(180, 220, 255, 0.6)')
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
             return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(8)           // slightly bigger nodes so they don't get lost
+        .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
         .d3AlphaDecay(0.5)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
          .nodeThreeObjectExtend(true)
          .nodeThreeObject(node => {
         //     //debugger;
         //
-             const text = node.name;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
+             const text = node.name != parseInt(node.name) ? node.name : node.data;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
              const sprite = new SpriteText(text);
              node.sprite = sprite;
              sprite.color = 'rgba(255,255,255,0.7)';
@@ -1026,7 +1119,7 @@ export class na3D_fileBrowser {
                 //node.sprite.visibile = false;
 
                 //debugger;
-                const text = ('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
+                const text = (node.data!=parseInt(node.data)?node.data:node.name);//('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
                 t.hoverLabel = new SpriteText(text);
                 t.hoverLabel.color = '#ffff88';
                 t.hoverLabel.textHeight = 5;
@@ -1118,32 +1211,37 @@ export class na3D_fileBrowser {
 
         .onNodeClick(node => {
             if (!node) return;
-            console.log('Clicked node:', node.name);
 
-            // Camera focus
             const distance = 180;
-            const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
+            const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
 
-            t.graph.cameraPosition(
-                {
-                    x: (node.x||0) * distRatio,
-                                   y: (node.y||0) * distRatio,
-                                   z: (node.z||0) * distRatio
-                },
-                node,
-                1600
-            );
-
-            // Your existing file listing logic
-            if (typeof t.onclick_node === 'function') {
-                t.onclick_node(t, node);
+            // If node is at/near origin, approach from current camera direction
+            if (nodeDistance < 1) {
+                t.graph.cameraPosition(
+                    { x: distance, y: distance, z: distance },
+                    { x: 0, y: 0, z: 0 },
+                    1600
+                );
+            } else {
+                const distRatio = 1 + distance / nodeDistance;
+                t.graph.cameraPosition(
+                    {
+                        x: (node.x || 0) * distRatio,
+                                       y: (node.y || 0) * distRatio,
+                                       z: (node.z || 0) * distRatio
+                    },
+                    node,
+                    1600
+                );
             }
+
+            if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
 
         .numDimensions(3);
 
         // === BATCH LOADING ===
-        const batchSize = 50;          // tune to taste
+        const batchSize = 333;          // tune to taste
         const sorted = [...data.nodes.sort((a,b)=>{return b.level - a.level;})]; // preserve original order, or sort if you want
         let j = 0;
 
@@ -1193,6 +1291,25 @@ export class na3D_fileBrowser {
                 return loadedIds.has(src) && loadedIds.has(tgt);
             });
             t.graph.pauseAnimation();
+
+
+
+            // Find any links referencing ids not in nodes
+            const nodeIdSet = new Set(data.nodes.map(n => n.id));
+            const phantomSources = new Set();
+            const phantomTargets = new Set();
+            data.links.forEach(link => {
+                if (!nodeIdSet.has(link.source)) phantomSources.add(link.source);
+                if (!nodeIdSet.has(link.target)) phantomTargets.add(link.target);
+            });
+                console.log('Phantom source ids (not in nodes):', [...phantomSources].slice(0, 20));
+                console.log('Phantom target ids (not in nodes):', [...phantomTargets].slice(0, 20));
+                console.log('Total bad links:', phantomSources.size + phantomTargets.size);
+
+
+
+
+
             t.graph.graphData({ nodes: currentNodes, links: currentLinks });
 
             t._progressCallback?.(
@@ -1203,28 +1320,83 @@ export class na3D_fileBrowser {
             j = end;
 
             if (j < data.nodes.length) {
-                setTimeout(loadBatch, 0);   // no delay needed since we're not animating
+                setTimeout(loadBatch, 50);   // no delay needed since we're not animating
             } else {
                 // All data loaded — now assign positions, THEN start simulation
-                /*
-                t.graph.graphData().nodes.forEach((node, idx) => {
-                    // Spread nodes in a sphere so force sim starts from a good state
-                    const phi   = Math.acos(-1 + (2 * idx) / data.nodes.length);
-                    const theta = Math.sqrt(data.nodes.length * Math.PI) * phi;
-                    const r = 800;
-                    node.fx = node.fy = node.fz = undefined;  // unpin
-                    node.x = r * Math.sin(phi) * Math.cos(theta);
-                    node.y = r * Math.sin(phi) * Math.sin(theta);
-                    node.z = r * Math.cos(phi);
+                // Build parent->children map
+                const childMap = new Map();
+                validLinks.forEach(link => {
+                    const src = typeof link.source === 'object' ? link.source.id : link.source;
+                    const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+                    if (!childMap.has(src)) childMap.set(src, []);
+                    childMap.get(src).push(tgt);
                 });
-                */
+
+                const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
+
+                // Find root
+                const targetIds = new Set(validLinks.map(l => typeof l.target === 'object' ? l.target.id : l.target));
+                const rootNode = data.nodes.find(n => !targetIds.has(n.id));
+                const rootId = rootNode?.id ?? 0;
+
+                const levelRadius = 400;  // distance per level — tune this
+
+                // BFS: collect nodes level by level
+                const levels = [];
+                const visited = new Set();
+                let currentLevel = [rootId];
+                visited.add(rootId);
+
+                while (currentLevel.length > 0) {
+                    levels.push(currentLevel);
+                    const nextLevel = [];
+                    currentLevel.forEach(id => {
+                        (childMap.get(id) || []).forEach(childId => {
+                            if (!visited.has(childId)) {
+                                visited.add(childId);
+                                nextLevel.push(childId);
+                            }
+                        });
+                    });
+                    currentLevel = nextLevel;
+                }
+
+                // Position root at origin
+                const root = nodeMap.get(rootId);
+                if (root) { root.x = 0; root.y = 0; root.z = 0; }
+
+                // For each subsequent level, distribute nodes on a sphere shell
+                // using Fibonacci sphere for even 3D spread
+                levels.forEach((levelNodes, levelIdx) => {
+                    if (levelIdx === 0) return;
+
+                    const count = levelNodes.length;
+
+                    // Scale radius to node count — denser levels get bigger shells
+                    // minRadius ensures even single nodes aren't at the origin
+                    const minRadius = levelIdx * 50;   // minimum spacing between levels
+                    const r = Math.max(minRadius, Math.sqrt(count) * 40);  // tune the 80
+
+                    levelNodes.forEach((nodeId, i) => {
+                        const node = nodeMap.get(nodeId);
+                        if (!node) return;
+
+                        const goldenRatio = (1 + Math.sqrt(5)) / 2;
+                        const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
+                        const theta = 2 * Math.PI * i / goldenRatio;
+
+                        node.x = r * Math.sin(phi) * Math.cos(theta);
+                        node.y = r * Math.sin(phi) * Math.sin(theta);
+                        node.z = r * Math.cos(phi);
+                    });
+                });
 
                 t.graph.resumeAnimation();
 
                 setTimeout(() => {
                     t.graph.d3Force('charge').strength(-2000);
                     t.graph.d3Force('link').distance(500);
-                    t.graph.zoomToFit(1200, 1000);
+                    t.graph.zoomToFit(3300, 5000);
                     t._progressCallback?.(100, 'Done!');
                 }, 100);
             }
@@ -1235,85 +1407,120 @@ export class na3D_fileBrowser {
 
     itemsToGraphData(t) {
         const nodes = [];
-        const links = [];
+        var links = [];
 
-        // Filter items
+        const seen = new Set();
         const visibleItems = t.items.filter(it => {
-            let r = t.showFiles || it.idx===0 || it.idx===1 || (
-                (
-                    typeof it.data=='string'
-                    && it.data.indexOf('.')===-1
-                    && it.data != parseInt(it.data)
-                ) || (
-                    typeof it.name=='string'
-                    && it.name.indexOf('.')===-1
-                    && it.name != parseInt(it.name)
-                )/* || (
-                    it.data
-                    && (
-                        it.data.files
-                        || it.data.folders
-                    )
-                )*/
+            // Always exclude mp3 files unless showFiles is on
+            if (!t.showFiles) {
+                if (typeof it.name === 'string' && it.name.match(/\.mp3$/i)) return false;
+                if (typeof it.data === 'string' && it.data.match(/\.mp3$/i)) return false;
+            }
 
+            if (seen.has(it.idx)) return false;  // hard dedup
+
+            const r = t.showFiles || it.idx === 0 || it.idx === 1 || (
+                (typeof it.data === 'string' && it.data.indexOf('.') === -1 && it.data != parseInt(it.data))
+                || (
+                    (typeof it.name === 'string' && it.name.indexOf('.') === -1 && it.name != parseInt(it.name))
+                    && it.data && (it.data.files || it.data.folders)
+                )
             );
-            //if (r) debugger;
+
+            if (r) seen.add(it.idx);
             return r;
         });
 
-        const total = visibleItems.length;
-        let processed = 0;
+        // Build a Set of visible idx values so we can check parent validity
+        const visibleIdxSet = new Set(visibleItems.map(it => it.idx));
 
-        // Use the progress callback set from initializeItems
-        const updateProgress = t._progressCallback || ((percent, text) => {
-            console.log(`[3D Graph] ${percent}% - ${text}`);
-        });
-
-        updateProgress(46, `Building graph nodes (${total} items)...`);
-
-        // === Main loop with progress updates ===
-        visibleItems.forEach((item, index) => {
-            // Create node
-            var it = item;
-            //if (it.data && it.data.files) debugger;
-            //if (it.name!=parseInt(it.name)) debugger;
-            if (it.name!=parseInt(it.name)) {
-                var n = it.name;
-            } else {
-                var n = it.data;
-            }
+        visibleItems.forEach(item => {
             nodes.push({
                 id: item.idx,
-                name: n,
-                type: typeof item.data=='string' && item.data.endsWith('.mp3') ? 'file' : 'folder',
-                item: item
+                name: item.name,
+                data: item.data && typeof item.data === 'string' ? item.data : null,
+                type: 'folder',
+                item: item,
+                level: item.level,
+                filepath: item.filepath,
+                idxPath: item.idxPath,
+                idx: item.idx,
             });
 
-            // Create link to parent (if exists)
-            if (item.parent && item.parent.idx !== undefined) {
+            // Only create link if parent is also visible
+            /*if (item.parent && item.parent.idx !== undefined && visibleIdxSet.has(item.parent.idx)) {
                 links.push({
                     source: item.parent.idx,
                     target: item.idx
                 });
             }
+            // If parent is NOT visible, walk up until we find one that is
+            else if (item.parent && item.parent.idx !== undefined && !visibleIdxSet.has(item.parent.idx)) {
+                let ancestor = item.parent.parent;
+                while (ancestor) {
+                    if (visibleIdxSet.has(ancestor.idx)) {
+                        links.push({ source: ancestor.idx, target: item.idx });
+                        break;
+                    }
+                    ancestor = ancestor.parent;
+                }
+            }*/
 
-            processed++;
-
-            // === Incremental progress updates ===
-            // Update more frequently for better visual feedback
-            if (total > 50 && (processed % Math.max(1, Math.floor(total / 40)) === 0 || processed === total)) {
-                const progress = 45 + Math.round((processed / total) * 30); // 45% → 75%
-                updateProgress(
-                    progress,
-                    `Building graph: ${processed}/${total} nodes (${Math.round((processed/total)*100)}%)`
-                );
+            if (item.parent?.idx !== undefined) {
+                // Walk up until we hit a visible ancestor
+                let p = item.parent;
+                while (p && !visibleIdxSet.has(p.idx)) {
+                    p = p.parent;
+                }
+                if (p && visibleIdxSet.has(p.idx)) {
+                    links.push({ source: p.idx, target: item.idx });
+                }
+                // If no visible ancestor found, node becomes a root — no link added
             }
         });
 
-        updateProgress(76, "Finalizing graph data...");
 
-        return { nodes, links };
+
+
+
+        // After visibleItems is built:
+        console.log('Total t.items:', t.items.length);
+        console.log('Visible items:', visibleItems.length);
+
+        // Check for duplicate idx in visibleItems
+        const idxCount = new Map();
+        visibleItems.forEach(it => {
+            idxCount.set(it.idx, (idxCount.get(it.idx) || 0) + 1);
+        });
+        const dupeIdx = [...idxCount.entries()].filter(([,v]) => v > 1);
+        console.log('Duplicate idx in visibleItems:', dupeIdx);
+
+        // Check for duplicate names
+        const nameCount = new Map();
+        visibleItems.forEach(it => {
+            const key = (it.filepath || '') + '/' + (it.name || it.data);
+            nameCount.set(key, (nameCount.get(key) || 0) + 1);
+        });
+        const dupeNames = [...nameCount.entries()].filter(([,v]) => v > 1);
+        console.log('Duplicate paths in visibleItems:', dupeNames.slice(0, 20));
+
+        // Also check t.items itself
+        const rawIdxCount = new Map();
+        t.items.forEach(it => rawIdxCount.set(it.idx, (rawIdxCount.get(it.idx) || 0) + 1));
+        const rawDupes = [...rawIdxCount.entries()].filter(([,v]) => v > 1);
+        console.log('Duplicate idx in raw t.items:', rawDupes);
+
+
+
+        const nodeIdSet = new Set(nodes.map(n => n.id));
+        // Final safety net
+        links = links.filter(l => visibleIdxSet.has(l.source) && visibleIdxSet.has(l.target));
+
+        return { nodes, links: links };
+
+        //return { nodes, links };
     }
+
     toggleShowLines () {
         var t = this;
         t.showLines = !t.showLines;

@@ -987,8 +987,8 @@ export class na3D_fileBrowser {
 
         // BFS outward — each node's children spread in a small sphere
         // around the parent's outward direction point
-        const levelStep = 350;      // how far each level steps outward — tune this
-        const siblingSpread = 120;  // radius of sibling sphere around direction point — tune this
+        const levelStep = 500;      // how far each level steps outward — tune this
+        const siblingSpread = 100;  // radius of sibling sphere around direction point — tune this
 
         const visited = new Set([rootId]);
         let queue = rootChildren.slice();
@@ -1391,6 +1391,7 @@ export class na3D_fileBrowser {
                     });
                 });
 
+                t.setupFlightControls(t);
                 t.graph.resumeAnimation();
 
                 setTimeout(() => {
@@ -1404,6 +1405,97 @@ export class na3D_fileBrowser {
 
         loadBatch();   // kick off
     }
+
+
+    setupFlightControls(t) {
+        const container = t.el;
+        let flyInterval = null;
+        let mouseButton = null;
+        let holdTimer = null;
+        const HOLD_THRESHOLD = 300;  // ms before long-click activates
+        const FLY_SPEED = 80;        // units per tick — tune this
+
+        const getForwardVector = () => {
+            const camera = t.graph.camera();
+            const dir = new THREE.Vector3();
+            camera.getWorldDirection(dir);  // normalised forward direction
+            return dir;
+        };
+
+        const startFlying = (direction) => {
+            if (flyInterval) return;
+            flyInterval = setInterval(() => {
+                const camera = t.graph.camera();
+                const forward = getForwardVector();
+                const delta = forward.multiplyScalar(FLY_SPEED * direction);
+                const pos = t.graph.cameraPosition();
+                t.graph.cameraPosition({
+                    x: pos.x + delta.x,
+                    y: pos.y + delta.y,
+                    z: pos.z + delta.z
+                });
+            }, 16);  // ~60fps
+        };
+
+        const stopFlying = () => {
+            if (flyInterval) {
+                clearInterval(flyInterval);
+                flyInterval = null;
+            }
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+            mouseButton = null;
+        };
+
+        container.addEventListener('mousedown', (e) => {
+            // Ignore if over a node (ForceGraph handles that)
+            if (e.target !== container.querySelector('canvas')) return;
+
+            if (e.button === 0) {
+                // Left button — wait for long press
+                mouseButton = 0;
+                holdTimer = setTimeout(() => {
+                    if (mouseButton === 0) startFlying(1);  // forward
+                }, HOLD_THRESHOLD);
+            } else if (e.button === 2) {
+                // Right button — immediate backward (or also long-press if preferred)
+                e.preventDefault();
+                mouseButton = 2;
+                holdTimer = setTimeout(() => {
+                    if (mouseButton === 2) startFlying(-1);  // backward
+                }, HOLD_THRESHOLD);
+            }
+        });
+
+        container.addEventListener('mouseup', stopFlying);
+        container.addEventListener('mouseleave', stopFlying);
+
+        // Prevent context menu on right click
+        container.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Optional: scroll wheel also flies (smoother than zoom)
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const direction = e.deltaY < 0 ? 1 : -1;
+            const camera = t.graph.camera();
+            const forward = getForwardVector();
+            const speed = Math.abs(e.deltaY) * 1.5;  // tune sensitivity
+            const delta = forward.multiplyScalar(speed * direction);
+            const pos = t.graph.cameraPosition();
+            t.graph.cameraPosition({
+                x: pos.x + delta.x,
+                y: pos.y + delta.y,
+                z: pos.z + delta.z
+            });
+        }, { passive: false });
+
+        console.log('Flight controls ready — long left-click: fly forward, long right-click: fly backward, scroll: fly in/out');
+    }
+
 
     itemsToGraphData(t) {
         const nodes = [];
@@ -1438,7 +1530,7 @@ export class na3D_fileBrowser {
             nodes.push({
                 id: item.idx,
                 name: item.name,
-                data: item.data && typeof item.data === 'string' ? item.data : null,
+                data: item.data && typeof item.data === 'string' ? item.data : item.name,
                 type: 'folder',
                 item: item,
                 level: item.level,

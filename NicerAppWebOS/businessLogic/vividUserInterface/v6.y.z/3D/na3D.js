@@ -214,12 +214,12 @@ export class na3D_fileBrowser {
                     file2 = file
                         .replace(/\-[\-\w]+\.mp3/, ".mp3")
                         .replace('.mp3', '');
-                        html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
+                        html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" ><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
-            if (html=='') debugger;
-            $("#fileListing").html(html).delay(250);
+
+            $('#fileListing').html(html).delay(500);
             na.site.startUIvisuals('fileListing');
 
             j = 0;
@@ -565,20 +565,7 @@ export class na3D_fileBrowser {
             height : $("#siteContent .vividDialogContent").height()
         });
 
-        na.m.waitForCondition("onresize_do_phase2()", function() {
-            /*
-            for (var i=0; i<t.ld4.length; i++) {
-                if (!t.ld3[t.ld4[i]].colorList) return false;
-            };
-            */
-            //var r = t.items.length > 2;// && !t.started && !t.started4;
-            //debugger;
-            return t.itemsInitialized;
-        }, function() {
-            //debugger;
-            na.m.log (1555, fncn+' : END coloring');
-            t.onresize_do_phase2 (t, callback);
-        }, 25);
+        t.onresize_do_phase2 (t, callback);
 
     }
 
@@ -750,7 +737,6 @@ export class na3D_fileBrowser {
         const data = t.forcegraph3d_data;
         if (!data?.nodes?.length) return;
 
-
         const nodeIds = new Set(data.nodes.map(n => n.id));
         const validLinks = data.links.filter(link => {
             let src = typeof link.source === 'object' ? link.source.id : link.source;
@@ -758,25 +744,14 @@ export class na3D_fileBrowser {
             return nodeIds.has(src) && nodeIds.has(tgt);
         });
 
-
-        // Pre-cache depth + color on each node
-        data.nodes.forEach(node => {
-            const ancestors = t.getAllAncestors(node.item);
-            const deepest = Array.from(ancestors)[ancestors.size - 1];
-            node._depth = Math.round((t.items[deepest]?.level ?? 0) / 2) + 1;
-            node._color = t.getHierarchicalColor(t, node._depth);
-        });
-
-        // Pre-build child map for fast descendant lookup
-        // Build parent->children map and nodeMap (same as before)
+        // All data loaded — now assign positions, THEN start simulation
+        // Build parent->children map
         const childMap = new Map();
-        const parentMap = new Map();
         validLinks.forEach(link => {
             const src = typeof link.source === 'object' ? link.source.id : link.source;
             const tgt = typeof link.target === 'object' ? link.target.id : link.target;
             if (!childMap.has(src)) childMap.set(src, []);
             childMap.get(src).push(tgt);
-            parentMap.set(tgt, src);
         });
 
         const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
@@ -786,89 +761,134 @@ export class na3D_fileBrowser {
         const rootNode = data.nodes.find(n => !targetIds.has(n.id));
         const rootId = rootNode?.id ?? 0;
 
-        const root = nodeMap.get(rootId);
-        if (root) { root.x = 0; root.y = 0; root.z = 0; }
+        const levelRadius = 50;  // distance per level — tune this
 
-        // Give root children initial directions using Fibonacci sphere
-        const rootChildren = childMap.get(rootId) || [];
-        rootChildren.forEach((childId, i) => {
-            const node = nodeMap.get(childId);
-            if (!node) return;
-            const goldenRatio = (1 + Math.sqrt(5)) / 2;
-            const phi   = Math.acos(1 - 2 * (i + 0.5) / rootChildren.length);
-            const theta = 2 * Math.PI * i / goldenRatio;
-            // Store direction vector on node for children to inherit
-            node._dir = {
-                x: Math.sin(phi) * Math.cos(theta),
-                             y: Math.sin(phi) * Math.sin(theta),
-                             z: Math.cos(phi)
-            };
-            const r = 400;
-            node.x = r * node._dir.x;
-            node.y = r * node._dir.y;
-            node.z = r * node._dir.z;
-        });
-
-        // BFS outward — each node's children spread in a small sphere
-        // around the parent's outward direction point
-        const levelStep = 250;      // how far each level steps outward — tune this
-        const siblingSpread = 300;  // radius of sibling sphere around direction point — tune this
-
-        const visited = new Set([rootId]);
-        let queue = rootChildren.slice();
-        queue.forEach(id => visited.add(id));
-
-        while (queue.length > 0) {
-            const nextQueue = [];
-
-            queue.forEach(parentId => {
-                const parentNode = nodeMap.get(parentId);
-                if (!parentNode) return;
-
-                const children = (childMap.get(parentId) || []).filter(id => !visited.has(id));
-                if (children.length === 0) return;
-
-                // Parent's outward direction (normalised)
-                const dir = parentNode._dir || { x: 0, y: 1, z: 0 };
-                const len = Math.sqrt(dir.x**2 + dir.y**2 + dir.z**2) || 1;
-                const nd = { x: dir.x/len, y: dir.y/len, z: dir.z/len };
-
-                // Centre point for this group of siblings — one step further out
-                const cx = parentNode.x + nd.x * levelStep;
-                const cy = parentNode.y + nd.y * levelStep;
-                const cz = parentNode.z + nd.z * levelStep;
-
-                // Distribute siblings in a Fibonacci sphere around that centre point
-                children.forEach((childId, i) => {
-                    const node = nodeMap.get(childId);
-                    if (!node) return;
-
-                    visited.add(childId);
-                    nextQueue.push(childId);
-
-                    const count = children.length;
-                    const goldenRatio = (1 + Math.sqrt(5)) / 2;
-                    const phi   = count > 1 ? Math.acos(1 - 2 * (i + 0.5) / count) : 0;
-                    const theta = 2 * Math.PI * i / goldenRatio;
-
-                    // Spread radius shrinks slightly with more siblings so clusters stay tight
-                    const spread = Math.min(siblingSpread, siblingSpread * Math.sqrt(10 / Math.max(count, 10)));
-
-                    const ox = spread * Math.sin(phi) * Math.cos(theta);
-                    const oy = spread * Math.sin(phi) * Math.sin(theta);
-                    const oz = spread * Math.cos(phi);
-
-                    node.x = cx + ox;
-                    node.y = cy + oy;
-                    node.z = cz + oz;
-
-                    // Inherit parent's direction so grandchildren continue outward
-                    node._dir = { x: nd.x + ox * 0.01, y: nd.y + oy * 0.01, z: nd.z + oz * 0.01 };
+        // BFS: collect nodes level by level
+        const levels = [];
+        const visited2 = new Set();
+        let currentLevel = [rootId];
+        visited2.add(rootId);
+        while (currentLevel.length > 0) {
+            levels.push(currentLevel);
+            const nextLevel = [];
+            currentLevel.forEach(id => {
+                (childMap.get(id) || []).forEach(childId => {
+                    if (!visited2.has(childId)) {
+                        visited2.add(childId);
+                        nextLevel.push(childId);
+                    }
                 });
             });
-
-            queue = nextQueue;
+            currentLevel = nextLevel;
         }
+
+        // Position root at origin
+        const root = nodeMap.get(rootId);
+        if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
+
+        const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+        // Level-1 nodes define the cap centers for ALL their descendants
+        const level1Nodes = levels[1] ?? [];
+        const level1Count = level1Nodes.length;
+        const nodeSectorCenter = new Map();
+
+        level1Nodes.forEach((childId, i) => {
+            const phi   = Math.acos(1 - 2 * (i + 0.5) / level1Count);
+            const theta = 2 * Math.PI * i / goldenRatio;
+            const dir = {
+                x: Math.sin(phi) * Math.cos(theta),
+                            y: Math.sin(phi) * Math.sin(theta),
+                            z: Math.cos(phi),
+            };
+            // Stamp this direction as cap center for the level-1 node and ALL descendants
+            nodeSectorCenter.set(childId, dir);
+            const queue = [...(childMap.get(childId) || [])];
+            while (queue.length) {
+                const id = queue.shift();
+                nodeSectorCenter.set(id, dir);
+                (childMap.get(id) || []).forEach(c => queue.push(c));
+            }
+        });
+
+        // Cap angle based on number of level-1 sectors
+        const capAngle = Math.PI / Math.sqrt(Math.max(level1Count, 1));
+
+        // Position each level as Fibonacci caps
+        levels.forEach((levelNodes, levelIdx) => {
+            if (levelIdx === 0) return;
+
+            const totalCount = levelNodes.length;
+            //const r = Math.max(levelIdx * 25, Math.sqrt(totalCount) * 40);
+
+            // Use the item's actual level as distance from center
+            const itemLevel = levelNodes[0].item?.level ?? levelIdx;
+            const r = itemLevel * 750;  // tune the 250 to taste
+
+            // Group by sector center
+            const bySector = new Map();
+            levelNodes.forEach(nodeId => {
+                const center = nodeSectorCenter.get(nodeId);
+                if (!center) return;
+                const key = `${center.x.toFixed(3)}_${center.y.toFixed(3)}`;
+                if (!bySector.has(key)) bySector.set(key, { center, nodes: [] });
+                bySector.get(key).nodes.push(nodeId);
+            });
+
+            bySector.forEach(({ center, nodes }) => {
+                // Sort alphabetically within sector
+                nodes.sort((a, b) =>
+                (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                );
+
+                const count = nodes.length;
+                const cosCapAngle = Math.cos(capAngle);
+
+                // Two axes perpendicular to center for rotating Fibonacci onto cap
+                const right = normalize(cross(
+                    center,
+                    Math.abs(center.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 }
+                ));
+                const up = normalize(cross(right, center));
+
+                nodes.forEach((nodeId, i) => {
+                    const node = nodeMap.get(nodeId);
+                    if (!node) return;
+
+                    // Fibonacci on spherical cap — phi spans [0, capAngle]
+                    const phi   = Math.acos(1 - (1 - cosCapAngle) * (i + 0.5) / count);
+                    const theta = 2 * Math.PI * i / goldenRatio;
+
+                    const sinPhi = Math.sin(phi);
+                    const cosPhi = Math.cos(phi);
+
+                    // Rotate Fibonacci point onto cap centered at `center`
+                    const dir = {
+                        x: center.x * cosPhi + (Math.cos(theta) * right.x + Math.sin(theta) * up.x) * sinPhi,
+                              y: center.y * cosPhi + (Math.cos(theta) * right.y + Math.sin(theta) * up.y) * sinPhi,
+                              z: center.z * cosPhi + (Math.cos(theta) * right.z + Math.sin(theta) * up.z) * sinPhi,
+                    };
+
+                    node.x = node.fx = r * dir.x;
+                    node.y = node.fy = r * dir.y;
+                    node.z = node.fz = r * dir.z;
+                });
+            });
+        });
+
+        function cross(a, b) {
+            return {
+                x: a.y * b.z - a.z * b.y,
+                y: a.z * b.x - a.x * b.z,
+                z: a.x * b.y - a.y * b.x,
+            };
+        }
+        function normalize(v) {
+            const len = Math.sqrt(v.x**2 + v.y**2 + v.z**2);
+            return len === 0 ? { x: 0, y: 1, z: 0 } : { x: v.x/len, y: v.y/len, z: v.z/len };
+        }
+
+
 
         t.graph = window.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
@@ -884,13 +904,13 @@ export class na3D_fileBrowser {
         .width(t.el.clientWidth || 1000)
         .height(t.el.clientHeight || 700)
         .dagMode('radialout')
-        .dagLevelDistance(1000)
+        //.dagLevelDistance(1000)
         .nodeId('id')           // ← tell the library which field is the ID
         .linkSource('source')
         .linkTarget('target')
 
         .nodeLabel(null)
-        .nodeOpacity(0.4)
+        .nodeOpacity(0.55)
         .warmupTicks(0)
         .cooldownTicks(0)
         .cooldownTime(1000)
@@ -899,12 +919,12 @@ export class na3D_fileBrowser {
         .linkTarget('target')
         .nodeLabel('data')
         .linkWidth(2)
-        .linkColor(() => 'rgba(180, 220, 255, 0.4)')
+        .linkColor(() => 'rgba(200, 200, 255, 0.4)')
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
             return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(2)           // slightly bigger nodes so they don't get lost
+        .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
         .d3AlphaDecay(0.05)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
         /*
@@ -1007,7 +1027,7 @@ export class na3D_fileBrowser {
 
                 })
                 .linkColor(link => {
-                    const defaultColor = 'rgba(255,255,255,0.7)'
+                    const defaultColor = 'rgba(200,200,255,0.4)'
                     const hovered = t.currentHoverNode;
                     if (!hovered) return defaultColor;
 
@@ -1142,8 +1162,8 @@ export class na3D_fileBrowser {
         let flyInterval = null;
         let mouseButton = null;
         let holdTimer = null;
-        const HOLD_THRESHOLD = 500;  // ms before long-click activates
-        const FLY_SPEED = 40;        // units per tick — tune this
+        const HOLD_THRESHOLD = 2000;  // ms before long-click activates
+        const FLY_SPEED = 25;        // units per tick — tune this
 
         const getForwardVector = window.getForwardVector = () => {
             const camera = window.currentCamera = t.graph.camera();

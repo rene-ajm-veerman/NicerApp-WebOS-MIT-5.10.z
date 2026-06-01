@@ -157,6 +157,15 @@ border-top: 1px solid #333;
                     && typeof state.camera.z === 'number'
                 ) {
                     window.threed.graph.cameraPosition(
+                        window.threed.currentNode,
+                        {
+                            x: ((pos.lookAt?.x ?? 0) + delta.x),
+                                                       y: ((pos.lookAt?.y ?? 0) + delta.y),
+                                                       z: ((pos.lookAt?.z ?? 0) + delta.z)
+                        },
+                        100
+                    );
+                    window.threed.graph.cameraPosition(
                         state.camera.pos,
                         {
                             x: ((pos.lookAt?.x ?? 0) + delta.x),

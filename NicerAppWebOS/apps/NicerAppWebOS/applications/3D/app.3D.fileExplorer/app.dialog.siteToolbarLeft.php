@@ -24,7 +24,8 @@
 
 <div id="historyControls" class="toolbar-section">
     <h4>History</h4>
-    <div class="history-buttons">
+    <div id="historyList" class="history-list"></div>
+    <div class="history-buttons" style="margin: 10px 0;">
     <button id="btnUndo" title="Undo (Ctrl+Z)" disabled>↩ Undo</button>
     <button id="btnRedo" title="Redo (Ctrl+Shift+Z)" disabled>↪ Redo</button>
     </div>
@@ -90,7 +91,10 @@ border-top: 1px solid #333;
 
     // ==================== UNDO / REDO SYSTEM ====================
 
-    let history = [];
+    let history = {
+        stack: [],      // past + current
+        redoStack: []
+    };
     let historyIndex = -1;
     const MAX_HISTORY = 50;
 
@@ -122,14 +126,14 @@ border-top: 1px solid #333;
         };
 
         // Trim future history if we're not at the end
-        history = history.slice(0, historyIndex + 1);
-        history.push(state);
+        history.stack = history.stack.slice(0, historyIndex + 1);
+        history.stack.push(state);
 
-        if (history.length > MAX_HISTORY) {
-            history.shift();
+        if (history.stack.length > MAX_HISTORY) {
+            history.stack.shift();
         }
 
-        historyIndex = history.length - 1;
+        historyIndex = history.stack.length - 1;
         updateHistoryUI();
     }
 
@@ -198,44 +202,144 @@ border-top: 1px solid #333;
 
         // Restore active item
         if (state.activeItemId) {
-            document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-            const activeEl = document.getElementById(state.activeItemId);
-            if (activeEl) activeEl.classList.add('active');
+            documenquerySelectorAll('.active').forEach(el => el.classLisremove('active'));
+            const activeEl = documengetElementById(state.activeItemId);
+            if (activeEl) activeEl.classLisadd('active');
         }
     }
 
-    function updateHistoryUI() {
+    function updateHistoryUI () {
+        const t = this;
+
+        // === 1. Update History List ===
+        const listContainer = document.getElementById('historyList');
+        if (listContainer) {
+            listContainer.innerHTML = '';
+
+            if (history.stack.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'history-empty';
+                empty.textContent = '(no history yet)';
+                empty.style.fontStyle = 'italic';
+                empty.style.color = '#888';
+                listContainer.appendChild(empty);
+            } else {
+                // Show history items (newest at top)
+                for (let i = history.stack.length - 1; i >= 0; i--) {
+                    const state = history.stack[i];
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.style.cursor = 'pointer';
+                    item.style.padding = '6px 8px';
+                    item.style.borderRadius = '4px';
+                    item.style.marginBottom = '3px';
+
+                    // Highlight current position
+                    if (i === history.stack.length - 1) {
+                        item.style.backgroundColor = 'rgba(0, 255, 120, 0.2)';
+                        item.style.fontWeight = 'bold';
+                    }
+
+                    const label = state.description || state.action || `History ${i + 1}`;
+
+                    item.innerHTML = `<small style="color:#999;">${i+1}.</small> ${label}`;
+
+                    item.onclick = () => jumpToHistory(i);
+                    listContainer.appendChild(item);
+                }
+            }
+        }
+
+        // === 2. Enable / Disable Undo & Redo Buttons ===
         const btnUndo = document.getElementById('btnUndo');
         const btnRedo = document.getElementById('btnRedo');
-        const status = document.getElementById('historyStatus');
 
-        if (btnUndo) btnUndo.disabled = historyIndex <= 0;
-        if (btnRedo) btnRedo.disabled = historyIndex >= history.length - 1;
+        if (btnUndo) {
+            btnUndo.disabled = history.stack.length <= 1;   // can't undo if only initial state
+            // Optional: visual feedback
+            btnUndo.style.opacity = btnUndo.disabled ? '0.4' : '1';
+        }
 
-        if (status) {
-            status.textContent = `${historyIndex + 1} / ${history.length}`;
+        if (btnRedo) {
+            btnRedo.disabled = !history.redoStack || history.redoStack.length === 0;
+            btnRedo.style.opacity = btnRedo.disabled ? '0.4' : '1';
         }
     }
 
-    function undo() {
-        if (historyIndex < 0) return;
-        historyIndex--;
-        restoreState(history[historyIndex]);
+
+    function jumpToHistory (index) {
+        const t = this;
+
+        if (index < 0 || index >= history.stack.length) return;
+
+        // Move all states after the selected one to redoStack
+        const currentState = history[index];
+
+        history.redoStack = history.redoStack.splice(index + 1).reverse();
+        history.stack = history.stack.slice(0, index + 1);
+
+        restoreState(currentState);
         updateHistoryUI();
     }
 
-    function redo() {
-        if (historyIndex > history.length - 1) return;
-        historyIndex++;
-        restoreState(history[historyIndex]);
+    function pushHistory (state, label = '') {
+        const t = this;
+
+        if (!history) {
+            history = { stack: [], redoStack: [] };
+        }
+
+        // Clear redo stack when new action happens
+        history.redoStack = [];
+
+        // Add label if provided
+        if (label) state.label = label;
+
+        history.stack.push(state);
+
+        // Optional: limit history size to prevent memory bloat
+        if (history.stack.length > 50) {
+            history.stack.shift();
+        }
+
         updateHistoryUI();
-    }
+    };
+
+    // ====================== UNDO ======================
+    function undo () {
+        if (!history || history.stack.length <= 1) return false;
+
+        // Take current state and move it to redoStack
+        const currentState = history.stack.pop();
+        history.redoStack.push(currentState);
+
+        // Restore the new current state
+        const previousState = history.stack[history.stack.length - 1];
+        restoreState(previousState);
+
+        updateHistoryUI();
+        return true;
+    };
+
+    // ====================== REDO ======================
+    function redo () {
+        if (!history || history.redoStack.length === 0) return false;
+
+        // Take state from redoStack and push it back to stack
+        const nextState = history.redoStack.pop();
+        history.stack.push(nextState);
+
+        restoreState(nextState);
+
+        updateHistoryUI();
+        return true;
+    };
 
     // ==================== BUTTONS & KEYBOARD ====================
     function initHistoryControls() {
         document.addEventListener('click', (e) => {
-            if (e.target.id === 'btnUndo') undo();
-            if (e.target.id === 'btnRedo') redo();
+            if (e.targeid === 'btnUndo') undo();
+            if (e.targeid === 'btnRedo') redo();
         });
 
             // keyboard shortcuts stay the same

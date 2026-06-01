@@ -1,5 +1,7 @@
 /*--- LICENSE : https://opensource.org/licenses/MIT
 ----- Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com), https://grok.com and https://claude.ai/chat
+-----
+----- At https://nicer.app/3D and https://nicer.app/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js, i have a live copy runniing of https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/tree/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer and https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js
 ---*/
 
 import * as three from '/NicerAppWebOS/3rd-party/3D/libs/three.js/build/three.module.js';
@@ -823,7 +825,7 @@ export class na3D_fileBrowser {
 
             // Use the item's actual level as distance from center
             const itemLevel = levelNodes[0].item?.level ?? levelIdx;
-            const r = itemLevel * 750;  // tune the 250 to taste
+            const r = itemLevel * 1500;  // tune the 250 to taste
 
             // Group by sector center
             const bySector = new Map();
@@ -925,7 +927,7 @@ export class na3D_fileBrowser {
             return t.getHierarchicalColor(t, depth);
         })
         .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
-        .d3AlphaDecay(0.05)        // slower cooling = more final spread
+        .d3AlphaDecay(0.02)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
         /*
          .nodeThreeObjectExtend(true)
@@ -1084,9 +1086,10 @@ export class na3D_fileBrowser {
             if (!node) return;
             t.currentNode = node;
 
+            window.saveHistoryState(`Before node clicked : ${node.data}`);
+
             const distance = 180;
             const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
-            window.saveHistoryState(`Node clicked (1) : ${node.data}`);
 
             // If node is at/near origin, approach from current camera direction
             if (nodeDistance < 1) {
@@ -1109,7 +1112,7 @@ export class na3D_fileBrowser {
             }
 
             setTimeout (function(node) {
-                window.saveHistoryState(`Node clicked (2) : ${node.data}`);
+                window.saveHistoryState(`After node clicked : ${node.data}`);
             }, 1700, node);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
@@ -1122,7 +1125,6 @@ export class na3D_fileBrowser {
         })
         .numDimensions(3);
 
-        t.graph
 
         // Move tooltip on mousemove — offset ABOVE the cursor
         const tooltip = document.createElement('div');
@@ -1154,6 +1156,10 @@ export class na3D_fileBrowser {
 
         console.log('stats : dagMode:', t.graph.dagMode());
         console.log('stats : charge force:', t.graph.d3Force('charge'));
+
+        setTimeout(() => {
+            t.graph.zoomToFit(1000, 50);  // 1000ms transition, 50px padding
+        }, 100);
     }
 
 

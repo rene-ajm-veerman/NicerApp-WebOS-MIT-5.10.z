@@ -40,13 +40,13 @@ na.m = {
         try {
             var r = path.replace('/filesAtRoot','').split('/').map(segment =>
                 encodeURIComponent(decodeURIComponent(segment))
-            ).join('/').replace("'", "\\''");
+            ).join('/');
         } catch (err) {
             var r = path.replace('/filesAtRoot','').split('/').map(segment =>
                 encodeURIComponent(segment)
-            ).join('/').replace("'", "\\''");
+            ).join('/');
         };
-        return r;
+        return r.replace(/'/g, '%27');
     },
 
     cssTranslation : function (dID, cssObj) {

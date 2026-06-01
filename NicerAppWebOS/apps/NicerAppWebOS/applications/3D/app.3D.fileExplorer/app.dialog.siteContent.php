@@ -63,6 +63,44 @@ if (
                 <?php echo json_encode($view, JSON_PRETTY_PRINT); ?>;
         }, 100);
     </script>
+    <style>
+    .na-node-tooltip {
+        position: fixed;
+        z-index: 9999;
+        pointer-events: none;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: #fff;
+        font-size: 13px;
+        max-width: 280px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        transition: opacity 0.1s ease;
+    }
+
+    .na-tooltip-icon {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .na-tooltip-name {
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .na-tooltip-path {
+        opacity: 0.6;
+        font-size: 11px;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    </style>
     <div id="na3D_progress" style="display:none; position:absolute; top:10px; left:10px; right:10px; z-index:1000; background:rgba(0,0,0,0.7); padding:8px; border-radius:6px;">
         <div style="color:#0ff; font-size:13px; margin-bottom:6px;">Initializing 3D File Browser...</div>
         <div style="height:6px; background:#222; border-radius:3px; overflow:hidden;">

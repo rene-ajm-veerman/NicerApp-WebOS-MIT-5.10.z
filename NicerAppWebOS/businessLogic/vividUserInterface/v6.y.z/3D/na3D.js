@@ -150,6 +150,9 @@ export class na3D_fileBrowser {
         t.renderer.setPixelRatio (window.devicePixelRatio);
         t.renderer.toneMappingExposure = 1.0;
 
+        var innerWidth = $("#siteContent .vividDialogContent").width();
+        var innerHeight = $("#siteContent .vividDialogContent").height();
+        t.renderer.setSize(innerWidth, innerHeight);
 
         t.container = el;
         t.wglcanvas = document.getElementById("wglcanvas");
@@ -182,229 +185,6 @@ export class na3D_fileBrowser {
         na.threeD = t;
 
         t.initializeItems (t);
-
-        /*
-         *        na.m.waitForCondition ('na3D.js : t.itemsInitialized?', function () {
-            return t.itemsInitialized;
-        }, function () {
-            na.apps.loaded.threed_fileExplorer = t;
-            debugger;
-            t.graph = ForceGraph3D({
-                rendererConfig: { antialias: true, alpha: true }
-            })(t.el)
-
-            .backgroundColor('rgba(0,0,0,0.3)')   // ← changed for visibility
-            .width(t.el.clientWidth || 1000)
-            .height(t.el.clientHeight || 700)
-            .dagMode('radialout')
-            .nodeId('id')           // ← tell the library which field is the ID
-            .linkSource('source')
-            .linkTarget('target')
-            .graphData(t.forcegraph3d_data)   // { nodes: [...], links: [...] }
-
-            .nodeLabel(null)
-            .nodeOpacity(0.9)
-            .linkOpacity(0.1)
-            .linkColor('#FFF')
-            .nodeColor(n => {
-                const ancestors = t.getAllAncestors(n);
-                const descendants = t.getAllDescendants(t, n);
-                const highlightedNodes = new Set([...ancestors, ...descendants, n.id || n]);
-                const defaultColor = 'rgba(255,255,255,0.55)';
-
-                const sourceAncestors = t.getAllAncestors(n);
-                if (sourceAncestors.size===0) return defaultColor;
-                var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                const targetAncestors = t.getAllAncestors(n);
-                if (targetAncestors.size===0) return defaultColor;
-                var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                targetDepth = Math.round(targetDepth / 2) + 1;
-
-                const isAncestorLink =  ancestors.has(n.id);
-                const isDescendantLink = descendants.has(n.id);
-
-
-                if (isAncestorLink) {
-                    return t.getHierarchicalColor(t,sourceDepth);
-                }
-                // Direct children
-                if (isDescendantLink) {
-                    return t.getHierarchicalColor(t,targetDepth);
-                }
-
-                return defaultColor;
-
-            })
-            .warmupTicks(100)
-            .cooldownTicks(0)
-
-            // === Custom Nodes & Links ===
-            .nodeThreeObjectExtend(true)
-            .nodeThreeObject(node => {
-                const text = node.name;//`${node.item.filepath}/${pp}/${node.name}`;
-                const sprite = new SpriteText(text);
-                node.sprite = sprite;
-                sprite.color = 'rgba(255,255,255,0.7)';
-                sprite.textHeight = 5;
-                sprite.fontFace = 'Arial';
-                sprite.position.set(0, 18, 0);
-
-                // Optional: make sure it renders in front
-                sprite.material.depthWrite = false;
-                sprite.material.depthTest = false;
-
-                t.graph.scene().add(sprite);
-                return sprite;
-
-            })
-
-            // Custom Link Labels
-            .linkThreeObjectExtend(false)
-            .linkThreeObject(null)
-            // === INTERACTIONS ===
-            .onNodeHover(node => {
-                t.currentHoverNode = node;
-
-                // Remove old hover label
-                if (t.hoverLabel) {
-                    t.graph.scene().remove(t.hoverLabel);
-                };
-
-                if (node) {
-                    // Big hover label
-                    node.sprite.visibile = false;
-
-                    const text = (node.item?.filepath || '') + '/' + node.name;
-                    t.hoverLabel = new SpriteText(text);
-                    t.hoverLabel.color = '#ffff88';
-                    t.hoverLabel.textHeight = 5;
-                    t.hoverLabel.fontFace = 'Arial';
-                    t.hoverLabel.fontWeight = 'bold';
-                    t.hoverLabel.position.set(node.x, node.y + 18, node.z);
-                    t.hoverLabel.material.depthWrite = false;
-                    t.hoverLabel.material.depthTest = false;
-                    t.graph.scene().add(t.hoverLabel);
-                    // t.graph.refresh();
-
-                    // Get all nodes to highlight
-                    const ancestors = t.getAllAncestors(node);
-                    const descendants = t.getAllDescendants(t, node);
-                    const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
-
-                    t.graph
-                    .nodeColor(n => {
-                    if (n === node) return '#ffff44';                    // hovered node
-
-                    var depth = n.item?.level ?? n.depth ?? 0;
-                    depth = depth / 2 + 1;
-                    if (highlightedNodes.has(n.id || n)) return t.getHierarchicalColor(t,depth);
-                    return 'rgba(150,150,150,0.5)';
-
-                    })
-                    .linkColor(link => {
-                        const defaultColor = 'rgba(255,255,255,0.2)'
-                        const hovered = t.currentHoverNode;
-                        if (!hovered) return defaultColor;
-
-                        const hoveredAncestors = t.getAllAncestors(hovered);
-                        const sourceAncestors = t.getAllAncestors(link.source);
-                        if (sourceAncestors.size===0) return defaultColor;
-                        var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                        sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                        const targetAncestors = t.getAllAncestors(link.target);
-                        if (targetAncestors.size===0) return defaultColor;
-                        var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                        targetDepth = Math.round(targetDepth / 2) + 1;
-
-                        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-
-                        const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
-                        const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
-
-
-                        if (ancestors.has(sourceId) && ancestors.has(targetId)) {
-                            return t.getHierarchicalColor(t,sourceDepth);
-                        }
-                        // Direct children
-                        if (isDescendantLink) {
-                            return t.getHierarchicalColor(t,targetDepth);
-                        }
-
-                        return defaultColor;
-
-                    })
-                    .linkWidth(link => {
-                        const hovered = t.currentHoverNode;
-                        if (!hovered) return 1;
-
-                        const sourceId = link.source?.id ?? link.source;
-                        const targetId = link.target?.id ?? link.target;
-                        const hoverId  = hovered.id ?? hovered;
-                        const allRelated = new Set([...ancestors, ...descendants, hoverId]);
-
-                        if (allRelated.has(sourceId) && allRelated.has(targetId)) {
-                            return 4;
-                        } else {
-                            return 1;
-                        }
-                    })
-                }
-                else {
-                    // Reset when hover ends
-                    t.graph.nodeColor(n => {
-                        n.sprite.visibile = true;
-                        var depth = n.item?.level ?? n.depth ?? 0;
-                        depth = depth / 2 + 1;
-                        return t.getHierarchicalColor(t,depth);
-                    });
-
-                    t.graph.linkColor(() => '#555555')
-                    .linkOpacity(0.35)
-                    .linkWidth(1.2);
-
-
-                }
-            })
-
-            .onNodeClick(node => {
-                if (!node) return;
-                console.log('Clicked node:', node.name);
-
-                // Camera focus
-                const distance = 180;
-                const distRatio = 1 + distance / Math.hypot(node.x||0, node.y||0, node.z||0);
-
-                t.graph.cameraPosition(
-                    {
-                        x: (node.x||0) * distRatio,
-                                        y: (node.y||0) * distRatio,
-                                        z: (node.z||0) * distRatio
-                    },
-                    node,
-                    1600
-                );
-
-                // Your existing file listing logic
-                if (typeof t.onclick_node === 'function') {
-                    t.onclick_node(t, node);
-                }
-            })
-
-            .nodeRelSize(7)
-            .numDimensions(3);
-
-            t.graph.d3Force('charge').strength(-130);
-            t.graph.d3Force('link').distance(link => 90 + Math.random() * 150);
-            // t.graph
-            // .d3Force('charge').strength(null);   // stronger repulsion
-        });
-        */
-
     }
 
     onclick_node (t, node) {
@@ -425,13 +205,14 @@ export class na3D_fileBrowser {
                     path = cit.filepath
                         .replace(/\/0\/filesAtRoot\/folders/, "")
                         .replace(/\/folders/g,"")
+                        .replace('\/filesAtRoot','')
                         .replace(/\/\//g,'/')
                         .replace(/\'/g, '\\'),
                     file2 = file
                         .replace(/\-[\-\w]+\.mp3/, ".mp3")
                         .replace('.mp3', '');
 
-                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+n+'/'+file.replace(/\'/g, '\\'))+'\')"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
+                    html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" filepath="'+path+'/'+file+'"><a href="javascript:na.threeD.play($(\'#'+t.fid+'_'+j+'\'), \''+na.m.encodeUnicodePath(path+'/'+n+'/'+file)+'\')"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -442,58 +223,84 @@ export class na3D_fileBrowser {
         }
     }
 
-    async initializeItems_old_withoutProgressbar (t) {
-        var p = { t : t, ld2 : {} };
-        t.s2 = [];
-        na.m.walkArray (t.data[0]['filesAtRoot'], t.data[0]['filesAtRoot'], t.initializeItems_walkKey, t.initializeItems_walkValue, false, p);
-        t.itemsInitialized = true;
-
-        var innerWidth = $("#siteContent .vividDialogContent").width();
-        var innerHeight = $("#siteContent .vividDialogContent").height();// - $("#header").position().top - $("#header").height();
-        t.renderer.setSize(innerWidth, innerHeight);
-    }
     async initializeItems(t) {
-        var p = { t: t, ld2: {} };
+        const p = { t, ld2: {} };
         t.s2 = [];
+        t._itemsByPath = new Map();
+        // seed the map with root item
+        t._itemsByPath.set(t.items[0].filepath + "/" + t.items[0].name, t.items[0]);
 
         t._progressCallback(10, "Walking file tree...");
 
-        // Walk the array with progress
-        na.m.walkArray(
-            t.data[0]['filesAtRoot'],
-            t.data[0]['filesAtRoot'],
-            t.initializeItems_walkKey,
-            t.initializeItems_walkValue,
-            false,
-            p
-        );
+        // Instead of na.m.walkArray (synchronous), do a chunked async walk:
+        await t.createGraph(t);
 
+        console.time('timed 1_walk');
+        await t._chunkedWalkArray(t, p);
+        console.timeEnd('timed 1_walk');
+
+        console.time('timed 2_itemsToGraphData');
         t._progressCallback(45, "Building graph data...");
-
-        // This can be heavy for large trees
         t.forcegraph3d_data = await t.itemsToGraphData(t);
+        console.timeEnd('timed 2_itemsToGraphData');
 
-        t._progressCallback(75, "Creating progressive 3D visualization...");
-        //await t.createProgressiveGraph(t);
-        await t.createGraph(t)
-
-        // Let the browser breathe before heavy ForceGraph creation
+        console.time('timed 3_createGraph');
+        t._progressCallback(75, "Creating visualization...");
+        await t.createGraph(t);
+        console.timeEnd('timed 3_createGraph');
         t.itemsInitialized = true;
-        await new Promise(r => setTimeout(r, 50));
 
-
-        // ... rest of your existing code (renderer size etc.)
-        var innerWidth = $("#siteContent .vividDialogContent").width();
-        var innerHeight = $("#siteContent .vividDialogContent").height();
-        t.renderer.setSize(innerWidth, innerHeight);
-
+        await new Promise(r => setTimeout(r, 0));
         t._progressCallback(100, "Done!");
 
         // Hide progress bar after a short delay
         setTimeout(() => {
             const progressContainer = document.getElementById('na3D_progress');
             if (progressContainer) progressContainer.style.display = 'none';
-        }, 800);
+        }, 4000);
+    }
+
+    _flattenFolderEntries(filesAtRoot) {
+        const result = [];
+
+        // Mirrors what na.m.walkArray does when it hits a "folders" key:
+        // cd = { path, k, at, level, params }
+        function recurse(node, path, level) {
+            if (!node || !node.folders) return;
+
+            for (const k in node.folders) {
+                if (!node.folders.hasOwnProperty(k)) continue;
+
+                const childPath = path + '/folders';
+                result.push({
+                    path  : childPath,   // the path TO the folders object (parent key)
+                k     : k,           // the folder name
+                at    : node.folders, // the object containing k
+                level : level,
+                params: null         // filled in by _chunkedWalkArray before calling walkKey
+                });
+
+                recurse(node.folders[k], path + '/' + k, level + 2);
+            }
+        }
+
+        recurse(filesAtRoot, 'filesAtRoot', 2); // level 2 matches original walkArray behaviour
+        return result;
+    }
+    async _chunkedWalkArray(t, p) {
+        const CHUNK = 200;
+        const entries = t._flattenFolderEntries(t.data[0]['filesAtRoot']);
+
+        for (let i = 0; i < entries.length; i += CHUNK) {
+            const batch = entries.slice(i, i + CHUNK);
+            for (const cd of batch) {
+                cd.params = p;           // inject shared params (contains t, ld2, etc.)
+                t.initializeItems_walkKey(cd);
+            }
+            const pct = 10 + 35 * (i / entries.length);
+            t._progressCallback(pct, `Processing folders… ${i + batch.length}/${entries.length}`);
+            await new Promise(r => setTimeout(r, 0)); // yield to browser paint
+        }
     }
 
     initializeItems_walkKey (cd) {
@@ -506,20 +313,34 @@ export class na3D_fileBrowser {
             if (path.substr(0,1)!=='/') path = '/'+path;
 
             var
-            lastParent = cd.params.t.items[0],
+            //lastParent = it1a?it1a:it?it:null;//cd.params.t.items[0],
             pk = cd.path.replace(/\/folders/g,'');
             if (!cd.params.ld2[pk]) cd.params.ld2[pk] = { levelIdx : 0 };
             var modded = false;
             cd.params.idxPath2 = '';
-            for (var i=0; i<cd.params.t.items.length; i++) {
-                var it2 = cd.params.t.items[i];
-                if (it2.filepath+"/"+(it2 && it2.name!==parseInt(it2.name) ? it2.name : it2.data) === pk) {
-                    lastParent = it2;
-                    cd.params.idxPath2  = it2.idxPath;
-                    modded = true;
-                    //debugger;
-                }
+            /*for (var i=0; i<cd.params.t.items.length; i++) {
+             *                var it2 = cd.params.t.items[i];
+             *                if (it2.filepath+"/"+(it2 && it2.name!==parseInt(it2.name) ? it2.name : it2.data) === pk) {
+             *                    lastParent = it2;
+             *                    cd.params.idxPath2  = it2.idxPath;
+             *                    modded = true;
+             *                    //debugger;
+        }
+        }*/
+
+
+            cd.params.t._itemsByPath = new Map();
+            var it = cd.params.t.items[0];
+            cd.params.t._itemsByPath.set(it.filepath.replace('/filesAtRoot','') + "/" + it.name, it); // for root item
+
+            // Then in initializeItems_walkKey, replace the O(n) loop with:
+            const lastParent = cd.params.t._itemsByPath.get(pk) ?? cd.params.t.items[0];
+            if (lastParent !== cd.params.t.items[0]) {
+                cd.params.idxPath2 = lastParent.idxPath;
+                modded = true;
             }
+
+
 
 
             /*
@@ -581,6 +402,7 @@ export class na3D_fileBrowser {
             cd.params.t.ld3[it.idxPath].items.push (it);
             //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
             cd.params.t.items.push (it);
+            cd.params.t._itemsByPath.set(it.filepath.replace('/filesAtRoot','') + "/" + it.name, it);
             cd.params.it = it;
             //console.log ('initializeFolderView_walkKey() : '+cd.params.t.items.length+' items initialized.')
 
@@ -661,6 +483,8 @@ export class na3D_fileBrowser {
                                 //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
                                 cd.params.t.items.push (it1a);
 
+                                cd.params.t._itemsByPath.set(it1a.filepath + "/" + it1a.name, it1a);
+
                                 processedFiles++;
 
                                 // === Progress update (throttled for performance) ===
@@ -689,7 +513,7 @@ export class na3D_fileBrowser {
         //debugger;
         //t.onresize_do (t, levels);
         na.m.waitForCondition ("waiting for other onresize commands to finish",
-            function () { return na.d.s.animating === false && t.resizing === false; },
+            function () { return na.d.s.animating === false },
             function () { t.onresize_do (t, levels); },
             50
         );
@@ -891,35 +715,6 @@ export class na3D_fileBrowser {
             if (it.level > t.maxLevel) t.maxLevel = it.level;
         }
 
-        /*
-        const container = t.el;
-        if (!container) return;
-
-        const data = t.forcegraph3d_data;
-        if (!data?.nodes?.length) return;
-
-        // === STRICT FILTER ===
-        // Clean broken links
-        const iterator = data.nodes.keys();//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
-        const nodeIds2 = [];
-        for (var key in data.nodes) {
-            nodeIds2.push (data.nodes[key].id);
-        }
-        const nodeIds = new Set(nodeIds2);//(n && n.item && n.item.parent ? n.item.parent.idx : n.id)));
-        const validLinks = data.links.filter(link => {
-            const src = link.source?.id ?? link.source;
-            const tgt = link.target?.id ?? link.target;
-            const r = (
-                nodeIds.has(src) && nodeIds.has(tgt)
-            ) || (
-              nodeIds2[tgt] == src
-            );
-            //if (r) debugger;
-            return r;
-        });
-        debugger;
-        */
-
         const container = t.el;
         if (!container) return;
 
@@ -1049,40 +844,46 @@ export class na3D_fileBrowser {
         t.graph = window.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
 
+        console.time('timed 4_simulation_settle');
+
+        t.graph.d3Force('charge', null);
+        t.graph.d3Force('center', null);
+
         t.graph
+        .pauseAnimation()
         .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
         .width(t.el.clientWidth || 1000)
         .height(t.el.clientHeight || 700)
         .dagMode('radialout')
+        .dagLevelDistance(1000)
         .nodeId('id')           // ← tell the library which field is the ID
         .linkSource('source')
         .linkTarget('target')
-        //.graphData({nodes : data.nodes, links : validLinks})   // { nodes: [...], links: [...] }
-        .graphData({ nodes: [], links: [] })
 
         .nodeLabel(null)
         .nodeOpacity(0.4)
-        .linkOpacity(0.3)
-        .linkColor('#FFF')
-        .warmupTicks(2)
-        .cooldownTicks(2)
+        .warmupTicks(0)
+        .cooldownTicks(0)
+        .cooldownTime(1000)
         .nodeId('id')
         .linkSource('source')
         .linkTarget('target')
         .nodeLabel('data')
         .linkWidth(2)
-        .linkColor(() => 'rgba(180, 220, 255, 0.6)')
+        .linkColor(() => 'rgba(180, 220, 255, 0.4)')
         .nodeColor(n => {
             const depth = (n.item?.level ?? 0) / 2 + 1;
             return t.getHierarchicalColor(t, depth);
         })
-        .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
-        .d3AlphaDecay(0.5)        // slower cooling = more final spread
+        .nodeRelSize(3.3)           // slightly bigger nodes so they don't get lost
+        .d3AlphaDecay(0.25)        // slower cooling = more final spread
         // === Custom Nodes & Links ===
+        /*
          .nodeThreeObjectExtend(true)
          .nodeThreeObject(node => {
         //     //debugger;
         //
+
              const text = node.name != parseInt(node.name) ? node.name : node.data;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
              const sprite = new SpriteText(text);
              node.sprite = sprite;
@@ -1099,6 +900,9 @@ export class na3D_fileBrowser {
              return sprite;
 
          })
+         */
+        .nodeThreeObjectExtend(false)
+        .nodeThreeObject(null)
 
         // Custom Link Labels
         .linkThreeObjectExtend(false)
@@ -1242,9 +1046,70 @@ export class na3D_fileBrowser {
             }, 1700, node);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
+        .nodeLabel('')           // disable built-in tooltip entirely
+        .onNodeHover(node => {
+            if (!node) {
+                tooltip.style.display = 'none';
+                return;
+            }
 
+            var path = node.filepath
+            .replace(/\/0\/filesAtRoot\/folders/, "")
+            .replace(/\/folders/g,"")
+            .replace('\/filesAtRoot','')
+            .replace(/\/\//g,'/')
+            .replace(/\'/g, '\\');
+
+            // Fill content
+            tooltip.innerHTML = `
+            <div class="na-tooltip-icon">📁</div>
+            <div class="na-tooltip-name">${node.data}</div>
+            <div class="na-tooltip-path">${path ?? ''}</div>
+            `;
+
+            tooltip.style.display = 'block';
+        })
+
+        .graphData({ nodes: data.nodes, links: validLinks })
+
+        .onEngineStop(() => {
+            console.timeEnd('timed 4_simulation_settle');
+        })
         .numDimensions(3);
+
+        t.graph
+
+        // Move tooltip on mousemove — offset ABOVE the cursor
+        const tooltip = document.createElement('div');
+        tooltip.className = 'na-node-tooltip';
+        tooltip.style.display = 'none';
+        document.body.appendChild(tooltip);
+
+        document.addEventListener('mousemove', e => {
+            if (tooltip.style.display === 'none') return;
+            const w = tooltip.offsetWidth;
+            const h = tooltip.offsetHeight;
+            // Position above and horizontally centered on cursor
+            tooltip.style.left = (e.clientX - w / 2) + 'px';
+            tooltip.style.top  = (e.clientY - h - 24) + 'px';  // 24px above cursor tip
+        });
+
+        // Access the underlying d3 simulation and stop it cold after 1 tick
+        const sim = t.graph.d3Force('charge')?.strength ? t.graph : null;
+        t.graph.d3Force('charge', null);
+        t.graph.d3Force('center', null);
+        //t.graph.d3ReheatSimulation();
+
         window.currentCamera = t.graph.camera();
+        t.setupFlightControls(t);
+
+        console.time('timed 5_resumeAnimation');
+        t.graph.resumeAnimation();
+        console.timeEnd('timed 5_resumeAnimation');
+
+
+        console.log('stats : dagMode:', t.graph.dagMode());
+        console.log('stats : charge force:', t.graph.d3Force('charge'));
 
         // === BATCH LOADING ===
         const batchSize = 333;          // tune to taste
@@ -1296,9 +1161,8 @@ export class na3D_fileBrowser {
                 const tgt = typeof link.target === 'object' ? link.target.id : link.target;
                 return loadedIds.has(src) && loadedIds.has(tgt);
             });
+
             t.graph.pauseAnimation();
-
-
 
             // Find any links referencing ids not in nodes
             const nodeIdSet = new Set(data.nodes.map(n => n.id));
@@ -1315,8 +1179,7 @@ export class na3D_fileBrowser {
 
 
 
-
-            t.graph.graphData({ nodes: currentNodes, links: currentLinks });
+            //t.graph.graphData({ nodes: currentNodes, links: currentLinks });
 
             t._progressCallback?.(
                 75 + Math.round((end / data.nodes.length) * 24),
@@ -1373,6 +1236,7 @@ export class na3D_fileBrowser {
 
                 // For each subsequent level, distribute nodes on a sphere shell
                 // using Fibonacci sphere for even 3D spread
+
                 levels.forEach((levelNodes, levelIdx) => {
                     if (levelIdx === 0) return;
 
@@ -1381,7 +1245,7 @@ export class na3D_fileBrowser {
                     // Scale radius to node count — denser levels get bigger shells
                     // minRadius ensures even single nodes aren't at the origin
                     const minRadius = levelIdx * 50;   // minimum spacing between levels
-                    const r = Math.max(minRadius, Math.sqrt(count) * 40);  // tune the 80
+                    const r = Math.max(minRadius, Math.sqrt(count) * 250);  // tune the 80
 
                     levelNodes.forEach((nodeId, i) => {
                         const node = nodeMap.get(nodeId);
@@ -1391,25 +1255,33 @@ export class na3D_fileBrowser {
                         const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
                         const theta = 2 * Math.PI * i / goldenRatio;
 
-                        node.x = r * Math.sin(phi) * Math.cos(theta);
-                        node.y = r * Math.sin(phi) * Math.sin(theta);
-                        node.z = r * Math.cos(phi);
+                        node.x = node.fx = r * Math.sin(phi) * Math.cos(theta);
+                        node.y = node.fy = r * Math.sin(phi) * Math.sin(theta);
+                        node.z = node.fz = r * Math.cos(phi);
                     });
                 });
+
+                // Pin root too
+                //const root = nodeMap.get(rootId);
+                if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
 
                 t.setupFlightControls(t);
                 t.graph.resumeAnimation();
 
                 setTimeout(() => {
-                    t.graph.d3Force('charge').strength(-2000);
-                    t.graph.d3Force('link').distance(500);
-                    t.graph.zoomToFit(3300, 5000);
+                    t.graph.d3Force('charge', null);
+                    //t.graph.d3Force('link').distance(500);
+                    t.graph.d3Force('center', null);
+                    t.graph.zoomToFit(7000, 7000);
                     t._progressCallback?.(100, 'Done!');
                 }, 100);
+                setTimeout(() => {
+                    t.graph.cooldownTicks(0);
+                }, 500);
             }
         };
 
-        loadBatch();   // kick off
+        //loadBatch();   // kick off
     }
 
 
@@ -1419,7 +1291,7 @@ export class na3D_fileBrowser {
         let mouseButton = null;
         let holdTimer = null;
         const HOLD_THRESHOLD = 500;  // ms before long-click activates
-        const FLY_SPEED = 20;        // units per tick — tune this
+        const FLY_SPEED = 40;        // units per tick — tune this
 
         const getForwardVector = window.getForwardVector = () => {
             const camera = window.currentCamera = t.graph.camera();

@@ -37,9 +37,16 @@ na.m = {
     },
 
     encodeUnicodePath(path) {
-        return path.split('/').map(segment =>
-        encodeURIComponent(decodeURIComponent(segment))
-        ).join('/').replace("'", "\\''");
+        try {
+            var r = path.replace('/filesAtRoot','').split('/').map(segment =>
+                encodeURIComponent(decodeURIComponent(segment))
+            ).join('/').replace("'", "\\''");
+        } catch (err) {
+            var r = path.replace('/filesAtRoot','').split('/').map(segment =>
+                encodeURIComponent(segment)
+            ).join('/').replace("'", "\\''");
+        };
+        return r;
     },
 
     cssTranslation : function (dID, cssObj) {

@@ -83,7 +83,6 @@ border-top: 1px solid #333;
 }
 </style>
 <script type="text/javascript">
-    $('#siteToolbarLeft').css({width:'fit-content'});
     na.desktop.settings.visibleDivs.push('#siteToolbarLeft');
     na.desktop.resize();
 
@@ -253,6 +252,7 @@ border-top: 1px solid #333;
 
         // Save initial state
         setTimeout(() => {
+            $('#siteToolbarLeft').css({width:'fit-content'});
             saveState("Initial state");
         }, 300);
 

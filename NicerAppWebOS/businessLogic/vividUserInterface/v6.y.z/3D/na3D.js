@@ -197,7 +197,10 @@ export class na3D_fileBrowser {
             } else {
                 var n = cit.data;
             }
-            if (cit.data.files) var f = cit.data.files.sort(); else var f = cit.parent.data.folders[n].files.sort();
+            if (cit.data.files) var f = cit.data.files.sort();
+                else if (cit.data.folders) var f = cit.data.folders[n].files.sort();
+                    else if (cit.parent?.data?.folders) var f = cit.parent.data.folders[n].files.sort();
+                        else return false;
             for (var i=0; i<f.length; i++) {
                 var file = ''+f[i];
                 if (file.match(/\.mp3$/)) {
@@ -215,7 +218,7 @@ export class na3D_fileBrowser {
                     j++;
                 }
             };
-            console.log (html);
+            if (html=='') debugger;
             $("#fileListing").html(html).delay(250);
             na.site.startUIvisuals('fileListing');
 
@@ -237,8 +240,8 @@ export class na3D_fileBrowser {
                         path.replace(/'/g, '%27')+'/'
                         +n.replace(/'/g, '%27')+'/'
                         +file.replace(/'/g, '%27');  // store raw, no escaping needed
-                    el.addEventListener('click', (e) => {
-                        na.threeD.play($(e.currentTarget).parents('.vividButton'), e.currentTarget.dataset.path);
+                    el.addEventListener('click', (evt) => {
+                        na.threeD.play($(evt.currentTarget).parents('.vividButton'), evt.currentTarget.dataset.path);
                     });
                 }
                 j++;

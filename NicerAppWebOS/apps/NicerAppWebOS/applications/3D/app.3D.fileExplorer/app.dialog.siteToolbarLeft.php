@@ -2,6 +2,17 @@
 <h3 style="margin: 8px 0 12px 0; padding-left: 8px;">Places</h3>
 
 <div class="places-section">
+<div class="places-header">Accreditions</div>
+<ul id="places-locations" class="places-list">
+<li class="place-item"><a href="https://afraid.org">Afraid.org Free DNS</a></li>
+<li class="place-item"><a href="https://grok.com">Grok.com AI</a></li>
+<li class="place-item"><a href="https://claude.ai/chat">Claude AI</a></li>
+</ul>
+</div>
+
+
+
+<div class="places-section">
 <div class="places-header">Favorites</div>
 <ul id="places-favorites" class="places-list"></ul>
 </div>

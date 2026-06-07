@@ -34,7 +34,7 @@ import SpriteText from "https://esm.sh/three-spritetext";
 
 export class na3D_fileBrowser {
     constructor(el, parent, parameters) {
-        var t = window.threed = na.threeD = window.threeD = this;
+        var t = window.threed = na.threeD = na.threed = window.threeD = this;
         t.me = 'na3D.js::na3D_fileBrowser';
         var fncn = t.me + '::constructor(el,parent,parameters)';
 
@@ -79,7 +79,7 @@ export class na3D_fileBrowser {
                     emissive: 0x0088aa,
                     shininess: 120,
                     transparent: true,
-                    opacity: 0.9
+                    opacity: 0.555
                 });
 
                 this.centralOrb = new THREE.Mesh(geometry, material);
@@ -98,6 +98,7 @@ export class na3D_fileBrowser {
                 this.centralOrb.add(glow);
             },
 
+            /* simple (2D like)
             createParticles() {
                 const count = 1200;
                 const positions = new Float32Array(count * 3);
@@ -126,6 +127,61 @@ export class na3D_fileBrowser {
                     vertexColors: true,
                     transparent: true,
                     opacity: 0.85,
+                    blending: THREE.AdditiveBlending,
+                    depthTest: false
+                });
+
+                this.particles = new THREE.Points(geo, mat);
+                this.visualGroup.add(this.particles);
+            },
+            */
+
+            // Fibonacci sphere for particles :
+            createParticles() {
+                const COUNT = 1200;
+                const PHI = Math.PI * (3 - Math.sqrt(5)); // golden angle ~137.5°
+
+                const positions  = new Float32Array(COUNT * 3);
+                const origins    = new Float32Array(COUNT * 3); // rest positions on unit sphere
+                const colors     = new Float32Array(COUNT * 3);
+
+                for (let i = 0; i < COUNT; i++) {
+                    // Fibonacci sphere — evenly distributed, no clumping at poles
+                    const y     = 1 - (2 * i / (COUNT - 1));       // -1 → +1
+                    const r     = Math.sqrt(Math.max(0, 1 - y * y));
+                    const theta = PHI * i;
+
+                    const nx = r * Math.cos(theta);
+                    const ny = y;
+                    const nz = r * Math.sin(theta);
+
+                    const radius = 28; // rest radius of the shell
+                    origins[i * 3]     = nx;
+                    origins[i * 3 + 1] = ny;
+                    origins[i * 3 + 2] = nz;
+
+                    positions[i * 3]     = nx * radius;
+                    positions[i * 3 + 1] = ny * radius;
+                    positions[i * 3 + 2] = nz * radius;
+
+                    // Cool blue-teal palette
+                    colors[i * 3]     = 0.05 + Math.random() * 0.15;  // R
+                    colors[i * 3 + 1] = 0.6  + Math.random() * 0.35;  // G
+                    colors[i * 3 + 2] = 1.0;                           // B
+                }
+
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geo.setAttribute('color',    new THREE.BufferAttribute(colors,    3));
+
+                // Store origins for use in the animation loop
+                geo._fibOrigins = origins;
+
+                const mat = new THREE.PointsMaterial({
+                    size: 0.8,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.9,
                     blending: THREE.AdditiveBlending,
                     depthTest: false
                 });
@@ -219,10 +275,55 @@ export class na3D_fileBrowser {
                 if (this.particles) this.particles.scale.setScalar(1);
             },
 
+            /*
             followNode(node) {
                 if (node?.__threeObj && this.visualGroup) {
                     this.visualGroup.position.copy(node.__threeObj.position);
                     this.visualGroup.position.y += 15;
+                }
+            }*/
+
+            followNode(node) {
+                if (!node || !this.visualGroup) return;
+
+                // Get world position from the ForceGraph3D three.js object
+                const pos = node.__threeObj?.position ?? node.pos ?? { x: 0, y: 0, z: 0 };
+                this.visualGroup.position.set(pos.x, pos.y + 15, pos.z);
+
+                // Resolve hierarchical color from node level
+                debugger;
+                var
+                d = node.item?.level ?? node.level ?? 0,
+                d = Math.round(d / 2) + 1;
+                const hex = window.threed.getHierarchicalColor(window.threed, d);
+                const color = new THREE.Color(hex);
+
+                // Recolor central orb
+                if (this.centralOrb) {
+                    this.centralOrb.material.color.set(color);
+                    this.centralOrb.material.emissive.set(color.clone().multiplyScalar(0.4));
+
+                    // Recolor glow child
+                    const glow = this.centralOrb.children[0];
+                    if (glow?.material) {
+                        glow.material.color.set(color);
+                    }
+                }
+
+                // Recolor particles — shift their hue toward the node color
+                if (this.particles) {
+                    const colors = this.particles.geometry.attributes.color.array;
+                    const count  = colors.length / 3;
+                    const r = color.r, g = color.g, b = color.b;
+
+                    for (let i = 0; i < count; i++) {
+                        // Blend each particle toward the node color, keep some brightness variation
+                        const t = 0.8 + Math.random() * 0.2;  // 80–100% toward node color
+                        colors[i * 3]     = r * t;
+                        colors[i * 3 + 1] = g * t;
+                        colors[i * 3 + 2] = b * t;
+                    }
+                    this.particles.geometry.attributes.color.needsUpdate = true;
                 }
             }
 
@@ -595,7 +696,7 @@ export class na3D_fileBrowser {
                     file2 = file
                         .replace(/\-[\-\w]+\.mp3/, ".mp3")
                         .replace('.mp3', '');
-                        html += '<div id="'+t.fid+'_'+j+'" class="vividButton" style="position:relative; font-size:small;" ><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
+                        html += '<div id="'+t.fid+'_'+j+'__'+cit.idx+'" class="vividButton" style="position:relative; font-size:small;" ><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -614,15 +715,11 @@ export class na3D_fileBrowser {
                             .replace('\/filesAtRoot','')
                             .replace(/\/\//g,'/')
                             .replace(/\'/g, '\\'),
-                        id = '#'+t.fid+'_'+i,
+                        id = '#'+t.fid+'_'+i+'__'+cit.idx,
                         el = $('a',$(id)[0])[0];
 
                         if (!el) debugger;
-
-                        el.dataset.path =
-                            path.replace(/'/g, '%27')+'/'
-                            +n.replace(/'/g, '%27')+'/'
-                            +file.replace(/'/g, '%27');  // store raw, no escaping needed
+                        el.dataset.path = path+'/'+cit.name+'/'+file;
 
                         el.addEventListener('click', (evt) => {
                             na.threeD.play($(evt.currentTarget).parents('.vividButton'), evt.currentTarget.dataset.path);
@@ -632,6 +729,12 @@ export class na3D_fileBrowser {
 
                 t.fid++;
             }, 500, t, f);
+
+
+            if (na.threeD.audioVisualizer3D) {
+                na.threeD.audioVisualizer3D.followNode(node);
+            }
+
             done = true;
         }
     }
@@ -974,95 +1077,85 @@ export class na3D_fileBrowser {
         return colors[depth % colors.length]*/
     }
 
-    play(buttonEl, relPath) {
-        var
-        fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath,
-        fullPath = new URL(fullPath).pathname,
-        fullUrl = na.m.encodeUnicodePath(fullPath);
+    encodePath (str) {
+        if (typeof str !== 'string') return '';
 
-        function encodePath (str) {
-            if (typeof str !== 'string') return '';
+        let result = '';
+        for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+            const code = char.charCodeAt(0);
 
-            let result = '';
-            for (let i = 0; i < str.length; i++) {
-                const char = str[i];
-                const code = char.charCodeAt(0);
-
-                // Only keep safe alphanumeric characters
-                if ((code >= 65 && code <= 90) ||    // A-Z
-                    (code >= 97 && code <= 122) ||   // a-z
-                    (code >= 48 && code <= 57)) {    // 0-9
-                        result += char;
+            // Only keep safe alphanumeric characters
+            if ((code >= 65 && code <= 90) ||    // A-Z
+                (code >= 97 && code <= 122) ||   // a-z
+                (code >= 48 && code <= 57)) {    // 0-9
+                    result += char;
+                } else {
+                    // Everything else (including @ ( ) & # $ % ^ etc.) gets encoded
+                    if (char=='%')
+                        result += '%';
+                    else if (char=='/')
+                        result += '/';
+                    else if (code < 256) {
+                        result += '%' + code.toString(16).toUpperCase().padStart(2, '0');
                     } else {
-                        // Everything else (including @ ( ) & # $ % ^ etc.) gets encoded
-                        if (code < 256) {
-                            result += '%' + code.toString(16).toUpperCase().padStart(2, '0');
-                        } else {
-                            // Unicode support
-                            result += encodeURIComponent(char);
-                        }
+                        // Unicode support
+                        result += encodeURIComponent(char);
                     }
-            }
-            return result;
+                }
         }
-
-        // 1. Clean and encode the path
-        const path = encodePath(fullUrl);
-
-        // 2. Reuse single audio element + single source node
-        if (!na.threeD.currentAudio) {
-            na.threeD.currentAudio = new Audio();
-            const audio = na.threeD.currentAudio;
-
-            // === ONE-TIME VISUALIZER CONNECTION ===
-            if (na.threeD.audioVisualizer3D) {
-                na.threeD.audioVisualizer3D.connectAudio(audio);   // This creates the source node once
-            }
-
-            // Event listeners (once)
-            audio.addEventListener('ended', () => {
-                if (na.threeD.audioVisualizer3D) na.threeD.audioVisualizer3D.stop();
-            });
-
-                audio.addEventListener('error', (e) => {
-                    console.error("Audio error:", e);
-                    if (na.threeD.audioVisualizer3D) na.threeD.audioVisualizer3D.stop();
-                });
-        }
-
-        const audio = na.threeD.currentAudio;
-
-        // Change track
-        if (audio.src !== fullUrl) {
-            audio.src = fullUrl;
-        }
-
-        // Play
-        audio.play().catch(err => {
-            console.error("Playback failed:", err);
-        });
-
-        // Optional: Make visualizer follow the clicked node
-        if (na.threeD.audioVisualizer3D && buttonEl) {
-            const nodeId = buttonEl.dataset.nodeId || buttonEl.closest('[data-node-id]')?.dataset.nodeId;
-            if (nodeId) {
-                const node = window.threed?.items?.[nodeId] ||
-                window.threed?.graph?.graphData().nodes.find(n => n.id == nodeId);
-                if (node) na.threeD.audioVisualizer3D.followNode(node);
-            }
-        }
-
-        $('#fileListing .vividButtonSelected').removeClass('vividButtonSelected').addClass('vividButton');
-        $(buttonEl).addClass('vividButtonSelected');
-        let
-        i = $('#playlist li').length,
-        html = '<li style="margin-right:10px;"><div id="playList_'+i+'" class="vividButton" style="position:relative;"><a href="javascript:na.apps.loaded.threed_fileExplorer.play($(\'#filesList_'+i+'\')[0], \''+fullPath+'\')" style="font-size:medium">'+relPath+'</a></div></li>';
-        $('#playlist ul').append(html);
-        $("#playlist li div, #fileListing li div").css({lineHeight:'1em'});
-
-        na.site.startUIvisuals();
+        return result;
     }
 
+    play(buttonEl, relPath) {
+        const rawPath = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/' + relPath;
+        const fullUrl = na.m.encodeUnicodePath(rawPath);  // encode ONCE, here
+
+        const doPlay = async (audio) => {
+            if (decodeURIComponent(audio.src) !== decodeURIComponent(location.origin + fullUrl)) {
+                // Safely abort any in-flight play before changing src
+                try { audio.pause(); } catch(e) {}
+                audio.src = fullUrl;
+                audio.load();
+            }
+            try {
+                await audio.play();
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error("Playback failed:", err);
+                }
+                // AbortError is expected when track changes quickly — safe to ignore
+            }
+        };
+
+        if (!na.threeD.currentAudio) {
+            const audio = na.threeD.currentAudio = new Audio();
+
+            // Connect to visualizer ONCE, before any src is set
+            if (na.threeD.audioVisualizer3D) {
+                na.threeD.audioVisualizer3D.connectAudio(audio);
+            }
+
+            audio.addEventListener('ended', () => {
+                na.threeD.audioVisualizer3D?.stop();
+            });
+            audio.addEventListener('error', (e) => {
+                console.error("Audio error:", audio.src, e);
+                na.threeD.audioVisualizer3D?.stop();
+            });
+        }
+
+        doPlay(na.threeD.currentAudio);
+
+        // UI updates
+        $('#fileListing .vividButtonSelected').removeClass('vividButtonSelected').addClass('vividButton');
+        $(buttonEl).addClass('vividButtonSelected');
+
+        let i = $('#playlist li').length;
+        let html = '<li style="margin-right:10px;"><div id="playList_'+i+'" class="vividButton" style="position:relative;"><a href="javascript:na.apps.loaded.threed_fileExplorer.play($(\'#playList_'+i+'\')[0], \''+relPath.replace(/'/g,"\\'")+'\');" style="font-size:medium">'+relPath+'</a></div></li>';
+        $('#playlist ul').append(html);
+        na.site.startUIvisuals();
+    }
     getChildren(item) {
         return t.items.filter(it => it.parent === item && (t.showFiles || it.name.indexOf('.')===-1));
     }
@@ -1102,11 +1195,6 @@ export class na3D_fileBrowser {
         validLinks.forEach(link => {
             const src = typeof link.source === 'object' ? link.source.id : link.source;
             const tgt = typeof link.target === 'object' ? link.target.id : link.target;
-            var s = window.threed.items[link.source];
-            var t = window.threed.items[link.target];
-            if (s.name=='Presidents of the USA') {
-                debugger;
-            }
             if (!childMap.has(src)) childMap.set(src, []);
             childMap.get(src).push(tgt);
         });
@@ -1477,7 +1565,6 @@ export class na3D_fileBrowser {
                     }
                     // Direct children
                     if (isDescendantLink) {
-                        debugger;
                         return t.getHierarchicalColor(t,targetDepth);
                     }
 
@@ -1612,7 +1699,6 @@ export class na3D_fileBrowser {
         //t.graph.d3ReheatSimulation();
 
         window.currentCamera = t.graph.camera();
-        debugger;
         t.setupFlightControls(t);
 
         console.time('timed 5_resumeAnimation');
@@ -1624,7 +1710,7 @@ export class na3D_fileBrowser {
 
         setTimeout(() => {
             t.graph.zoomToFit(1000, 50);  // 1000ms transition, 50px padding
-        }, 100);
+        }, 500);
     }
 
 
@@ -1747,8 +1833,17 @@ export class na3D_fileBrowser {
             // Always exclude mp3 files unless showFiles is on
 
             if (!t.showFiles) {
-                if (typeof it.name === 'string' && it.name.match(/\.mp3$/i)) return false;
-                if (typeof it.data === 'string' && it.data.match(/\.mp3$/i)) return false;
+                const nonFolder = (
+                    it.name.match(/\.gif$/i)
+                    || it.name.match(/\.jpg$/i)
+                    || it.name.match(/\.png$/i)
+                    || it.name.match(/\.mp3$/i)
+                    || it.name.match(/\.flac$/i)
+                    || it.name.match(/\.wav$/i)
+                    || it.name.match(/\.wma$/i)
+                )
+                if (typeof it.name === 'string' && nonFolder) return false;
+                if (typeof it.data === 'string' && nonFolder) return false;
             }
 
             if (seen.has(it.idx)) return false;  // hard dedup
@@ -1762,8 +1857,6 @@ export class na3D_fileBrowser {
             );
 
             if (r) seen.add(it.idx);
-            if (it.idx===0) debugger;
-            if (it.name.match(/\.mp3$/i)) debugger;
             return r;
         });
 

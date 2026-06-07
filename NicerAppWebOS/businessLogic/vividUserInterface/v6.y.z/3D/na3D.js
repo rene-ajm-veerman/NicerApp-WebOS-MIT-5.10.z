@@ -390,7 +390,7 @@ export class na3D_fileBrowser {
             if (cit.data.files) var f = cit.data.files.sort();
                 else if (cit.data.folders) var f = cit.data.folders[n].files.sort();
                     else if (cit.parent?.data?.folders) var f = cit.parent.data.folders[n].files.sort();
-                        else return false;
+                        else debugger;
             for (var i=0; i<f.length; i++) {
                 var file = ''+f[i];
                 if (file.match(/\.mp3$/)) {
@@ -434,7 +434,6 @@ export class na3D_fileBrowser {
                             +file.replace(/'/g, '%27');  // store raw, no escaping needed
 
                         el.addEventListener('click', (evt) => {
-                            debugger;
                             na.threeD.play($(evt.currentTarget).parents('.vividButton'), evt.currentTarget.dataset.path);
                         });
                     }
@@ -622,6 +621,9 @@ export class na3D_fileBrowser {
                         cd.params.t.ld3[it1a.idxPath].items.push(it1a);
 
                         cd.params.t.items.push(it1a);
+                        cd.params.t._itemsByPath.set(
+                            it1a.filepath + "/" + it1a.name,                                                     it1a
+                        );
                     }
                 }
             }

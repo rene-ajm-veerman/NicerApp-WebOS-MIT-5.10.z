@@ -34,9 +34,200 @@ import SpriteText from "https://esm.sh/three-spritetext";
 
 export class na3D_fileBrowser {
     constructor(el, parent, parameters) {
-        var t = window.threed = this;
+        var t = window.threed = na.threeD = window.threeD = this;
         t.me = 'na3D.js::na3D_fileBrowser';
         var fncn = t.me + '::constructor(el,parent,parameters)';
+
+
+        na.threeD.audioVisualizer3D = {
+            scene: null,
+            analyser: null,
+            audioContext: null,
+            source: null,
+            currentAudio: null,
+            visualGroup: null,
+            particles: null,
+            centralOrb: null,
+            animationFrame: null,
+
+            // Smoothing buffers
+            bassHistory: new Array(12).fill(0),
+            midHistory: new Array(12).fill(0),
+            trebleHistory: new Array(12).fill(0),
+            volumeHistory: new Array(8).fill(0),
+
+            lastTime: 0,
+            beatThreshold: 1.4,
+
+            init(t) {
+                this.scene = t.graph.scene();
+                if (!this.scene) return console.warn("No scene found");
+
+                this.visualGroup = new THREE.Group();
+                this.scene.add(this.visualGroup);
+
+                this.createCentralOrb();
+                this.createParticles();
+
+                console.log("3D Audio Visualizer (Smooth) initialized");
+            },
+
+            createCentralOrb() {
+                const geometry = new THREE.IcosahedronGeometry(8, 4);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x00ffcc,
+                    emissive: 0x0088aa,
+                    shininess: 120,
+                    transparent: true,
+                    opacity: 0.9
+                });
+
+                this.centralOrb = new THREE.Mesh(geometry, material);
+                this.visualGroup.add(this.centralOrb);
+
+                // Glow
+                const glow = new THREE.Mesh(
+                    new THREE.IcosahedronGeometry(9.8, 4),
+                                            new THREE.MeshBasicMaterial({
+                                                color: 0x44ffff,
+                                                transparent: true,
+                                                opacity: 0.3,
+                                                blending: THREE.AdditiveBlending
+                                            })
+                );
+                this.centralOrb.add(glow);
+            },
+
+            createParticles() {
+                const count = 1200;
+                const positions = new Float32Array(count * 3);
+                const colors = new Float32Array(count * 3);
+
+                for (let i = 0; i < count * 3; i += 3) {
+                    const r = 18 + Math.random() * 35;
+                    const theta = Math.random() * Math.PI * 2;
+                    const phi = Math.acos(2 * Math.random() - 1);
+
+                    positions[i]     = r * Math.sin(phi) * Math.cos(theta);
+                    positions[i + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.6;
+                    positions[i + 2] = r * Math.cos(phi);
+
+                    colors[i]     = 0.1;
+                    colors[i + 1] = 0.7 + Math.random() * 0.3;
+                    colors[i + 2] = 1.0;
+                }
+
+                const geo = new THREE.BufferGeometry();
+                geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                const mat = new THREE.PointsMaterial({
+                    size: 0.7,
+                    vertexColors: true,
+                    transparent: true,
+                    opacity: 0.85,
+                    blending: THREE.AdditiveBlending,
+                    depthTest: false
+                });
+
+                this.particles = new THREE.Points(geo, mat);
+                this.visualGroup.add(this.particles);
+            },
+
+            connectAudio(audioElement) {
+                if (!this.audioContext) {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    this.analyser.fftSize = 2048;
+                    this.analyser.smoothingTimeConstant = 0.82;
+                }
+
+                if (!this.source) {
+                    this.source = this.audioContext.createMediaElementSource(audioElement);
+                    this.source.connect(this.analyser);
+                    this.analyser.connect(this.audioContext.destination);
+                }
+
+                this.currentAudio = audioElement;
+                this.startVisualization();
+            },
+
+            startVisualization() {
+                if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+
+                const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+
+                const animate = (timestamp) => {
+                    const dt = Math.min((timestamp - (this.lastTime || timestamp)) / 16, 3);
+                    this.lastTime = timestamp;
+
+                    this.analyser.getByteFrequencyData(dataArray);
+
+                    // === Smoothed frequency bands ===
+                    let bass = 0, mid = 0, treble = 0;
+                    for (let i = 0; i < 12; i++) bass += dataArray[i];
+                    for (let i = 30; i < 120; i++) mid += dataArray[i];
+                    for (let i = 180; i < 500; i++) treble += dataArray[i];
+
+                    bass = bass / 12 / 255;
+                    mid = mid / 90 / 255;
+                    treble = treble / 320 / 255;
+
+                    // Exponential smoothing
+                    this.bassHistory.push(bass); this.bassHistory.shift();
+                    this.midHistory.push(mid); this.midHistory.shift();
+                    this.trebleHistory.push(treble); this.trebleHistory.shift();
+
+                    const smoothBass = this.bassHistory.reduce((a,b)=>a+b)/this.bassHistory.length;
+                    const smoothMid = this.midHistory.reduce((a,b)=>a+b)/this.midHistory.length;
+                    const smoothTreble = this.trebleHistory.reduce((a,b)=>a+b)/this.trebleHistory.length;
+
+                    const volume = (smoothBass + smoothMid * 1.1 + smoothTreble * 0.8) / 2.9;
+
+                    // === Smooth Orb Animation ===
+                    if (this.centralOrb) {
+                        const targetScale = 1 + smoothBass * 2.2 + smoothMid * 0.8;
+                        this.centralOrb.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.18);
+
+                        this.centralOrb.rotation.y += 0.003 + smoothTreble * 0.018;
+                        this.centralOrb.rotation.x = Math.sin(timestamp/1200) * 0.08 * smoothBass;
+                    }
+
+                    // === Smooth Particles ===
+                    if (this.particles) {
+                        const pos = this.particles.geometry.attributes.position.array;
+                        for (let i = 1; i < pos.length; i += 3) {
+                            pos[i] += Math.sin(timestamp/180 + i) * 0.035 * smoothMid;
+                        }
+                        this.particles.geometry.attributes.position.needsUpdate = true;
+
+                        this.particles.rotation.y += 0.0012 + smoothTreble * 0.022;
+                        const pScale = 1 + volume * 1.1;
+                        this.particles.scale.lerp(new THREE.Vector3(pScale, pScale, pScale), 0.22);
+                    }
+
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+
+                this.lastTime = performance.now();
+                animate(this.lastTime);
+            },
+
+            stop() {
+                if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+                if (this.centralOrb) this.centralOrb.scale.setScalar(1);
+                if (this.particles) this.particles.scale.setScalar(1);
+            },
+
+            followNode(node) {
+                if (node?.__threeObj && this.visualGroup) {
+                    this.visualGroup.position.copy(node.__threeObj.position);
+                    this.visualGroup.position.y += 15;
+                }
+            }
+
+        };
+
 
         t.debug = true;
         
@@ -456,7 +647,10 @@ export class na3D_fileBrowser {
 
         // Instead of na.m.walkArray (synchronous), do a chunked async walk:
         await t.createGraph(t);
+
+
         setTimeout((t) => {
+            na.threeD.audioVisualizer3D.init(window.threed || t);
             t.graph.refresh();           // or t.graph._d3ReheatSimulation?.();
             t.graph.resumeAnimation?.()
         }, 100, t);
@@ -593,8 +787,9 @@ export class na3D_fileBrowser {
             cd.params.it = it;
 
             // === Files (if enabled) ===
-            if (it.data && it.data.files) {
-                const files = it.data.files;
+            if (it.data && it.data.folders && it.data.folders[it.name]) {
+                const files = it.data.folders[it.name].files;
+                if (it.name=='Graduated Fool') debugger;
                 for (const fkey in files) {
                     if (files.hasOwnProperty(fkey)) {
                         const fileIdx = cd.params.t.items.length;
@@ -779,14 +974,86 @@ export class na3D_fileBrowser {
         return colors[depth % colors.length]*/
     }
 
-    play(btn, relPath) {
-        let
-        fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath;
-        fullPath = new URL(fullPath).pathname;
-        $('#audioTag')[0].src = na.m.encodeUnicodePath(fullPath);
-        $('#audioTag')[0].play();
+    play(buttonEl, relPath) {
+        var
+        fullPath = document.location.origin+'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music/'+relPath,
+        fullPath = new URL(fullPath).pathname,
+        fullUrl = na.m.encodeUnicodePath(fullPath);
+
+        function encodePath (str) {
+            if (typeof str !== 'string') return '';
+
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                const code = char.charCodeAt(0);
+
+                // Only keep safe alphanumeric characters
+                if ((code >= 65 && code <= 90) ||    // A-Z
+                    (code >= 97 && code <= 122) ||   // a-z
+                    (code >= 48 && code <= 57)) {    // 0-9
+                        result += char;
+                    } else {
+                        // Everything else (including @ ( ) & # $ % ^ etc.) gets encoded
+                        if (code < 256) {
+                            result += '%' + code.toString(16).toUpperCase().padStart(2, '0');
+                        } else {
+                            // Unicode support
+                            result += encodeURIComponent(char);
+                        }
+                    }
+            }
+            return result;
+        }
+
+        // 1. Clean and encode the path
+        const path = encodePath(fullUrl);
+
+        // 2. Reuse single audio element + single source node
+        if (!na.threeD.currentAudio) {
+            na.threeD.currentAudio = new Audio();
+            const audio = na.threeD.currentAudio;
+
+            // === ONE-TIME VISUALIZER CONNECTION ===
+            if (na.threeD.audioVisualizer3D) {
+                na.threeD.audioVisualizer3D.connectAudio(audio);   // This creates the source node once
+            }
+
+            // Event listeners (once)
+            audio.addEventListener('ended', () => {
+                if (na.threeD.audioVisualizer3D) na.threeD.audioVisualizer3D.stop();
+            });
+
+                audio.addEventListener('error', (e) => {
+                    console.error("Audio error:", e);
+                    if (na.threeD.audioVisualizer3D) na.threeD.audioVisualizer3D.stop();
+                });
+        }
+
+        const audio = na.threeD.currentAudio;
+
+        // Change track
+        if (audio.src !== fullUrl) {
+            audio.src = fullUrl;
+        }
+
+        // Play
+        audio.play().catch(err => {
+            console.error("Playback failed:", err);
+        });
+
+        // Optional: Make visualizer follow the clicked node
+        if (na.threeD.audioVisualizer3D && buttonEl) {
+            const nodeId = buttonEl.dataset.nodeId || buttonEl.closest('[data-node-id]')?.dataset.nodeId;
+            if (nodeId) {
+                const node = window.threed?.items?.[nodeId] ||
+                window.threed?.graph?.graphData().nodes.find(n => n.id == nodeId);
+                if (node) na.threeD.audioVisualizer3D.followNode(node);
+            }
+        }
+
         $('#fileListing .vividButtonSelected').removeClass('vividButtonSelected').addClass('vividButton');
-        $(btn).addClass('vividButtonSelected');
+        $(buttonEl).addClass('vividButtonSelected');
         let
         i = $('#playlist li').length,
         html = '<li style="margin-right:10px;"><div id="playList_'+i+'" class="vividButton" style="position:relative;"><a href="javascript:na.apps.loaded.threed_fileExplorer.play($(\'#filesList_'+i+'\')[0], \''+fullPath+'\')" style="font-size:medium">'+relPath+'</a></div></li>';
@@ -1918,4 +2185,3 @@ export class na3D_demo_cube {
         t.renderer.render( t.scene, t.graph.camera );
     }*/
 }
-

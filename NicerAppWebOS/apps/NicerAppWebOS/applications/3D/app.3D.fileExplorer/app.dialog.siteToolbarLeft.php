@@ -316,7 +316,6 @@ border-top: 1px solid #333;
     }
 
     // Expose for easy calling from onclick_node() etc.
-    window. istoryState = saveState;
     window.undo = undo;
     window.redo = redo;
 
@@ -327,7 +326,7 @@ border-top: 1px solid #333;
         // Save initial state
         setTimeout(() => {
             $('#siteToolbarLeft').css({width:'fit-content'});
-            saveState("Initial state");
+            pushHistory("Initial state");
         }, 300);
 
         console.log("✅ Undo/Redo system initialized with working buttons");
@@ -341,5 +340,5 @@ border-top: 1px solid #333;
     }
 
     // Expose for other modules
-    window.historyManager = { saveState, undo, redo };
+    window.historyManager = { pushHistory, undo, redo };
 </script>

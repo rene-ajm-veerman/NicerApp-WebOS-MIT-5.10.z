@@ -420,8 +420,11 @@ na.backgrounds = na.background = na.bg = {
                     }
 
                     if (
-                        !bgk.match(/Tiled/i)
-                        && !bgk.match(/\.txt$/)
+                        !(
+                            bgk.match(/.*\.jpg$/i)
+                            || bgk.match(/.*\.png$/i)
+                            || bgk.match(/.*\.gif$/i)
+                        )
                         && (
                             $(window).width() > w
                             || $(window).height() > h

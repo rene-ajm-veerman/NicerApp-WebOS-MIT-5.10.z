@@ -27,6 +27,9 @@
     $collectionDurationInSeconds = 0;
     $pageDurationInSeconds = 0;
 
+    var_dump(file_exists(dirname(__FILE__).'/index.views.json'));
+    exit;
+
     if ((!$rescanContent && file_exists(dirname(__FILE__).'/index.views.json')) && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
     //if (!$naLAN && file_exists(dirname(__FILE__).'/index.views.json') && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
         // ONLY SLOWS THINGS DOWN CONSIDERABLY $folders = json_decode(file_get_contents($rf.'/index.foldersAndFiles.json'),true);

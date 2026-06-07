@@ -10,7 +10,7 @@
     global $naURLs;
     require_once ($naWebOS->domainPath.'/domainConfig/mainmenu.items.php');
     //var_dump ($naURLs);
-    $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering';
+    $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse';
     $rf = dirname(__FILE__).'/music/';
     $ffi = []; // file and folder index
     $views = [];
@@ -26,8 +26,8 @@
     $read = false;
     $collectionDurationInSeconds = 0;
     $pageDurationInSeconds = 0;
-
-    if ((!$rescanContent && file_exists(dirname(__FILE__).'/index.views.json')) && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
+    $rescanContent = false; // not really cheating when you're bypassing 10 minutes worth of mp3info exec() calls
+    if (file_exists(dirname(__FILE__).'/index.views.json')) && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
     //if (!$naLAN && file_exists(dirname(__FILE__).'/index.views.json') && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
         // ONLY SLOWS THINGS DOWN CONSIDERABLY $folders = json_decode(file_get_contents($rf.'/index.foldersAndFiles.json'),true);
         $views = json_decode(file_get_contents(dirname(__FILE__).'/index.views.json'),true);
@@ -124,7 +124,6 @@
     };
     if (!$read) file_put_contents(dirname(__FILE__).'/index.views.json', json_encode($views));
 
-    $rescanContent = false; // not really cheating when you're bypassing 10 minutes worth of mp3info exec() calls
     if ($rescanContent) {
         function arrayWalk_key_buildMenu ($cd) {
             global $naWebOS;

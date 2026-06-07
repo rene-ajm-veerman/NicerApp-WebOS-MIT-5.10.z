@@ -1,7 +1,7 @@
 /*--- LICENSE : https://opensource.org/licenses/MIT
 ----- Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com), https://grok.com and https://claude.ai/chat
 -----
------ At https://nicer.app/3D and https://nicer.app/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js, i have a live copy runniing of https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/tree/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer and https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js
+----- At https://nicer.app/3D and https://nicer.app/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js, i have a live copy runniing of https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/tree/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer and https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js i have data supplied by https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer/ajax_getBackgroundsRecursive.php
 ---*/
 
 import * as three from '/NicerAppWebOS/3rd-party/3D/libs/three.js/build/three.module.js';
@@ -140,9 +140,9 @@ export class na3D_fileBrowser {
         /*t.scene = new THREE.Scene();
         t.scene.add(cube)
         t.scene.add(new THREE.AxesHelper(5000))
-        t.camera = new THREE.PerspectiveCamera( 90  , $(el).width() / $(el).height(), 0.01, 100*1000 );
+        t.graph.camera = new THREE.PerspectiveCamera( 90  , $(el).width() / $(el).height(), 0.01, 100*1000 );
 
-        t.camera.rotation.order = 'YXZ';
+        t.graph.camera().rotation.order = 'YXZ';
         */
 
         t.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, logarithmicDepthBuffer: true});
@@ -187,12 +187,200 @@ export class na3D_fileBrowser {
         na.threeD = t;
 
         t.initializeItems (t);
+        t.initHistory(t);
+    }
+
+    // ====================== HISTORY SYSTEM ======================
+
+    initHistory(t) {
+        t.history = {
+            stack: [],
+            redoStack: []
+        };
+
+        document.getElementById('btnUndo').onclick = () => t.undo();
+        document.getElementById('btnRedo').onclick = () => t.redo();
+    }
+
+    pushHistory(t, state, label = 'Action') {
+        if (!t.history) t.initHistory();
+
+        t.history.redoStack = [];                    // clear future on new action
+        if (label) state.label = label;
+
+        t.history.stack.push(state);
+
+        // Limit history size
+        if (t.history.stack.length > 40) t.history.stack.shift();
+
+        t.updateHistoryUI(t);
+    }
+
+    undo(t) {
+        var t = this;
+        if (!t.history || t.history.stack.length <= 1) return false;
+
+        const current = t.history.stack.pop();
+        t.history.redoStack.push(current);
+
+        const previous = t.history.stack[t.history.stack.length - 1];
+        debugger;
+        t.restoreState(t,previous);
+
+        t.updateHistoryUI(t);
+        return true;
+    }
+
+    redo(t) {
+        var t = this;
+        if (!t.history || t.history.redoStack.length === 0) return false;
+
+        const nextState = t.history.redoStack.pop();
+        t.history.stack.push(nextState);
+
+        t.restoreState(t,nextState);
+        t.updateHistoryUI(t);
+        return true;
+    }
+
+    updateHistoryUI(t) {
+        var t = this;
+        const list = document.getElementById('historyList');
+        const btnUndo = document.getElementById('btnUndo');
+        const btnRedo = document.getElementById('btnRedo');
+
+        // Update list
+        if (list) {
+            list.innerHTML = '';
+
+            if (t.history.stack.length === 0) {
+                list.innerHTML = '<div style="padding:8px; font-style:italic; color:#888;">(no history yet)</div>';
+            } else {
+                for (let i = t.history.stack.length - 1; i >= 0; i--) {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.style.cssText = `
+                    padding: 6px 10px;
+                    margin: 2px 0;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    `;
+
+                    if (i === t.history.stack.length - 1) {
+                        item.style.backgroundColor = 'rgba(0, 255, 120, 0.25)';
+                        item.style.fontWeight = 'bold';
+                    }
+
+                    const label = t.history.stack[i].label || `State ${i+1}`;
+                    item.innerHTML = `<small style="color:#aaa">${i+1}.</small> ${label}`;
+
+                    item.onclick = () => t.jumpToHistory(i);
+                    list.appendChild(item);
+                }
+            }
+        }
+
+        // Update buttons
+        if (btnUndo) btnUndo.disabled = t.history.stack.length <= 1;
+        if (btnRedo) btnRedo.disabled = t.history.redoStack.length === 0;
+    }
+
+    jumpToHistory(t,index) {
+        if (!t.history || index < 0 || index >= t.history.stack.length) return;
+
+        const target = t.history.stack[index];
+        t.history.redoStack = t.history.stack.splice(index + 1).reverse();
+        t.history.stack = t.history.stack.slice(0, index + 1);
+
+        t.restoreState(t,target);
+        t.updateHistoryUI(t);
+    }
+
+    restoreState(t,state) {
+        if (!state) return;
+
+        // Restore scroll
+        if (typeof state.scrollY === 'number') {
+            window.scrollTo({ top: state.scrollY, behavior: 'auto' });
+        }
+
+        // Restore camera
+        if (state.camera && window.currentCamera) {
+            if (state.camera.length) {
+                state.camera = {
+                    x: state.camera[0], y : state.camera[1], z : state.camera[2]
+                }
+            }
+            if (state.camera.pos.length) {
+                state.camera.pos = {
+                    x: state.camera.pos[0], y : state.camera.pos[1], z : state.camera.pos[2]
+                }
+            }
+
+            if (state.camera) {
+                const cam = window.currentCamera;
+                const pos = state.camera.pos;
+                const forward = window.getForwardVector();
+                const delta = forward.multiplyScalar(20);
+
+                if (
+                    typeof state.camera.x === 'number'
+                    && typeof state.camera.y === 'number'
+                    && typeof state.camera.z === 'number'
+                ) {
+                    window.threed.graph.cameraPosition(
+                        window.threed.currentNode,
+                        {
+                            x: ((state.camera.pos?.lookAt?.x ?? 0) + delta.x),
+                                                       y: ((state.camera.pos?.lookAt?.y ?? 0) + delta.y),
+                                                       z: ((state.camera.pos?.lookAt?.z ?? 0) + delta.z)
+                        },
+                        100
+                    );
+                    window.threed.graph.cameraPosition(
+                        state.camera.pos,
+                        {
+                            x: ((state.camera.pos?.lookAt?.x ?? 0) + delta.x),
+                                                       y: ((state.camera.pos?.lookAt?.y ?? 0) + delta.y),
+                                                       z: ((state.camera.pos?.lookAt?.z ?? 0) + delta.z)
+                        },
+                        1600
+                    );
+                }
+                if (typeof state.camera.zoom === 'number') cam.zoom = state.camera.zoom;
+                if (state.camera.rotation) {
+                    cam.rotation.set(
+                        state.camera.rotation.x,
+                        state.camera.rotation.y,
+                        state.camera.rotation.z,
+                        state.camera.rotation.order
+                    );
+                }
+            };
+
+            if (typeof window.updateCamera === 'function') {
+                window.updateCamera();
+            } else if (typeof window.render === 'function') {
+                window.render(); // fallback
+            } else if (typeof window.currentCamera.updateProjectionMatrix==='function') {
+                window.currentCamera.updateProjectionMatrix();
+                window.currentCamera.updateMatrixWorld(true);
+            }
+        }
+
+        // Restore active item
+        if (state.activeItemId) {
+            documenquerySelectorAll('.active').forEach(el => el.classLisremove('active'));
+            const activeEl = documengetElementById(state.activeItemId);
+            if (activeEl) activeEl.classList.add('active');
+        }
     }
 
     onclick_node (t, node) {
         var cit = t.items[node.id], done = false;
 
-        while (cit && !done) {
+        if (cit) {
             var html = "", j = 0;
             if (cit.name!=parseInt(cit.name)) {
                 var n = cit.name;
@@ -224,32 +412,36 @@ export class na3D_fileBrowser {
             $('#fileListing').html(html).delay(500);
             na.site.startUIvisuals('fileListing');
 
-            j = 0;
-            for (var i=0; i<f.length; i++) {
-                var file = ''+f[i];
-                if (file.match(/\.mp3$/)) {
-                    var
-                    path = cit.filepath
-                        .replace(/\/0\/filesAtRoot\/folders/, "")
-                        .replace(/\/folders/g,"")
-                        .replace('\/filesAtRoot','')
-                        .replace(/\/\//g,'/')
-                        .replace(/\'/g, '\\'),
-                    id = '#'+t.fid+'_'+j,
-                    el = $('a',$(id)[0])[0];
+            setTimeout (function (t, f) {
+                for (var i=0; i<f.length; i++) {
+                    var file = ''+f[i];
+                    if (file.match(/\.mp3$/)) {
+                        var
+                        path = cit.filepath
+                            .replace(/\/0\/filesAtRoot\/folders/, "")
+                            .replace(/\/folders/g,"")
+                            .replace('\/filesAtRoot','')
+                            .replace(/\/\//g,'/')
+                            .replace(/\'/g, '\\'),
+                        id = '#'+t.fid+'_'+i,
+                        el = $('a',$(id)[0])[0];
 
-                    el.dataset.path =
-                        path.replace(/'/g, '%27')+'/'
-                        +n.replace(/'/g, '%27')+'/'
-                        +file.replace(/'/g, '%27');  // store raw, no escaping needed
-                    el.addEventListener('click', (evt) => {
-                        na.threeD.play($(evt.currentTarget).parents('.vividButton'), evt.currentTarget.dataset.path);
-                    });
-                }
-                j++;
-            };
+                        if (!el) debugger;
 
-            t.fid++;
+                        el.dataset.path =
+                            path.replace(/'/g, '%27')+'/'
+                            +n.replace(/'/g, '%27')+'/'
+                            +file.replace(/'/g, '%27');  // store raw, no escaping needed
+
+                        el.addEventListener('click', (evt) => {
+                            debugger;
+                            na.threeD.play($(evt.currentTarget).parents('.vividButton'), evt.currentTarget.dataset.path);
+                        });
+                    }
+                };
+
+                t.fid++;
+            }, 500, t, f);
             done = true;
         }
     }
@@ -259,12 +451,16 @@ export class na3D_fileBrowser {
         t.s2 = [];
         t._itemsByPath = new Map();
         // seed the map with root item
-        t._itemsByPath.set(t.items[0].filepath + "/" + t.items[0].name, t.items[0]);
+        t._itemsByPath.set(t.items[0].filepath.replace(/\/folders/g, '').replace('/filesAtRoot','') + "/" + t.items[0].name, t.items[0]);
 
         t._progressCallback(10, "Walking file tree...");
 
         // Instead of na.m.walkArray (synchronous), do a chunked async walk:
         await t.createGraph(t);
+        setTimeout((t) => {
+            t.graph.refresh();           // or t.graph._d3ReheatSimulation?.();
+            t.graph.resumeAnimation?.()
+        }, 100, t);
 
         console.time('timed 1_walk');
         await t._chunkedWalkArray(t, p);
@@ -334,206 +530,102 @@ export class na3D_fileBrowser {
         }
     }
 
-    initializeItems_walkKey (cd) {
+    initializeItems_walkKey(cd) {
         var ps = cd.path.split("/");
-        if (ps[ps.length-1]=="files") {
-            //console.log ("initializeItems_walkKey", "files", cd);
-        } else if (ps[ps.length-1]=="folders") {
+        if (ps[ps.length-1] === "files") {
+            return;
+        } else if (ps[ps.length-1] === "folders") {
 
-            var path = cd.path.replace(/\/folders/g, '');
-            if (path.substr(0,1)!=='/') path = '/'+path;
+            var path = cd.path.replace(/\/folders/g, '').replace('filesAtRoot','');
+            if (path[0] !== '/') path = '/' + path;
+            let pk = path;
 
-            var
-            //lastParent = it1a?it1a:it?it:null;//cd.params.t.items[0],
-            pk = cd.path.replace(/\/folders/g,'');
-            if (!cd.params.ld2[pk]) cd.params.ld2[pk] = { levelIdx : 0 };
-            var modded = false;
-            cd.params.idxPath2 = '';
-            /*for (var i=0; i<cd.params.t.items.length; i++) {
-             *                var it2 = cd.params.t.items[i];
-             *                if (it2.filepath+"/"+(it2 && it2.name!==parseInt(it2.name) ? it2.name : it2.data) === pk) {
-             *                    lastParent = it2;
-             *                    cd.params.idxPath2  = it2.idxPath;
-             *                    modded = true;
-             *                    //debugger;
-        }
-        }*/
+            if (!cd.params.ld2[pk]) cd.params.ld2[pk] = { levelIdx: 0 };
 
-
-            cd.params.t._itemsByPath = new Map();
-            var it = cd.params.t.items[0];
-            cd.params.t._itemsByPath.set(it.filepath.replace('/filesAtRoot','') + "/" + it.name, it); // for root item
-
-            // Then in initializeItems_walkKey, replace the O(n) loop with:
-            const lastParent = cd.params.t._itemsByPath.get(pk) ?? cd.params.t.items[0];
-            if (lastParent !== cd.params.t.items[0]) {
-                cd.params.idxPath2 = lastParent.idxPath;
-                modded = true;
+            if (!cd.params.t._itemsByPath) {
+                cd.params.t._itemsByPath = new Map();
+                // Seed root once
+                const root = cd.params.t.items[0];
+                cd.params.t._itemsByPath.set(
+                    root.filepath.replace(/\/folders/g, '').replace('filesAtRoot','') + "/" + root.name,
+                                             root
+                );
             }
 
+            // Find parent using clean key
+            var lastParent = cd.params.t._itemsByPath.get(pk) ?? cd.params.t.items[0];
+            var idxPath2 = lastParent.idxPath + (lastParent.id?'/' + lastParent.id:'') || '/0';
 
 
-
-            /*
-            if (cd.level < 3) {
-                cd.params.idxPath = "/0";// + cd.params.t.items.length;
-            } else {
-                var
-                il1 = (cd.level - 4) / 2,
-                il2 = cd.params.idxPath.split("/"),
-                il3 = null,
-                j = il2.length;
-
-
-                for (var i=0; i<j; i++) {
-                    if (parseInt(il2[i])===lastParent.idx) il3 = lastParent.idx;
-                    if (il3) il2.pop();
-                }
-
-                cd.params.idxPath = il2.join("/") + "/" + lastParent.idx;
-                cd.params.idxPath2 = cd.params.idxPath;
+            // Create the folder item
+            const idx = cd.params.t.items.length;
+            const it = {
+                level: cd.level,
+                name: cd.k,
+                idx: idx,
+                idxPath: idxPath2 + '/' + idx,
+                filepath: path,
+                levelIdx: ++cd.params.ld2[pk].levelIdx,
+                parent: lastParent,
+                leftRight: 0,
+                upDown: 0,
+                columnOffsetValue: 1000,
+                rowOffsetValue: 1000,
+                model: { position: new THREE.Vector3(0,0,0) },
+                data: cd.at[cd.k]
             };
-            */
 
-            if (!cd.params.idxPath2) cd.params.idxPath2='';
-            //sif (!modded) cd.params.idxPath2 += '/' + it2.idx;
-            //cd.params.idxPath = (cd.params.it&&cd.params.it?cd.params.it.idxPath:'') + '/' + cd.params.t.items.length;
-            if (!modded) cd.params.idxPath = cd.params.idxPath2; else cd.params.idxPath = '';// + '/' + cd.params.t.items.length;
-            //debugger;
-
-
-
-            var
-            it = {
-                level : cd.level,
-                name : cd.k,
-                idx : cd.params.t.items.length,
-                idxPath : cd.params.idxPath2 + '/' + cd.params.t.items.length,
-                filepath : path,
-                levelIdx : ++cd.params.ld2[pk].levelIdx,
-                parent : lastParent,
-                leftRight : 0,
-                upDown : 0,
-                columnOffsetValue : 1000,
-                rowOffsetValue : 1000,
-                model : { position : new THREE.Vector3(0,0,0) },
-                data : cd.at[cd.k]
-            };
-            //if (!modded) cd.params.idxPath = it.idxPath;
-            //if (!cd.k.match(/\/.mp3$/)) {
-                //debugger;
-                //console.log ("t779", it.filepath + "/" + it.data, it);
-            //};
-
+            // Store in ld3
             if (!cd.params.t.ld3) cd.params.t.ld3 = {};
-            if (!cd.params.t.ld3[it.idxPath]) cd.params.t.ld3[it.idxPath] = { itemCount : 0, folderCount : 0, items : [] };
-            if (!cd.params.t.ld3[it.idxPath].folderCount) cd.params.t.ld3[it.idxPath].folderCount = 0;
+            if (!cd.params.t.ld3[it.idxPath]) {
+                cd.params.t.ld3[it.idxPath] = { itemCount: 0, folderCount: 0, items: [] };
+            }
             cd.params.t.ld3[it.idxPath].folderCount++;
             cd.params.t.ld3[it.idxPath].itemCount++;
-            cd.params.t.ld3[it.idxPath].items.push (it);
-            //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
-            cd.params.t.items.push (it);
-            cd.params.t._itemsByPath.set(it.filepath.replace('/filesAtRoot','') + "/" + it.name, it);
+            cd.params.t.ld3[it.idxPath].items.push(it);
+
+            // Add to main arrays + map
+            cd.params.t.items.push(it);
+            cd.params.t._itemsByPath.set(
+                it.filepath.replace('filesAtRoot','').replace(/\/folders/g, '') + "/" + it.name,
+                                         it
+            );
+
             cd.params.it = it;
-            //console.log ('initializeFolderView_walkKey() : '+cd.params.t.items.length+' items initialized.')
 
-            cd.params.ld2[cd.path] = { levelIdx : 1 };
+            // === Files (if enabled) ===
+            if (it.data && it.data.files) {
+                const files = it.data.files;
+                for (const fkey in files) {
+                    if (files.hasOwnProperty(fkey)) {
+                        const fileIdx = cd.params.t.items.length;
+                        const it1a = {
+                            data: files[fkey],
+                            level: cd.level + 1,
+                            name: fkey,
+                            idx: fileIdx,
+                            idxPath: it.idxPath + '/' + fileIdx,
+                            filepath: path + "/" + cd.k,
+                            levelIdx: ++cd.params.ld2[pk].levelIdx,
+                            parent: it,
+                            leftRight: 0,
+                            upDown: 0,
+                            columnOffsetValue: 1000,
+                            rowOffsetValue: 1000,
+                            model: { position: new THREE.Vector3(0,0,0) }
+                        };
 
-            // display files :
-            /*
-            if (cd.params.t.showFiles && it.data.files)
-            for (var fkey in it.data.files) {
-                //if (fkey.match(/\.mp3$/)) {
-                    var p = null;
-
-                    /*var ps2 = $.extend([],ps);
-                    delete ps2[ps2.length-1];
-                    var ps2Str = ps2.join("/");
-                    var parent = it.parent;//na.m.chaseToPath (cd.root, ps2Str+"/files/"+fkey, false);* /
-                    //var level = lastParent.level/2;//ps2.length;
-
-
-                    var
-                    pk = cd.path,//+"/"+cd.k+"/"+fkey,
-                    it1a = {
-                        data : it.data.files[fkey],
-                        level : cd.level+1,
-                        name : fkey,
-                        idx : cd.params.t.items.length,
-                        idxPath : cd.params.idxPath + '/' + cd.params.t.items.length,
-                        filepath : path+"/"+cd.k,
-                        levelIdx : ++cd.params.ld2[pk].levelIdx,
-                        parent : it,
-                        leftRight : 0,
-                        upDown : 0,
-                        columnOffsetValue : 1000,
-                        rowOffsetValue : 1000,
-                        model : { position : new THREE.Vector3(0,0,0) }
-                    };
-
-                    if (!cd.params.t.ld3) cd.params.t.ld3 = {};
-                    if (!cd.params.t.ld3[it1a.idxPath]) cd.params.t.ld3[it1a.idxPath] = { itemCount : 0, items : [] };
-                    cd.params.t.ld3[it1a.idxPath].itemCount++;
-                    cd.params.t.ld3[it1a.idxPath].items.push (it1a);
-                    //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
-                    cd.params.t.items.push (it1a);
-                }
-            //}
-            */
-                    if (it.data && it.data.files) {
-                        const files = it.data.files;
-                        const totalFiles = Object.keys(files).length;
-                        let processedFiles = 0;
-
-                        for (var fkey in files) {
-                            if (files.hasOwnProperty(fkey)) {
-                                const file = files[fkey];
-
-                                var
-                                pk = cd.path,//+"/"+cd.k+"/"+fkey,
-                                it1a = {
-                                    data : it.data.files[fkey],
-                                    level : cd.level+1,
-                                    name : fkey,
-                                    idx : cd.params.t.items.length,
-                                    idxPath : cd.params.idxPath + '/' + cd.params.t.items.length,
-                                    filepath : path+"/"+cd.k,
-                                    levelIdx : ++cd.params.ld2[pk].levelIdx,
-                                    parent : it,
-                                    leftRight : 0,
-                                    upDown : 0,
-                                    columnOffsetValue : 1000,
-                                    rowOffsetValue : 1000,
-                                    model : { position : new THREE.Vector3(0,0,0) }
-                                };
-
-                                if (!cd.params.t.ld3) cd.params.t.ld3 = {};
-                                if (!cd.params.t.ld3[it1a.idxPath]) cd.params.t.ld3[it1a.idxPath] = { itemCount : 0, items : [] };
-                                cd.params.t.ld3[it1a.idxPath].itemCount++;
-                                cd.params.t.ld3[it1a.idxPath].items.push (it1a);
-                                //cd.params.idxPath2 = cd.params.idxPath + "/" + it1a.idx;
-                                cd.params.t.items.push (it1a);
-
-                                cd.params.t._itemsByPath.set(it1a.filepath + "/" + it1a.name, it1a);
-
-                                processedFiles++;
-
-                                // === Progress update (throttled for performance) ===
-                                if (totalFiles > 30 && (processedFiles % Math.max(1, Math.floor(totalFiles / 25)) === 0 || processedFiles === totalFiles)) {
-                                    const progressPercent = 10 + Math.round((processedFiles / totalFiles) * 35); // e.g. 10% → 45%
-
-                                    if (p && p._progressCallback) {
-                                        p._progressCallback(
-                                            progressPercent,
-                                            `Scanning files: ${processedFiles}/${totalFiles} (${key})`
-                                        );
-                                    }
-                                }
-                            }
+                        if (!cd.params.t.ld3[it1a.idxPath]) {
+                            cd.params.t.ld3[it1a.idxPath] = { itemCount: 0, items: [] };
                         }
+                        cd.params.t.ld3[it1a.idxPath].itemCount++;
+                        cd.params.t.ld3[it1a.idxPath].items.push(it1a);
+
+                        cd.params.t.items.push(it1a);
                     }
+                }
+            }
         }
-        //debugger;
     }
     initializeItems_walkValue (cd) {
         //console.log ("initializeItems_walkValue", "cd", cd);
@@ -572,55 +664,44 @@ export class na3D_fileBrowser {
     }
 
 
-    // Returns all ancestor IDs up to the root
-    getAllAncestors (node) {
-        if (!node || !node?.item?.idxPath) return new Set();
+    getAllAncestors(node) {
+        const ancestors = new Set([0]);
+        if (!node?.item?.idxPath) return ancestors;
 
-        const ancestors = new Set();
-        ancestors.add(0); // don't forget to add the innermost root folder
         const path = node.item.idxPath;
-
-
         if (typeof path === 'string') {
-            const parts = path.substr(1,path.length-1).split('/');
-            for (let i = 0; i < parts.length; i++) {
-                var current_t_items_N_idx = parseInt(parts[i]);
-                ancestors.add(current_t_items_N_idx);           // add partial paths
+            const parts = path.replace(/^\//, '').split('/').filter(Boolean);
+            for (let p of parts) {
+                const idx = parseInt(p);
+                if (!isNaN(idx)) ancestors.add(idx);
             }
         }
-
-        // Also add the node itself
-        ancestors.add(node.id);
-
+        ancestors.add(node.id || node.idx);
         return ancestors;
     }
 
-    getAllDescendants (t, node) {
-        if (!node) return new Set();
-
+    getAllDescendants(t, node) {
         const descendants = new Set();
-        const queue = [node];
+        if (!node) return descendants;
 
-        while (queue.length > 0) {
-            const current = queue.shift();
-            const id = current.id || current;
-
-            if (descendants.has(id)) continue;
+        const queue = [node.id || node];
+        while (queue.length) {
+            const id = queue.shift();
             descendants.add(id);
 
-            // Find all direct children
-            t.graph.graphData().links.forEach(link => {
-                const sourceId = link.source?.id ?? link.source;
-                const targetId = link.target?.id ?? link.target;
+            // Use childMap if available, or fall back to links
+            const children = (t.childMap && t.childMap.get(id)) ||
+            t.graph.graphData().links
+            .filter(l => (l.source.id || l.source) === id)
+            .map(l => l.target.id || l.target);
 
-                if (sourceId === id) {
-                    queue.push(link.target);
-                }
+            children.forEach(childId => {
+                if (!descendants.has(childId)) queue.push(childId);
             });
         }
-
         return descendants;
     }
+
 
     onresize_do_phase2(t, callback) {
         let fncn = 'na3D.js::onresize_do_phase2()';
@@ -644,7 +725,7 @@ export class na3D_fileBrowser {
 
     onresize_postDo (t, animate=false) {
         //t.drawLines(t);
-        //t.controls._camera.lookAt (t.s2[0].position);
+        //t.graph.controls()._camera().lookAt (t.s2[0].position);
 
         const width = t.el.clientWidth;
         const height = t.el.clientHeight;
@@ -714,7 +795,7 @@ export class na3D_fileBrowser {
     }
 
     getChildren(item) {
-        return this.items.filter(it => it.parent === item && (this.showFiles || it.name.indexOf('.')===-1));
+        return t.items.filter(it => it.parent === item && (t.showFiles || it.name.indexOf('.')===-1));
     }
 
     async createGraph(t) {
@@ -752,9 +833,16 @@ export class na3D_fileBrowser {
         validLinks.forEach(link => {
             const src = typeof link.source === 'object' ? link.source.id : link.source;
             const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+            var s = window.threed.items[link.source];
+            var t = window.threed.items[link.target];
+            if (s.name=='Presidents of the USA') {
+                debugger;
+            }
             if (!childMap.has(src)) childMap.set(src, []);
             childMap.get(src).push(tgt);
         });
+        t.childMap = childMap;
+
 
         const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
 
@@ -816,6 +904,7 @@ export class na3D_fileBrowser {
         // Cap angle based on number of level-1 sectors
         const capAngle = Math.PI / Math.sqrt(Math.max(level1Count, 1));
 
+        /*
         // Position each level as Fibonacci caps
         levels.forEach((levelNodes, levelIdx) => {
             if (levelIdx === 0) return;
@@ -876,7 +965,68 @@ export class na3D_fileBrowser {
                     node.z = node.fz = r * dir.z;
                 });
             });
+        });*/
+
+        // ── REPLACE the entire levels.forEach(…) positioning block ──────────────────
+        // (the block that starts with: levels.forEach((levelNodes, levelIdx) => {)
+        // and ends just before: function cross(a, b) {
+        // ── with this: ───────────────────────────────────────────────────────────────
+        const parentMap = new Map();
+        validLinks.forEach(link => {
+            const src = typeof link.source === 'object' ? link.source.id : link.source;
+            const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+            parentMap.set(tgt, src);
         });
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));  // ~2.399963 rad
+
+        // Position root
+        if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
+
+        // Per-parent Fibonacci sphere: iterate BFS level by level
+        levels.forEach((levelNodes, levelIdx) => {
+            if (levelIdx === 0) return;  // root already placed
+
+            // Group children by their parent
+            const byParent = new Map();
+            levelNodes.forEach(nodeId => {
+                const parentId = parentMap.get(nodeId);
+                if (parentId === undefined) return;
+                if (!byParent.has(parentId)) byParent.set(parentId, []);
+                byParent.get(parentId).push(nodeId);
+            });
+
+            byParent.forEach((children, parentId) => {
+                const parentNode = nodeMap.get(parentId);
+                if (!parentNode) return;
+
+                const count = children.length;
+
+                // Sphere radius scales with child count — tune the multiplier to taste
+                // Level 1 children of root use a larger radius so the big sphere stays prominent
+                const baseRadius = levelIdx === 1
+                ? Math.max(400, Math.sqrt(count) * 60)
+                : Math.max(80,  Math.sqrt(count) * 30);
+
+                // Sort for stable ordering
+                children.sort((a, b) =>
+                (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                );
+
+                children.forEach((nodeId, i) => {
+                    const node = nodeMap.get(nodeId);
+                    if (!node) return;
+
+                    // Fibonacci sphere around the parent position
+                    const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
+                    const theta = goldenAngle * i;
+
+                    node.x = node.fx = (parentNode.fx ?? parentNode.x ?? 0) + baseRadius * Math.sin(phi) * Math.cos(theta);
+                    node.y = node.fy = (parentNode.fy ?? parentNode.y ?? 0) + baseRadius * Math.sin(phi) * Math.sin(theta);
+                    node.z = node.fz = (parentNode.fz ?? parentNode.z ?? 0) + baseRadius * Math.cos(phi);
+                });
+            });
+        });
+        // ── end replacement ──────────────────────────────────────────────────────────
 
         function cross(a, b) {
             return {
@@ -894,8 +1044,6 @@ export class na3D_fileBrowser {
 
         t.graph = window.graph = ForceGraph3D();
         t.graph(container);  // mount to DOM immediately
-
-        console.time('timed 4_simulation_settle');
 
         t.graph.d3Force('charge', null);
         t.graph.d3Force('center', null);
@@ -923,8 +1071,8 @@ export class na3D_fileBrowser {
         .linkWidth(2)
         .linkColor(() => 'rgba(200, 200, 255, 0.4)')
         .nodeColor(n => {
-            const depth = (n.item?.level ?? 0) / 2 + 1;
-            return t.getHierarchicalColor(t, depth);
+            if (n.data === 'Artists' || (n.item && n.item.name === 'Artists')) return '#ffff00';
+            return t.getHierarchicalColor(t, (n.item?.level ?? 0)/2 + 1);
         })
         .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
         .d3AlphaDecay(0.02)        // slower cooling = more final spread
@@ -1044,6 +1192,9 @@ export class na3D_fileBrowser {
                     var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
                     targetDepth = Math.round(targetDepth / 2) + 1;
 
+                    //const sourceDescendants = t.getAllDescendants(t, link.source);
+                    //const targetDescendants = t.getAllDescendants(t, link.target);
+
                     const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
                     const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
@@ -1057,10 +1208,10 @@ export class na3D_fileBrowser {
                     }
                     // Direct children
                     if (isDescendantLink) {
+                        debugger;
                         return t.getHierarchicalColor(t,targetDepth);
                     }
 
-                    //debugger;
                     return defaultColor;
 
                 })
@@ -1084,9 +1235,33 @@ export class na3D_fileBrowser {
 
         .onNodeClick(node => {
             if (!node) return;
+            var t = this;
             t.currentNode = node;
 
-            window.saveHistoryState(`Before node clicked : ${node.data}`);
+            t.pushHistory(t, {
+                timestamp: Date.now(),
+
+                // Navigation
+                scrollY: window.scrollY,
+                activeItemId: document.querySelector('.active')?.id || null,
+
+                // Camera (customize these properties to match your viewer)
+                camera: window.currentCamera ? {
+                    x: window.currentCamera.x ?? 0,
+                    y: window.currentCamera.y ?? 0,
+                    z: window.currentCamera.z ?? 0,
+                    zoom: window.currentCamera.zoom ?? 1,
+                    rotation: window.currentCamera.rotation
+                    ? {
+                        x: window.currentCamera.rotation.x,
+                        y: window.currentCamera.rotation.y,
+                        z: window.currentCamera.rotation.z,
+                        order: window.currentCamera.rotation.order
+                    }
+                    : null,
+                    pos : window.threed.graph.cameraPosition()
+                } : null
+            }, `Before node clicked : ${node.data}`)
 
             const distance = 180;
             const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
@@ -1112,7 +1287,30 @@ export class na3D_fileBrowser {
             }
 
             setTimeout (function(node) {
-                window.saveHistoryState(`After node clicked : ${node.data}`);
+                t.pushHistory(t, {
+                    timestamp: Date.now(),
+
+                    // Navigation
+                    scrollY: window.scrollY,
+                    activeItemId: document.querySelector('.active')?.id || null,
+
+                    // Camera (customize these properties to match your viewer)
+                    camera: window.currentCamera ? {
+                        x: window.currentCamera.x ?? 0,
+                        y: window.currentCamera.y ?? 0,
+                        z: window.currentCamera.z ?? 0,
+                        zoom: window.currentCamera.zoom ?? 1,
+                        rotation: window.currentCamera.rotation
+                        ? {
+                            x: window.currentCamera.rotation.x,
+                            y: window.currentCamera.rotation.y,
+                            z: window.currentCamera.rotation.z,
+                            order: window.currentCamera.rotation.order
+                        }
+                        : null,
+                        pos : window.threed.graph.cameraPosition()
+                    } : null
+                }, `After node clicked : ${node.data}`)
             }, 1700, node);
             if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
         })
@@ -1120,9 +1318,6 @@ export class na3D_fileBrowser {
 
         .graphData({ nodes: data.nodes, links: validLinks })
 
-        .onEngineStop(() => {
-            console.timeEnd('timed 4_simulation_settle');
-        })
         .numDimensions(3);
 
 
@@ -1148,6 +1343,7 @@ export class na3D_fileBrowser {
         //t.graph.d3ReheatSimulation();
 
         window.currentCamera = t.graph.camera();
+        debugger;
         t.setupFlightControls(t);
 
         console.time('timed 5_resumeAnimation');
@@ -1190,10 +1386,10 @@ export class na3D_fileBrowser {
                 // so OrbitControls doesn't snap back
                 t.graph.cameraPosition(
                     { x: pos.x + delta.x, y: pos.y + delta.y, z: pos.z + delta.z },
-                    { x: (pos.lookAt?.x ?? 0) + delta.x, y: (pos.lookAt?.y ?? 0) + delta.y, z: (pos.lookAt?.z ?? 0) + delta.z }
+                    { x: (pos?.lookAt?.x ?? 0) + delta.x, y: (pos?.lookAt?.y ?? 0) + delta.y, z: (pos?.lookAt?.z ?? 0) + delta.z }
                     // no duration = instant
                 );
-            }, 16);
+            }, 20);
         };
 
         const stopFlying = () => {
@@ -1246,7 +1442,7 @@ export class na3D_fileBrowser {
             const pos = t.graph.cameraPosition();
             t.graph.cameraPosition(
                 { x: pos.x + delta.x, y: pos.y + delta.y, z: pos.z + delta.z },
-                { x: (pos.lookAt?.x ?? 0) + delta.x, y: (pos.lookAt?.y ?? 0) + delta.y, z: (pos.lookAt?.z ?? 0) + delta.z }
+                { x: (pos?.lookAt?.x ?? 0) + delta.x, y: (pos?.lookAt?.y ?? 0) + delta.y, z: (pos?.lookAt?.z ?? 0) + delta.z }
             );
         }, { passive: false });
 
@@ -1297,6 +1493,7 @@ export class na3D_fileBrowser {
             );
 
             if (r) seen.add(it.idx);
+            if (it.idx===0) debugger;
             if (it.name.match(/\.mp3$/i)) debugger;
             return r;
         });
@@ -1429,7 +1626,7 @@ export class na3D_demo_models {
         
 
         t.scene = new THREE.Scene();
-        t.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
+        t.graph.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
         
 
         t.renderer = new THREE.WebGLRenderer({alpha:true, antialias : true});
@@ -1442,8 +1639,8 @@ export class na3D_demo_models {
         
         el.appendChild( t.renderer.domElement );
         
-        t.controls = new OrbitControls( t.camera, t.renderer.domElement );
-        //t.controls.listenToKeyEvents( window ); // optional
+        t.controls = new OrbitControls( t.graph.camera, t.renderer.domElement );
+        //t.graph.controls().listenToKeyEvents( window ); // optional
         
         t.loader = new GLTFLoader();
         
@@ -1476,15 +1673,15 @@ export class na3D_demo_models {
         light1.name = "ambient_light";
         light1.intensity = 0.3;
         light1.color = 0xFFFFFF;
-        t.camera.add( t.light1 );
-        t.camera.add( t.light2 );
+        t.graph.camera().add( t.light1 );
+        t.graph.camera().add( t.light2 );
 
         const light2  = new DirectionalLight(0xFFFFFF, 0.8 * Math.PI);
         light2.position.set(0.5, 0, 0.866); // ~60º
         light2.name = "main_light";
         light2.intensity = 0.8 * Math.PI;
         light2.color = 0xFFFFFF;
-        //t.camera.add( light2 );
+        //t.graph.camera().add( light2 );
 
         t.lights.push(light1, light2);
         
@@ -1508,7 +1705,7 @@ export class na3D_demo_models {
     animate(t) {
         requestAnimationFrame( function() { t.st) } );
         
-        t.raycaster.setFromCamera (t.mouse, t.camera);
+        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
 
         const intersects = t.raycaster.intersectObjects (t.scene.children, true);
         if (intersects[0] && t.cube && t.cube2) {
@@ -1519,7 +1716,7 @@ export class na3D_demo_models {
             //t.cube2.rotation.y += 0.02;
         }
         
-        t.renderer.render( t.scene, t.camera );
+        t.renderer.render( t.scene, t.graph.camera );
     }*/
     
     
@@ -1616,8 +1813,8 @@ export class na3D_demo_models {
         t.evt = event;
 
         // THIS IS THE CRITICAL LINE that was missing after refactor
-        t.camera.updateMatrixWorld(true);
-        t.raycaster.setFromCamera(t.mouse, t.camera);
+        t.graph.camera().updateMatrixWorld(true);
+        t.raycaster.setFromCamera(t.mouse, t.graph.camera);
         const intersects = t.raycaster.intersectObjects(t.s2);
 
         console.log('Intersects:', intersects.length, intersects[0] ? intersects[0].object.it?.name : null);
@@ -1627,43 +1824,6 @@ export class na3D_demo_models {
         debugger;
     }
 }
-
-na3D_fileBrowser.prototype.history = {
-    stack: [],
-    redoStack: [],
-    maxSize: 50
-};
-
-na3D_fileBrowser.prototype.pushHistory = function(state) {
-    this.history.stack.push(JSON.parse(JSON.stringify(state))); // deep clone
-    if (this.history.stack.length > this.history.maxSize) this.history.stack.shift();
-    this.history.redoStack = []; // clear redo on new action
-};
-
-na3D_fileBrowser.prototype.undo = function() {
-    if (this.history.stack.length === 0) return;
-
-    const currentState = this.history.stack.pop();
-    this.history.redoStack.push(currentState);
-
-    const previousState = this.history.stack[this.history.stack.length - 1];
-    if (previousState) this.restoreState(previousState);
-};
-
-na3D_fileBrowser.prototype.redo = function() {
-    if (this.history.redoStack.length === 0) return;
-
-    const state = this.history.redoStack.pop();
-    this.history.stack.push(state);
-    this.restoreState(state);
-};
-
-na3D_fileBrowser.prototype.restoreState = function(state) {
-    // Restore camera position, selected nodes, current folder, graph data, etc.
-    // Example:
-    this.graph.cameraPosition(state.cameraPos);
-    // ... other restorations
-};
 
 // Keyboard handler
 document.addEventListener('keydown', (e) => {
@@ -1688,7 +1848,7 @@ export class na3D_demo_cube {
         t.t = $(t.el).attr("theme");
         
         t.scene = new THREE.Scene();
-        t.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
+        t.graph.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
 
         t.renderer = new THREE.WebGLRenderer({ alpha : true });
         t.renderer.setSize( $(el).width()-20, $(el).height()-20 );
@@ -1724,7 +1884,7 @@ export class na3D_demo_cube {
         t.raycaster = new THREE.Raycaster();
         t.mouse = new THREE.Vector2();
 
-        t.camera.position.z = 5;
+        t.graph.camera().position.z = 5;
         t.cube.rotation.x = 0.3;
         t.cube.rotation.y = 0.4;
         t.animate(this);
@@ -1738,7 +1898,7 @@ export class na3D_demo_cube {
         var rect = t.renderer.domElement.getBoundingClientRect();
         t.mouse.x = ( ( event.clientX - rect.left ) / ( rect.width - rect.left ) ) * 2 - 1;
         t.mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;        
-        t.raycaster.setFromCamera(t.mouse, t.camera);
+        t.raycaster.setFromCamera(t.mouse, t.graph.camera);
     }
     
 
@@ -1747,13 +1907,13 @@ export class na3D_demo_cube {
         requestAnimationFrame( function() { t.animate (t) } );
         //t.cube.rotation.x += 0.02;
         //t.cube.rotation.y += 0.02;
-        t.raycaster.setFromCamera (t.mouse, t.camera);
+        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
         const intersects = t.raycaster.intersectObjects (t.scene.children, true);
         for (var i=0; i<intersects.length; i++) {
             intersects[i].object.rotation.x += 0.02;
             intersects[i].object.rotation.y += 0.02;
         }
-        t.renderer.render( t.scene, t.camera );
+        t.renderer.render( t.scene, t.graph.camera );
     }*/
 }
 

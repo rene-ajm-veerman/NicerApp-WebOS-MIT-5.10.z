@@ -7,7 +7,7 @@ global $naWebOS; global $naLAN;
 
 
 
-    $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D';
+    $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse';
     $rf = dirname(__FILE__).'/music/';
     //var_dump($rf); //die();
 
@@ -21,12 +21,13 @@ global $naWebOS; global $naLAN;
     */
 
 $view = $naWebOS->view;
-if (false) {
+if (true) {
     echo '<pre style="color:lime;background:blue;">app.dialog.siteContent.php::';
     var_dump($appFolder); echo PHP_EOL;
     var_dump ($view); echo PHP_EOL;
     var_dump(is_array($view[$appFolder])); echo PHP_EOL;
     echo '</pre>';
+    exit;
 };
 if (
     $naLAN
@@ -35,10 +36,7 @@ if (
                 $_GET['pw']=='efv7750'
                 || $_GET['pw']=='50plzTolerate'
                 || $_GET['pw']=='alwaysXMASohNoes-50s'
-                || $_GET['pw']=='efv7750'
                 || $_GET['pw']=='xmas2025ai-d'
-                || $_GET['pw']=='pl-2025-10-24-15-03'
-                || $_GET['pw']=='AllahuaAckbar507788'
                 || $_GET['pw']=='alwaysXMASzzz'
             )
         )

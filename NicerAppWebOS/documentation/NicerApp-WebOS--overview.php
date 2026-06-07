@@ -1,6 +1,6 @@
 <?php
     global $naWebOS;
-    require_once ($naWebOS->domainPath.'/domainConfig/pageHeader.php');
+    require_once ($naWebOS->domainPath.'/pageHeader.php');
 ?>
     <style>
         p {

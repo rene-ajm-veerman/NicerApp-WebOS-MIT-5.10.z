@@ -18,12 +18,13 @@ global $rootPath_na;
 
 foreach ($view as $fp1 => $rec) {
     $rec = (array)$rec;
-    $fp1 = $rootPath_na.$fp1;
+    $fp1 = str_replace('/domainConfig','',$naWebOS->domainPath).$fp1;
+
     if (substr($rec['file'],0,1)=='/')
-        $fPath = $rootPath_na.$rec['file'];
+        $fPath = str_replace('/domainConfig','',$naWebOS->domainPath).$rec['file'];
     else
         $fPath = $fp1.'/'.$rec['file'];
-    echo require_return ($fPath);
+    require_once ($fPath);
     //echo $fPath;
 }
 ?>

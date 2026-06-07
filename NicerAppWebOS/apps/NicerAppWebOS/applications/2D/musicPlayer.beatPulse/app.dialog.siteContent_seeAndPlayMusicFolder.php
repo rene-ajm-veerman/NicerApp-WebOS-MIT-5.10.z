@@ -3,13 +3,14 @@ require_once (realpath(dirname(__FILE__).'/../../../../../..').'/NicerAppWebOS/b
 global $naWebOS; global $naLAN;
 $view = $naWebOS->view;
 //echo '<pre>'; var_dump ($view); die();
+$cacheFile = dirname(__FILE__).'/index.views.json';
 
 //$setPath = $view['folder']['path'];
 //$authorEmail = 'rene.veerman.netherlands@gmail.com';
 //$spacer = "\n\t\t\t\t";
-    $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D';
+    $appFolder = realpath(dirname(__FILE__).'/../../../../../..').'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse';
     $rf = dirname(__FILE__).'/music';
-    $views = json_decode(file_get_contents(dirname(__FILE__).'/index.views.json'),true);
+    $views = json_decode(file_get_contents($cacheFile),true);
     $pw = 'outtaLuck';
     if (array_key_exists('pw',$_GET)) $pw = $_GET['pw'];
     $linksOnPage = 100;
@@ -17,7 +18,7 @@ $view = $naWebOS->view;
     $pageDurationInSeconds = 0;
     $idxStart = 0;
     if (array_key_exists('idxStart', $_GET)) $idxStart = intval($_GET['idxStart']);
-
+    //if (count($views)===0) {
 
         $setPath = $rf.$view['rp'];
         //var_dump ($setPath); exit();
@@ -31,7 +32,7 @@ $view = $naWebOS->view;
         */
 
         //var_dump (FILE_FORMATS_mp3s); exit();
-        $files = getFilePathList ($setPath, false, FILE_FORMATS_mp3s, null, array('file'), 1, 1, false);
+        $files = getFilePathList ($setPath, true, FILE_FORMATS_mp3s, null, array('file'), 1, 1, false);
         //echo '<!-- JSON, $files : '.json_encode($files,JSON_PRETTY_PRINT).' -->'.PHP_EOL;
         foreach ($files as $idx => $filepath) {
             $files[$idx] = str_replace(realpath(dirname(__FILE__.'/../..')), '', $files[$idx]);
@@ -51,6 +52,9 @@ $view = $naWebOS->view;
             */
         }
         //echo '<pre>'; var_dump ($files); exit();
+    //}
+    //echo 't66'; var_dump (count($views)); echo '<br/>'.PHP_EOL;
+    //echo '6tj'; var_dump ($files); exit;
 
     $authorEmail = 'rene.veerman.netherlands@gmail.com';
     $spacer = "\n\t\t\t\t";
@@ -62,7 +66,7 @@ $view = $naWebOS->view;
         <meta http-equiv="content-language" content="en">
         <meta http-equiv="content-language" content="english">
         -->
-        <link type="text/css" rel="StyleSheet" media="screen" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/index.css?changed=<?php echo date('Ymd-His', filemtime(dirname(__FILE__).'/index.css'));?>"/>
+        <link type="text/css" rel="StyleSheet" media="screen" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/index.css?changed=<?php echo date('Ymd-His', filemtime(dirname(__FILE__).'/index.css'));?>"/>
         <link type="text/css" rel="StyleSheet" media="screen" href="/NicerAppWebOS/3rd-party/jQuery/jPlayer-2.9.1/jplayer.vivid.css"/>
 
         <!--<script src="/NicerAppWebOS/3rd-party/jQuery/jquery-ui-1.12.1/jquery-ui.js"></script>-->
@@ -71,7 +75,7 @@ $view = $naWebOS->view;
             <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
         -->
 
-        <script type="text/javascript" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/app.musicPlayer_siteContent.source.js?changed=<?php echo date('Ymd-His', filemtime(dirname(__FILE__).'/app.musicPlayer_siteContent.source.js'));?>"></script>
+        <script type="text/javascript" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/app.musicPlayer_siteContent.source.js?changed=<?php echo date('Ymd-His', filemtime(dirname(__FILE__).'/app.musicPlayer_siteContent.source.js'));?>"></script>
         <script type="text/javascript">
             $('.mp3').show();
             delete na.site.settings.loadingApps;
@@ -130,6 +134,7 @@ $view = $naWebOS->view;
 
             foreach ($filez as $file1 => $fileTitle)
                     break;
+            //exit;
         ?>
         <div style="float:right;height:500px;width:750px">
             <?php
@@ -139,7 +144,7 @@ $view = $naWebOS->view;
                 $fn = $naWebOS->path.$appFolder.'/beatPulse-0.1.0/index3.php';//?file='.str_replace(' ','%20',$file1).'&time=0';
                 //echo $fn;
                 $c = require_return ($fn);
-                echo '<div id="visualizer" style="width:100%;height:100%;border:none;">'.$c.'</div></div>';
+                echo '<div id="visualizer" style="width:100%;height:100%;border:none;">'.$c.'</div>';
             ?>
             <!--<iframe id="visualizer" style="width:100%;height:100%;border:none;" src=""></iframe>-->
         </div>
@@ -194,7 +199,7 @@ $view = $naWebOS->view;
                 load : function (url) {
 
                     var
-                    url = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/beatPulse-0.1.0/index3.php',
+                    url = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/beatPulse-0.1.0/index3.php',
                     ac = {
                         type : 'POST',
                         url : url,
@@ -210,7 +215,6 @@ $view = $naWebOS->view;
 
                         }
                     };
-                    debugger;
                     $.ajax(ac);
                 }
             };
@@ -219,16 +223,16 @@ $view = $naWebOS->view;
             <div id="mp3s" class="vividScrollpane noFlex naNoComments" type="vertical" theme="dark" style="wrap:inherit;overflow:hidden;overflow-y:auto;opacity:1;position:absolute;bottom:0px;text-align:center;width:auto;height:calc(100% - 520px);margin-top:20px;">
         <?php
 
-                    //echo '<pre>'; var_dump($filez); echo '</pre>';
+                    //echo '<pre>'; var_dump($filez); echo '</pre>'; exit;
 
 
                     $idx = 0;
                     foreach ($filez as $fn=>$fl) {
                         echo "\t\t".'<span id="mp3Div_'.$idx.'" class="mp3Div">'.PHP_EOL;
-                        echo "\t\t\t".'<a target="naMP3" id="aTag_'.$idx.'" href="javascript:na.music.load(\'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music'.$view['rp'].$fn.'\');" type="audio/mpeg" style="margin-left:20px;font-weight:bold">'.$fl.'</a>'.PHP_EOL;
-                        echo "\t\t\t".'<audio id="audioTag_'.$idx.'"  onplay="$(\'#audioTag_'.$idx.'\')[0].volume = 0.007; var timeInSeconds = $(\'#audioTag_'.$idx.'\')[0].currentTime; $(\'#visualizer\')[0].src=\''.$appFolder.'/beatPulse-0.1.0/index3.php?file=/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music'.$view['rp'].$fn.'&time=\'+timeInSeconds; $(\'.mp3Div\').removeClass(\'playing\');$(event.currentTarget.parentNode).removeClass(\'paused\').addClass(\'playing\');" onended="$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'paused\').addClass(\'ended\')" onpause="$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'ended\').addClass(\'paused\')" onunpause="$(event.currentTarget.parentNode).removeClass(\'paused\').removeClass(\'ended\').addClass(\'playing\')" style="display:flex;order:2;align-items:center;margin:10px;opacity:0.68" onseeked="var frameRef = $(\'#visualizer\')[0]; var audioEl = $(\'#audio\', frameRef.contentWindow ? frameRef.contentWindow.document : frameRef.contentDocument)[0]; audio.play(0); audio.currentTime = $(\'#audioTag_'.$idx.'\')[0].currentTime; event.preventDefault();" controls>'.PHP_EOL;
-                        //echo "\t\t\t".'<audio id="audioTag_'.$idx.'"  onplay="na.m.addLogEntry(\'naMP3 : Now playing : '.$view['rp'].$fn.'\',\'mp3Change_start\');$(\'#audioTag_'.$idx.'\')[0].volume = 1; var timeInSeconds = Math.floor($(\'#audioTag_'.$idx.'\')[0].currentTime); na.music.load(\'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music'.$view['rp'].$fn.'\'); $(\'.mp3Div\').removeClass(\'playing\');$(event.currentTarget.parentNode).removeClass(\'paused\').addClass(\'playing\');" onended="na.m.addLogEntry(\'naMP3 : Now ended : '.$view['rp'].$fn.'\',\'mp3Change_ended\');$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'paused\').addClass(\'ended\')" onpause="na.m.addLogEntry(\'naMP3 : Now pausing : '.$view['rp'].$fn.'\',\'mp3Change_pausing\');$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'ended\').addClass(\'paused\')" onunpause="na.m.addLogEntry(\'naMP3 : Now unpausing : '.$view['rp'].$fn.'\',\'mp3Change_unpausing\');$(event.currentTarget.parentNode).removeClass(\'paused\').removeClass(\'ended\').addClass(\'playing\')" style="display:flex;order:2;align-items:center;margin:10px;opacity:0.68" onseeked="na.m.addLogEntry(\'naMP3 : Now unpausing : '.$view['rp'].$fn.'\',\'mp3Change_onseeked\');$(\'#audioTag_'.$idx.'\')[0].volume = 0.007; var timeInSeconds = Math.floor($(\'#audioTag_'.$idx.'\')[0].currentTime); $(\'#visualizer\')[0].src=\''.$appFolder.'/beatPulse-0.1.0/index3.php?file=/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music'.$view['rp'].$fn.'&time=\'+timeInSeconds;" controls>'.PHP_EOL;
-                        echo "\t\t\t\t".'<source id="'.$idx.'" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.fancy.latest.2D/music'.$view['rp'].$fn.'" type="audio/mpeg"/>'.PHP_EOL;
+                        echo "\t\t\t".'<a target="naMP3" id="aTag_'.$idx.'" href="javascript:na.music.load(\'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/music'.$view['rp'].$fn.'\');" type="audio/mpeg" style="margin-left:20px;font-weight:bold">'.$fl.'</a>'.PHP_EOL;
+                        echo "\t\t\t".'<audio id="audioTag_'.$idx.'"  onplay="$(\'#audioTag_'.$idx.'\')[0].volume = 0.007; var timeInSeconds = $(\'#audioTag_'.$idx.'\')[0].currentTime; $(\'#visualizer\')[0].src=\''.$appFolder.'/beatPulse-0.1.0/index3.php?file=/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/music'.$view['rp'].$fn.'&time=\'+timeInSeconds; $(\'.mp3Div\').removeClass(\'playing\');$(event.currentTarget.parentNode).removeClass(\'paused\').addClass(\'playing\');" onended="$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'paused\').addClass(\'ended\')" onpause="$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'ended\').addClass(\'paused\')" onunpause="$(event.currentTarget.parentNode).removeClass(\'paused\').removeClass(\'ended\').addClass(\'playing\')" style="display:flex;order:2;align-items:center;margin:10px;opacity:0.68" onseeked="var frameRef = $(\'#visualizer\')[0]; var audioEl = $(\'#audio\', frameRef.contentWindow ? frameRef.contentWindow.document : frameRef.contentDocument)[0]; audio.play(0); audio.currentTime = $(\'#audioTag_'.$idx.'\')[0].currentTime; event.preventDefault();" controls>'.PHP_EOL;
+                        //echo "\t\t\t".'<audio id="audioTag_'.$idx.'"  onplay="na.m.addLogEntry(\'naMP3 : Now playing : '.$view['rp'].$fn.'\',\'mp3Change_start\');$(\'#audioTag_'.$idx.'\')[0].volume = 1; var timeInSeconds = Math.floor($(\'#audioTag_'.$idx.'\')[0].currentTime); na.music.load(\'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/music'.$view['rp'].$fn.'\'); $(\'.mp3Div\').removeClass(\'playing\');$(event.currentTarget.parentNode).removeClass(\'paused\').addClass(\'playing\');" onended="na.m.addLogEntry(\'naMP3 : Now ended : '.$view['rp'].$fn.'\',\'mp3Change_ended\');$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'paused\').addClass(\'ended\')" onpause="na.m.addLogEntry(\'naMP3 : Now pausing : '.$view['rp'].$fn.'\',\'mp3Change_pausing\');$(event.currentTarget.parentNode).removeClass(\'playing\').removeClass(\'ended\').addClass(\'paused\')" onunpause="na.m.addLogEntry(\'naMP3 : Now unpausing : '.$view['rp'].$fn.'\',\'mp3Change_unpausing\');$(event.currentTarget.parentNode).removeClass(\'paused\').removeClass(\'ended\').addClass(\'playing\')" style="display:flex;order:2;align-items:center;margin:10px;opacity:0.68" onseeked="na.m.addLogEntry(\'naMP3 : Now unpausing : '.$view['rp'].$fn.'\',\'mp3Change_onseeked\');$(\'#audioTag_'.$idx.'\')[0].volume = 0.007; var timeInSeconds = Math.floor($(\'#audioTag_'.$idx.'\')[0].currentTime); $(\'#visualizer\')[0].src=\''.$appFolder.'/beatPulse-0.1.0/index3.php?file=/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/music'.$view['rp'].$fn.'&time=\'+timeInSeconds;" controls>'.PHP_EOL;
+                        echo "\t\t\t\t".'<source id="'.$idx.'" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/music'.$view['rp'].$fn.'" type="audio/mpeg"/>'.PHP_EOL;
                         echo "\t\t\t".'</audio>'.PHP_EOL;
                         echo "\t\t".'</span>'.PHP_EOL;
                         $idx++;

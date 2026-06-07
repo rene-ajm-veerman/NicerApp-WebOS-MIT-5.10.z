@@ -6,8 +6,8 @@
     $debug_jsonViewer = false;
     global $debug;
 
-    $fp = $naRoot.'/NicerAppWebOS/siteCache/app.3D.fileBrowser.json';
-    $fp = $naWebOS->domainPath.'/siteCache/app.3D.fileBrowser.json';
+    $fp = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteCache/app.3D.fileBrowser.json';
+    //var_dump ($fp); echo PHP_EOL;
     //if (file_exists($fp)) unlink ($fp);
     if (file_exists($fp)) readfile($fp);
     else {

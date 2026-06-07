@@ -98,46 +98,7 @@ border-top: 1px solid #333;
     let historyIndex = -1;
     const MAX_HISTORY = 50;
 
-    function saveState(description = "State change") {
-        const state = {
-            timestamp: Date.now(),
-            description: description,
-
-            // Navigation
-            scrollY: window.scrollY,
-            activeItemId: document.querySelector('.active')?.id || null,
-
-            // Camera (customize these properties to match your viewer)
-            camera: window.currentCamera ? {
-                x: window.currentCamera.x ?? 0,
-                y: window.currentCamera.y ?? 0,
-                z: window.currentCamera.z ?? 0,
-                zoom: window.currentCamera.zoom ?? 1,
-                rotation: window.currentCamera.rotation
-                ? {
-                    x: window.currentCamera.rotation.x,
-                    y: window.currentCamera.rotation.y,
-                    z: window.currentCamera.rotation.z,
-                    order: window.currentCamera.rotation.order
-                }
-                : null,
-                pos : window.threed.graph.cameraPosition()
-            } : null
-        };
-
-        // Trim future history if we're not at the end
-        history.stack = history.stack.slice(0, historyIndex + 1);
-        history.stack.push(state);
-
-        if (history.stack.length > MAX_HISTORY) {
-            history.stack.shift();
-        }
-
-        historyIndex = history.stack.length - 1;
-        updateHistoryUI();
-    }
-
-    function restoreState(state) {
+        function restoreState(state) {
         if (!state) return;
 
         // Restore scroll
@@ -240,7 +201,7 @@ border-top: 1px solid #333;
                         item.style.fontWeight = 'bold';
                     }
 
-                    const label = state.description || state.action || `History ${i + 1}`;
+                    const label = state.d|| state.action || `History ${i + 1}`;
 
                     item.innerHTML = `<small style="color:#999;">${i+1}.</small> ${label}`;
 
@@ -355,7 +316,7 @@ border-top: 1px solid #333;
     }
 
     // Expose for easy calling from onclick_node() etc.
-    window.saveHistoryState = saveState;
+    window. istoryState = saveState;
     window.undo = undo;
     window.redo = redo;
 

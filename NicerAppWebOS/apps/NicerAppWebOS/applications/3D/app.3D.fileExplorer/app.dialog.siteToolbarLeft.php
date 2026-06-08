@@ -10,6 +10,15 @@
 </ul>
 </div>
 
+<div class="places-section">
+<div class="places-header">View</div>
+<ul id="places-locations" class="places-list">
+<li class="place-item" onclick="na.threed.switchView(event)"><input type="checkbox" id="checkbox_defaultView" class="checkbox_naThreeD_viewType" onclick="na.threed.switchView(event)" checked>Default</input></li>
+<li class="place-item" onclick="na.threed.switchView(event)"><input type="checkbox" id="checkbox_FibonnaciView" class="checkbox_naThreeD_viewType" onclick="na.threed.switchView(event)">Fibonacci</input></li>
+<li class="place-item" onclick="na.threed.switchView(event)"><input type="checkbox" id="checkbox_treeView" class="checkbox_naThreeD_viewType" onclick="na.threed.switchView(event)">Tree</input></li>
+<li class="place-item" onclick="na.threed.switchView(event)"><input type="checkbox" id="checkbox_bushView" class="checkbox_naThreeD_viewType" onclick="na.threed.switchView(event)">Bush</input></li>
+</ul>
+</div>
 
 
 <div class="places-section">

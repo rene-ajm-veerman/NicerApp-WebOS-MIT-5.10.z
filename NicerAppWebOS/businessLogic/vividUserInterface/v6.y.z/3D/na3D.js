@@ -1,8 +1,8 @@
 /*--- LICENSE : https://opensource.org/licenses/MIT
------ Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com), https://grok.com and https://claude.ai/chat
------
------ At https://nicer.app/3D and https://nicer.app/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js, i have a live copy runniing of https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/tree/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer and https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js i have data supplied by https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer/ajax_getBackgroundsRecursive.php
----*/
+ * ----- Copyright 2020-2026 by Rene AJM Veerman (rene.veerman.netherlands@gmail.com), https://grok.com and https://claude.ai/chat
+ * -----
+ * ----- At https://nicer.app/3D and https://nicer.app/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js, i have a live copy runniing of https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/tree/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer and https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/3D/na3D.js i have data supplied by https://github.com/rene-ajm-veerman/NicerApp-WebOS-MIT-5.10.z/blob/main/NicerAppWebOS/apps/NicerAppWebOS/applications/3D/app.3D.fileExplorer/ajax_getBackgroundsRecursive.php
+ * ---*/
 
 import * as three from '/NicerAppWebOS/3rd-party/3D/libs/three.js/build/three.module.js';
 import * as THREE from '/NicerAppWebOS/3rd-party/3D/libs/three.js/build/three.module.js';
@@ -16,21 +16,15 @@ import { RGBELoader } from "/NicerAppWebOS/3rd-party/3D/libs/three.js/examples/j
 import { DragControls } from "/NicerAppWebOS/3rd-party/3D/libs/three.js/examples/jsm/controls/DragControls.js";
 import { FlyControls } from "/NicerAppWebOS/3rd-party/3D/libs/three.js/examples/jsm/controls/FlyControls.js";
 import { FirstPersonControls } from "/NicerAppWebOS/3rd-party/3D/libs/three.js/examples/jsm/controls/FirstPersonControls.js";
-import gsap from "https://unpkg.com/gsap@3.12.2/index.js";
-import { CameraControls, approxZero } from '/NicerAppWebOS/3rd-party/3D/libs/three.js/camera-controls-dev/dist/camera-controls.module.js';// with {type:"module"};
-
-import { EffectComposer, BloomEffect, EffectPass, RenderPass }  from "https://esm.sh/postprocessing@latest";
-/*-- OPTIONAL : */
-//import { CSS2DRenderer, CSS2DObject } from 'https://esm.sh/three/examples/jsm/renderers/CSS2DRenderer.js';
-//import { UnrealBloomPass } from 'https://esm.sh/three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import SpriteText from "https://esm.sh/three-spritetext";
-
+import gsap from "https://cdn.jsdelivr.net/npm/gsap@3.12.2/index.js";
+import { EffectComposer, BloomEffect, EffectPass, RenderPass } from "https://esm.sh/postprocessing@6.36.3";
+import SpriteText from "https://esm.sh/three-spritetext@1.9.3";
 /*
-  import {
-    CSS2DRenderer,
-    CSS2DObject,
-  } from "https://unpkg.com/three@0.125.2/examples/jsm/renderers/CSS2DRenderer.js";
-*/
+ *  import {
+ *    CSS2DRenderer,
+ *    CSS2DObject,
+ *  } from "https://unpkg.com/three@0.125.2/examples/jsm/renderers/CSS2DRenderer.js";
+ */
 
 export class na3D_fileBrowser {
     constructor(el, parent, parameters) {
@@ -99,42 +93,42 @@ export class na3D_fileBrowser {
             },
 
             /* simple (2D like)
-            createParticles() {
-                const count = 1200;
-                const positions = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
+             *            createParticles() {
+             *                const count = 1200;
+             *                const positions = new Float32Array(count * 3);
+             *                const colors = new Float32Array(count * 3);
+             *
+             *                for (let i = 0; i < count * 3; i += 3) {
+             *                    const r = 18 + Math.random() * 35;
+             *                    const theta = Math.random() * Math.PI * 2;
+             *                    const phi = Math.acos(2 * Math.random() - 1);
+             *
+             *                    positions[i]     = r * Math.sin(phi) * Math.cos(theta);
+             *                    positions[i + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.6;
+             *                    positions[i + 2] = r * Math.cos(phi);
+             *
+             *                    colors[i]     = 0.1;
+             *                    colors[i + 1] = 0.7 + Math.random() * 0.3;
+             *                    colors[i + 2] = 1.0;
+        }
 
-                for (let i = 0; i < count * 3; i += 3) {
-                    const r = 18 + Math.random() * 35;
-                    const theta = Math.random() * Math.PI * 2;
-                    const phi = Math.acos(2 * Math.random() - 1);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-                    positions[i]     = r * Math.sin(phi) * Math.cos(theta);
-                    positions[i + 1] = r * Math.sin(phi) * Math.sin(theta) * 0.6;
-                    positions[i + 2] = r * Math.cos(phi);
+        const mat = new THREE.PointsMaterial({
+        size: 0.7,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthTest: false
+        });
 
-                    colors[i]     = 0.1;
-                    colors[i + 1] = 0.7 + Math.random() * 0.3;
-                    colors[i + 2] = 1.0;
-                }
-
-                const geo = new THREE.BufferGeometry();
-                geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-                geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-                const mat = new THREE.PointsMaterial({
-                    size: 0.7,
-                    vertexColors: true,
-                    transparent: true,
-                    opacity: 0.85,
-                    blending: THREE.AdditiveBlending,
-                    depthTest: false
-                });
-
-                this.particles = new THREE.Points(geo, mat);
-                this.visualGroup.add(this.particles);
-            },
-            */
+        this.particles = new THREE.Points(geo, mat);
+        this.visualGroup.add(this.particles);
+        },
+        */
 
             // Fibonacci sphere for particles :
             createParticles() {
@@ -192,7 +186,12 @@ export class na3D_fileBrowser {
 
             connectAudio(audioElement) {
                 if (!this.audioContext) {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    try {
+                        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    } catch(e) {
+                        console.warn('AudioContext failed (needs user gesture):', e);
+                        return; // bail gracefully, visualizer won't work until first tap
+                    }
                     this.analyser = this.audioContext.createAnalyser();
                     this.analyser.fftSize = 2048;
                     this.analyser.smoothingTimeConstant = 0.82;
@@ -276,12 +275,12 @@ export class na3D_fileBrowser {
             },
 
             /*
-            followNode(node) {
-                if (node?.__threeObj && this.visualGroup) {
-                    this.visualGroup.position.copy(node.__threeObj.position);
-                    this.visualGroup.position.y += 15;
-                }
-            }*/
+             *            followNode(node) {
+             *                if (node?.__threeObj && this.visualGroup) {
+             *                    this.visualGroup.position.copy(node.__threeObj.position);
+             *                    this.visualGroup.position.y += 15;
+        }
+        }*/
 
             followNode(node) {
                 if (!node || !this.visualGroup) return;
@@ -331,7 +330,7 @@ export class na3D_fileBrowser {
 
 
         t.debug = true;
-        
+
         t.autoRotate = false;
         t.showLines = false;
         t.showFiles = false;
@@ -423,21 +422,24 @@ export class na3D_fileBrowser {
         t.permaLines = []; // permanent lines, the lines that show all of the parent-child connections.
         t.s2 = []; // search array filled with the files and folders three.js models, used by raycaster.intersectObjects()
 
-        var 
+        var
         c = $.cookie("3DFDM_lineColors");
         if (typeof c=="string" && c!=="") {
             t.lineColors = JSON.parse(c);
         }
-        
+
         /*t.scene = new THREE.Scene();
-        t.scene.add(cube)
-        t.scene.add(new THREE.AxesHelper(5000))
-        t.graph.camera = new THREE.PerspectiveCamera( 90  , $(el).width() / $(el).height(), 0.01, 100*1000 );
+         *        t.scene.add(cube)
+         *        t.scene.add(new THREE.AxesHelper(5000))
+         *        t.graph.camera = new THREE.PerspectiveCamera( 90  , $(el).width() / $(el).height(), 0.01, 100*1000 );
+         *
+         *        t.graph.camera().rotation.order = 'YXZ';
+         */
 
-        t.graph.camera().rotation.order = 'YXZ';
-        */
-
-        t.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true, logarithmicDepthBuffer: true});
+        const testCanvas = document.createElement('canvas');
+        const gl = testCanvas.getContext('webgl');
+        const hasLogDepth = gl && !!gl.getExtension('EXT_frag_depth');
+        t.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, logarithmicDepthBuffer: hasLogDepth });
         t.renderer.physicallyCorrectLights = true;
         t.renderer.outputEncoding = THREE.sRGBEncoding;
         t.renderer.setSize( $(parent).width()-20, $(parent).height()-20);
@@ -680,23 +682,23 @@ export class na3D_fileBrowser {
                 var n = cit.data;
             }
             if (cit.data.files) var f = cit.data.files.sort();
-                else if (cit.data.folders) var f = cit.data.folders[n].files.sort();
-                    else if (cit.parent?.data?.folders) var f = cit.parent.data.folders[n].files.sort();
-                        else debugger;
+            else if (cit.data.folders) var f = cit.data.folders[n].files.sort();
+            else if (cit.parent?.data?.folders) var f = cit.parent.data.folders[n].files.sort();
+            else debugger;
             for (var i=0; i<f.length; i++) {
                 var file = ''+f[i];
                 if (file.match(/\.mp3$/)) {
                     var
                     path = cit.filepath
-                        .replace(/\/0\/filesAtRoot\/folders/, "")
-                        .replace(/\/folders/g,"")
-                        .replace('\/filesAtRoot','')
-                        .replace(/\/\//g,'/')
-                        .replace(/\'/g, '\\'),
+                    .replace(/\/0\/filesAtRoot\/folders/, "")
+                    .replace(/\/folders/g,"")
+                    .replace('\/filesAtRoot','')
+                    .replace(/\/\//g,'/')
+                    .replace(/\'/g, '\\'),
                     file2 = file
-                        .replace(/\-[\-\w]+\.mp3/, ".mp3")
-                        .replace('.mp3', '');
-                        html += '<div id="'+t.fid+'_'+j+'__'+cit.idx+'" class="vividButton" style="position:relative; font-size:small;" ><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
+                    .replace(/\-[\-\w]+\.mp3/, ".mp3")
+                    .replace('.mp3', '');
+                    html += '<div id="'+t.fid+'_'+j+'__'+cit.idx+'" class="vividButton" style="position:relative; font-size:small;" ><a href="#"><span>'+path+'/'+n+'/'+file2+'</span></a></div>';
                     j++;
                 }
             };
@@ -710,11 +712,11 @@ export class na3D_fileBrowser {
                     if (file.match(/\.mp3$/)) {
                         var
                         path = cit.filepath
-                            .replace(/\/0\/filesAtRoot\/folders/, "")
-                            .replace(/\/folders/g,"")
-                            .replace('\/filesAtRoot','')
-                            .replace(/\/\//g,'/')
-                            .replace(/\'/g, '\\'),
+                        .replace(/\/0\/filesAtRoot\/folders/, "")
+                        .replace(/\/folders/g,"")
+                        .replace('\/filesAtRoot','')
+                        .replace(/\/\//g,'/')
+                        .replace(/\'/g, '\\'),
                         id = '#'+t.fid+'_'+i+'__'+cit.idx,
                         el = $('a',$(id)[0])[0];
 
@@ -755,7 +757,7 @@ export class na3D_fileBrowser {
         setTimeout((t) => {
             na.threeD.audioVisualizer3D.init(window.threed || t);
             t.graph.refresh();           // or t.graph._d3ReheatSimulation?.();
-            t.graph.resumeAnimation?.()
+        t.graph.resumeAnimation?.()
         }, 100, t);
 
         console.time('timed 1_walk');
@@ -931,14 +933,14 @@ export class na3D_fileBrowser {
         //console.log ("initializeItems_walkValue", "cd", cd);
     }
 
-   onresize (t, levels) {
+    onresize (t, levels) {
         var t = this;
         //debugger;
         //t.onresize_do (t, levels);
         na.m.waitForCondition ("waiting for other onresize commands to finish",
-            function () { return na.d.s.animating === false },
-            function () { t.onresize_do (t, levels); },
-            50
+                               function () { return na.desktop.settings.animating === false },
+                               function () { t.onresize_do (t, levels); },
+                               50
         );
     }
 
@@ -956,7 +958,7 @@ export class na3D_fileBrowser {
 
         $('.na3D').css({
             width : $("#siteContent .vividDialogContent").width(),
-            height : $("#siteContent .vividDialogContent").height()
+                       height : $("#siteContent .vividDialogContent").height()
         });
 
         t.onresize_do_phase2 (t, callback);
@@ -1031,8 +1033,8 @@ export class na3D_fileBrowser {
         const height = t.el.clientHeight;
 
         if (t.graph) t.graph
-        .width(width)
-        .height(height);
+            .width(width)
+            .height(height);
 
         t.resizing = false;
 
@@ -1069,12 +1071,12 @@ export class na3D_fileBrowser {
         const relativeIndex = Math.floor((depth / maxDepth) * (colors.length - 1));
         return colors[Math.min(relativeIndex, colors.length - 1)];
 
-/*
-        var y = Math.min(depth, colors.length - 1);
-        var x = colors[y] || '#aaaaaa';
-        //return x;
-        //return colors[Math.min(Math.abs(colors.length*depth/100), colors.length - 1)] || '#aaaaaa';
-        return colors[depth % colors.length]*/
+        /*
+         *        var y = Math.min(depth, colors.length - 1);
+         *        var x = colors[y] || '#aaaaaa';
+         *        //return x;
+         *        //return colors[Math.min(Math.abs(colors.length*depth/100), colors.length - 1)] || '#aaaaaa';
+         *        return colors[depth % colors.length]*/
     }
 
     encodePath (str) {
@@ -1160,7 +1162,42 @@ export class na3D_fileBrowser {
         return t.items.filter(it => it.parent === item && (t.showFiles || it.name.indexOf('.')===-1));
     }
 
+
+    applyAutoRotate(t) {
+        const controls = t.graph?.controls();
+        if (!controls) return;
+
+        controls.target.set(0, 0, 0);        // always orbit origin, not camera focus point
+        controls.autoRotate      = t.autoRotate;
+        controls.autoRotateSpeed = 0.6;
+        controls.update();
+    }
+
+
+    switchView(evt) {
+        var t = this;
+        $('.checkbox_naThreeD_viewType').each(function(idx,el){
+            el.checked = false;
+        });
+        evt.currentTarget.checked = true;
+        $('input', evt.currentTarget)[0].checked = true;
+        if ($('input', evt.currentTarget)[0]) {
+            t.currentViewMode = $('input', evt.currentTarget)[0].id;
+        } else {
+            t.currentViewMode = evt.currentTarget.id;
+        }
+        t.switchView_doGraph();
+    }
+
+    switchView_doGraph() {
+        var t = this;
+        t.createGraph(t);
+    }
+
     async createGraph(t) {
+        var vm = t.currentViewMode;
+        debugger;
+
         if (t.graph) {
             t.graph._destructor?.();
             t.graph = null;
@@ -1202,6 +1239,7 @@ export class na3D_fileBrowser {
 
 
         const nodeMap = new Map(data.nodes.map(n => [n.id, n]));
+        t.nodeMap = nodeMap;
 
         // Find root
         const targetIds = new Set(validLinks.map(l => typeof l.target === 'object' ? l.target.id : l.target));
@@ -1261,129 +1299,237 @@ export class na3D_fileBrowser {
         // Cap angle based on number of level-1 sectors
         const capAngle = Math.PI / Math.sqrt(Math.max(level1Count, 1));
 
-        /*
-        // Position each level as Fibonacci caps
-        levels.forEach((levelNodes, levelIdx) => {
-            if (levelIdx === 0) return;
-
-            const totalCount = levelNodes.length;
-            //const r = Math.max(levelIdx * 25, Math.sqrt(totalCount) * 40);
-
-            // Use the item's actual level as distance from center
-            const itemLevel = levelNodes[0].item?.level ?? levelIdx;
-            const r = itemLevel * 1500;  // tune the 250 to taste
-
-            // Group by sector center
-            const bySector = new Map();
-            levelNodes.forEach(nodeId => {
-                const center = nodeSectorCenter.get(nodeId);
-                if (!center) return;
-                const key = `${center.x.toFixed(3)}_${center.y.toFixed(3)}`;
-                if (!bySector.has(key)) bySector.set(key, { center, nodes: [] });
-                bySector.get(key).nodes.push(nodeId);
+        if (
+            vm=='checkbox_treeView'
+            || vm=='checkbox_bushView'
+        ) {
+            const parentMap = new Map();
+            validLinks.forEach(link => {
+                const src = typeof link.source === 'object' ? link.source.id : link.source;
+                const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+                parentMap.set(tgt, src);
             });
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5));  // ~2.399963 rad
+            t.positionBushTree(t, levels, t.nodeMap, t.childMap, parentMap, goldenAngle);
+        } else if (vm=='checkbox_FibonnaciView') {
+            // Position each level as Fibonacci caps
+            levels.forEach((levelNodes, levelIdx) => {
+                if (levelIdx === 0) return;
 
-            bySector.forEach(({ center, nodes }) => {
-                // Sort alphabetically within sector
-                nodes.sort((a, b) =>
-                (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
-                );
+                const totalCount = levelNodes.length;
+                //const r = Math.max(levelIdx * 25, Math.sqrt(totalCount) * 40);
 
-                const count = nodes.length;
-                const cosCapAngle = Math.cos(capAngle);
+                // Use the item's actual level as distance from center
+                const itemLevel = levelNodes[0].item?.level ?? levelIdx;
+                const r = itemLevel * 750;  // tune the 250 to taste
 
-                // Two axes perpendicular to center for rotating Fibonacci onto cap
-                const right = normalize(cross(
-                    center,
-                    Math.abs(center.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 }
-                ));
-                const up = normalize(cross(right, center));
+                // Group by sector center
+                const bySector = new Map();
+                levelNodes.forEach(nodeId => {
+                    const center = nodeSectorCenter.get(nodeId);
+                    if (!center) return;
+                    const key = `${center.x.toFixed(3)}_${center.y.toFixed(3)}`;
+                    if (!bySector.has(key)) bySector.set(key, { center, nodes: [] });
+                    bySector.get(key).nodes.push(nodeId);
+                });
 
-                nodes.forEach((nodeId, i) => {
-                    const node = nodeMap.get(nodeId);
-                    if (!node) return;
+                bySector.forEach(({ center, nodes }) => {
+                    // Sort alphabetically within sector
+                    nodes.sort((a, b) =>
+                    (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                    );
 
-                    // Fibonacci on spherical cap — phi spans [0, capAngle]
-                    const phi   = Math.acos(1 - (1 - cosCapAngle) * (i + 0.5) / count);
-                    const theta = 2 * Math.PI * i / goldenRatio;
+                    const count = nodes.length;
+                    const cosCapAngle = Math.cos(capAngle);
 
-                    const sinPhi = Math.sin(phi);
-                    const cosPhi = Math.cos(phi);
+                    // Two axes perpendicular to center for rotating Fibonacci onto cap
+                    const right = normalize(cross(
+                        center,
+                        Math.abs(center.z) < 0.9 ? { x: 0, y: 0, z: 1 } : { x: 1, y: 0, z: 0 }
+                    ));
+                    const up = normalize(cross(right, center));
 
-                    // Rotate Fibonacci point onto cap centered at `center`
-                    const dir = {
-                        x: center.x * cosPhi + (Math.cos(theta) * right.x + Math.sin(theta) * up.x) * sinPhi,
-                              y: center.y * cosPhi + (Math.cos(theta) * right.y + Math.sin(theta) * up.y) * sinPhi,
-                              z: center.z * cosPhi + (Math.cos(theta) * right.z + Math.sin(theta) * up.z) * sinPhi,
-                    };
+                    nodes.forEach((nodeId, i) => {
+                        const node = nodeMap.get(nodeId);
+                        if (!node) return;
 
-                    node.x = node.fx = r * dir.x;
-                    node.y = node.fy = r * dir.y;
-                    node.z = node.fz = r * dir.z;
+                        // Fibonacci on spherical cap — phi spans [0, capAngle]
+                        const phi   = Math.acos(1 - (1 - cosCapAngle) * (i + 0.5) / count);
+                        const theta = 2 * Math.PI * i / goldenRatio;
+
+                        const sinPhi = Math.sin(phi);
+                        const cosPhi = Math.cos(phi);
+
+                        // Rotate Fibonacci point onto cap centered at `center`
+                        const dir = {
+                            x: center.x * cosPhi + (Math.cos(theta) * right.x + Math.sin(theta) * up.x) * sinPhi,
+                                  y: center.y * cosPhi + (Math.cos(theta) * right.y + Math.sin(theta) * up.y) * sinPhi,
+                                  z: center.z * cosPhi + (Math.cos(theta) * right.z + Math.sin(theta) * up.z) * sinPhi,
+                        };
+
+                        node.x = node.fx = r * dir.x;
+                        node.y = node.fy = r * dir.y;
+                        node.z = node.fz = r * dir.z;
+
+                        if (window.threed.audioVisualizer3D && t.currentNode && nodeId===t.currentNode.id) window.threed.audioVisualizer3D.followNode(t.currentNode);
+                    });
                 });
             });
-        });*/
+        } else {
 
-        // ── REPLACE the entire levels.forEach(…) positioning block ──────────────────
-        // (the block that starts with: levels.forEach((levelNodes, levelIdx) => {)
-        // and ends just before: function cross(a, b) {
-        // ── with this: ───────────────────────────────────────────────────────────────
-        const parentMap = new Map();
-        validLinks.forEach(link => {
-            const src = typeof link.source === 'object' ? link.source.id : link.source;
-            const tgt = typeof link.target === 'object' ? link.target.id : link.target;
-            parentMap.set(tgt, src);
-        });
-        const goldenAngle = Math.PI * (3 - Math.sqrt(5));  // ~2.399963 rad
-
-        // Position root
-        if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
-
-        // Per-parent Fibonacci sphere: iterate BFS level by level
-        levels.forEach((levelNodes, levelIdx) => {
-            if (levelIdx === 0) return;  // root already placed
-
-            // Group children by their parent
-            const byParent = new Map();
-            levelNodes.forEach(nodeId => {
-                const parentId = parentMap.get(nodeId);
-                if (parentId === undefined) return;
-                if (!byParent.has(parentId)) byParent.set(parentId, []);
-                byParent.get(parentId).push(nodeId);
+            // ── REPLACE the entire levels.forEach(…) positioning block ──────────────────
+            // (the block that starts with: levels.forEach((levelNodes, levelIdx) => {)
+            // and ends just before: function cross(a, b) {
+            // ── with this: ───────────────────────────────────────────────────────────────
+            const parentMap = new Map();
+            validLinks.forEach(link => {
+                const src = typeof link.source === 'object' ? link.source.id : link.source;
+                const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+                parentMap.set(tgt, src);
             });
+            const goldenAngle = Math.PI * (3 - Math.sqrt(5));  // ~2.399963 rad
 
-            byParent.forEach((children, parentId) => {
-                const parentNode = nodeMap.get(parentId);
-                if (!parentNode) return;
+            // Position root
+            if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
 
-                const count = children.length;
+            // Per-parent Fibonacci sphere: iterate BFS level by level
+            levels.forEach((levelNodes, levelIdx) => {
+                if (levelIdx === 0) return;  // root already placed
 
-                // Sphere radius scales with child count — tune the multiplier to taste
-                // Level 1 children of root use a larger radius so the big sphere stays prominent
-                const baseRadius = levelIdx === 1
-                ? Math.max(400, Math.sqrt(count) * 60)
-                : Math.max(80,  Math.sqrt(count) * 30);
+                // Group children by their parent
+                const byParent = new Map();
+                levelNodes.forEach(nodeId => {
+                    const parentId = parentMap.get(nodeId);
+                    if (parentId === undefined) return;
+                    if (!byParent.has(parentId)) byParent.set(parentId, []);
+                    byParent.get(parentId).push(nodeId);
+                });
 
-                // Sort for stable ordering
-                children.sort((a, b) =>
-                (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
-                );
+                byParent.forEach((children, parentId) => {
+                    const parentNode = nodeMap.get(parentId);
+                    if (!parentNode) return;
 
-                children.forEach((nodeId, i) => {
-                    const node = nodeMap.get(nodeId);
-                    if (!node) return;
+                    const count = children.length;
 
-                    // Fibonacci sphere around the parent position
-                    const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
-                    const theta = goldenAngle * i;
+                    // Sphere radius scales with child count — tune the multiplier to taste
+                    // Level 1 children of root use a larger radius so the big sphere stays prominent
+                    const baseRadius = levelIdx === 1
+                    ? Math.max(400, Math.sqrt(count) * 60)
+                    : Math.max(80,  Math.sqrt(count) * 30);
 
-                    node.x = node.fx = (parentNode.fx ?? parentNode.x ?? 0) + baseRadius * Math.sin(phi) * Math.cos(theta);
-                    node.y = node.fy = (parentNode.fy ?? parentNode.y ?? 0) + baseRadius * Math.sin(phi) * Math.sin(theta);
-                    node.z = node.fz = (parentNode.fz ?? parentNode.z ?? 0) + baseRadius * Math.cos(phi);
+                    // Sort for stable ordering
+                    children.sort((a, b) =>
+                    (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                    );
+
+                    children.forEach((nodeId, i) => {
+                        const node = nodeMap.get(nodeId);
+                        if (!node) return;
+
+                        // Fibonacci sphere around the parent position
+                        const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
+                        const theta = goldenAngle * i;
+
+                        node.x = node.fx = (parentNode.fx ?? parentNode.x ?? 0) + baseRadius * Math.sin(phi) * Math.cos(theta);
+                        node.y = node.fy = (parentNode.fy ?? parentNode.y ?? 0) + baseRadius * Math.sin(phi) * Math.sin(theta);
+                        node.z = node.fz = (parentNode.fz ?? parentNode.z ?? 0) + baseRadius * Math.cos(phi);
+
+                    });
                 });
             });
-        });
-        // ── end replacement ──────────────────────────────────────────────────────────
+            // ── end replacement ──────────────────────────────────────────────────────────
+            // ── Fibonacci sphere positioning with minimum radial distance ────────────────
+            const LEVEL_RADIUS_MULTIPLIER = 350; // tune: units of min distance per item.level unit
+
+            // Helper: ensure a node's (fx,fy,fz) is at least minR from origin,
+            // scaling outward along its existing direction. Returns true if moved.
+            function enforceMinRadius(node, minR) {
+                const x = node.fx ?? node.x ?? 0;
+                const y = node.fy ?? node.y ?? 0;
+                const z = node.fz ?? node.z ?? 0;
+                const r = Math.sqrt(x*x + y*y + z*z);
+                if (r < minR) {
+                    if (r < 0.001) {
+                        // Degenerate: place along +X axis
+                        node.x = node.fx = minR;
+                        node.y = node.fy = 0;
+                        node.z = node.fz = 0;
+                    } else {
+                        const scale = minR / r;
+                        node.x = node.fx = x * scale;
+                        node.y = node.fy = y * scale;
+                        node.z = node.fz = z * scale;
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+            // Position root
+            if (root) { root.x = root.fx = 0; root.y = root.fy = 0; root.z = root.fz = 0; }
+
+            // BFS level by level so parents are always positioned before children
+            levels.forEach((levelNodes, levelIdx) => {
+                if (levelIdx === 0) return; // root already placed
+
+                // Group children by their parent
+                const byParent = new Map();
+                levelNodes.forEach(nodeId => {
+                    const parentId = parentMap.get(nodeId);
+                    if (parentId === undefined) return;
+                    if (!byParent.has(parentId)) byParent.set(parentId, []);
+                    byParent.get(parentId).push(nodeId);
+                });
+
+                byParent.forEach((children, parentId) => {
+                    const parentNode = nodeMap.get(parentId);
+                    if (!parentNode) return;
+
+                    // ── Enforce minimum radius on the PARENT first ──────────────────────
+                    // so the whole child cluster inherits a valid anchor point
+                    const parentItem = parentNode.item;
+                    const parentLevel = parentItem?.level ?? 0;
+                    if (parentLevel > 0) {
+                        enforceMinRadius(parentNode, parentLevel * LEVEL_RADIUS_MULTIPLIER);
+                    }
+
+                    const count = children.length;
+
+                    // Sphere radius scales with child count
+                    const baseRadius = levelIdx === 1
+                    ? Math.max(400, Math.sqrt(count) * 60)
+                    : Math.max(80,  Math.sqrt(count) * 30);
+
+                    // Sort for stable ordering
+                    children.sort((a, b) =>
+                    (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                    );
+
+                    // Place children as a Fibonacci sphere centred on the (now corrected) parent
+                    children.forEach((nodeId, i) => {
+                        const node = nodeMap.get(nodeId);
+                        if (!node) return;
+
+                        const phi   = Math.acos(1 - 2 * (i + 0.5) / count);
+                        const theta = goldenAngle * i;
+
+                        node.x = node.fx = (parentNode.fx ?? parentNode.x ?? 0) + baseRadius * Math.sin(phi) * Math.cos(theta);
+                        node.y = node.fy = (parentNode.fy ?? parentNode.y ?? 0) + baseRadius * Math.sin(phi) * Math.sin(theta);
+                        node.z = node.fz = (parentNode.fz ?? parentNode.z ?? 0) + baseRadius * Math.cos(phi);
+
+                        // ── Enforce minimum radius on each child as well ─────────────────
+                        // catches any child that the Fibonacci sphere aimed back at center
+                        const childItem = node.item;
+                        const childLevel = childItem?.level ?? 0;
+                        if (childLevel > 0) {
+                            enforceMinRadius(node, childLevel * LEVEL_RADIUS_MULTIPLIER);
+                        }
+                        if (window.threed.audioVisualizer3D && t.currentNode && nodeId===t.currentNode.id) window.threed.audioVisualizer3D.followNode(t.currentNode);
+                    });
+                });
+            });
+            // ── end Fibonacci sphere positioning with minimum radius from center for all sublevels ─────────────────────────────────────────
+        }
 
         function cross(a, b) {
             return {
@@ -1398,321 +1544,556 @@ export class na3D_fileBrowser {
         }
 
 
-
-        t.graph = window.graph = ForceGraph3D();
-        t.graph(container);  // mount to DOM immediately
-
-        t.graph.d3Force('charge', null);
-        t.graph.d3Force('center', null);
-
-        t.graph
-        .pauseAnimation()
-        .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
-        .width(t.el.clientWidth || 1000)
-        .height(t.el.clientHeight || 700)
-        .dagMode('radialout')
-        //.dagLevelDistance(1000)
-        .nodeId('id')           // ← tell the library which field is the ID
-        .linkSource('source')
-        .linkTarget('target')
-
-        .nodeLabel(null)
-        .nodeOpacity(0.55)
-        .warmupTicks(0)
-        .cooldownTicks(0)
-        .cooldownTime(1000)
-        .nodeId('id')
-        .linkSource('source')
-        .linkTarget('target')
-        .nodeLabel('data')
-        .linkWidth(2)
-        .linkColor(() => 'rgba(200, 200, 255, 0.4)')
-        .nodeColor(n => {
-            if (n.data === 'Artists' || (n.item && n.item.name === 'Artists')) return '#ffff00';
-            return t.getHierarchicalColor(t, (n.item?.level ?? 0)/2 + 1);
-        })
-        .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
-        .d3AlphaDecay(0.02)        // slower cooling = more final spread
-        // === Custom Nodes & Links ===
-        /*
-         .nodeThreeObjectExtend(true)
-         .nodeThreeObject(node => {
-        //     //debugger;
-        //
-
-             const text = node.name != parseInt(node.name) ? node.name : node.data;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
-             const sprite = new SpriteText(text);
-             node.sprite = sprite;
-             sprite.color = 'rgba(255,255,255,0.7)';
-             sprite.textHeight = 5;
-             sprite.fontFace = 'Arial';
-             sprite.position.set(0, 18, 0);
-        //
-        //     // Optional: make sure it renders in front
-             sprite.material.depthWrite = false;
-             sprite.material.depthTest = false;
-        //
-        //     //t.graph.scene().add(sprite);
-             return sprite;
-
-         })
-         */
-        .nodeThreeObjectExtend(false)
-        .nodeThreeObject(null)
-
-        // Custom Link Labels
-        .linkThreeObjectExtend(false)
-        .linkThreeObject(null)
-        // === INTERACTIONS ===
-        .onNodeHover(node => {
-            t.currentHoverNode = node;
-
-            // Remove old hover label
-            if (t.hoverLabel) {
-                t.graph.scene().remove(t.hoverLabel);
-                t.hoverLabel.material.dispose();  // ← add this
-                t.hoverLabel = null;
-            };
-
-            if (!node) {
-                tooltip.style.display = 'none';
-                // Reset when hover ends
-                t.graph.nodeColor(n => {
-                    var depth = n?.item?.level ?? n.item.level ?? 0;
-                    depth = depth / 2 + 1;
-                    return t.getHierarchicalColor(t,depth);
-                });
-            } else {
-
-                var path = node.filepath
-                .replace(/\/0\/filesAtRoot\/folders/, "")
-                .replace(/\/folders/g,"")
-                .replace('\/filesAtRoot','')
-                .replace(/\/\//g,'/')
-                .replace(/\'/g, '\\');
-
-                // Fill content
-                tooltip.innerHTML = `
-                <div class="na-tooltip-icon">📁</div>
-                <div class="na-tooltip-name">${node.data}</div>
-                <div class="na-tooltip-path">${path ?? ''}</div>
-                `;
-
-                tooltip.style.display = 'block';
-
-                // Big hover label
-                //node.sprite.visibile = false;
-
-                //debugger;
-                /*
-                const text = (node.data!=parseInt(node.data)?node.data:node.name);//('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
-                t.hoverLabel = new SpriteText(text);
-                t.hoverLabel.color = '#ffff88';
-                t.hoverLabel.textHeight = 5;
-                t.hoverLabel.fontFace = 'Arial';
-                t.hoverLabel.fontWeight = 'bold';
-                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
-                t.hoverLabel.material.depthWrite = false;
-                t.hoverLabel.material.depthTest = false;
-                t.graph.scene().add(t.hoverLabel);
-                // t.graph.refresh();
-                */
-
-                // Get all nodes to highlight
-                const ancestors = t.getAllAncestors(node);
-                const descendants = t.getAllDescendants(t, node);
-                const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
-
-                t.graph
-                .nodeColor(n => {
-                    if (n === node) return '#ffff44';                    // hovered node
-
-                    var depth = n?.item?.level ?? n.item.level;
-                    depth = depth / 2 + 1;
-                    if (highlightedNodes.has(n.id)) { return t.getHierarchicalColor(t,depth); };
-                    return 'rgba(150,150,150,0.5)';
-
-                })
-                .linkColor(link => {
-                    const defaultColor = 'rgba(200,200,255,0.4)'
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return defaultColor;
-
-                    const hoveredAncestors = t.getAllAncestors(hovered);
-                    const sourceAncestors = t.getAllAncestors(link.source);
-                    if (sourceAncestors.size===0) return defaultColor;
-                    var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
-                    sourceDepth = Math.round(sourceDepth / 2) + 1;
-
-                    const targetAncestors = t.getAllAncestors(link.target);
-                    if (targetAncestors.size===0) return defaultColor;
-                    var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
-                    targetDepth = Math.round(targetDepth / 2) + 1;
-
-                    //const sourceDescendants = t.getAllDescendants(t, link.source);
-                    //const targetDescendants = t.getAllDescendants(t, link.target);
-
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-
-                    const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
-                    const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
-
-
-                    if (ancestors.has(sourceId) && ancestors.has(targetId)) {
-                        return t.getHierarchicalColor(t,sourceDepth);
-                    }
-                    // Direct children
-                    if (isDescendantLink) {
-                        return t.getHierarchicalColor(t,targetDepth);
-                    }
-
-                    return defaultColor;
-
-                })
-                .linkWidth(link => {
-                    const hovered = t.currentHoverNode;
-                    if (!hovered) return 1;
-
-                    const sourceId = link.source?.id ?? link.source;
-                    const targetId = link.target?.id ?? link.target;
-                    const hoverId  = hovered.id ?? hovered;
-                    const allRelated = new Set([...ancestors, ...descendants, hoverId]);
-
-                    if (allRelated.has(sourceId) && allRelated.has(targetId)) {
-                        return 4;
-                    } else {
-                        return 1;
-                    }
-                })
+        na.m.waitForCondition('ForceGraph3D JS loaded?', function () {
+            if (typeof ForceGraph3D === 'undefined') {
+                console.error('ForceGraph3D not loaded yet — check script load order');
+                return false;
             }
+            return true;
+        }, function () {
+
+            t.graph = window.graph = ForceGraph3D();
+            t.graph(container);  // mount to DOM immediately
+
+            t.graph.d3Force('charge', null);
+            t.graph.d3Force('center', null);
+
+            t.graph
+            .pauseAnimation()
+            .backgroundColor('rgba(0,0,0,0.22)')   // ← changed for visibility
+            .width(t.el.clientWidth || 1000)
+            .height(t.el.clientHeight || 700)
+            //.dagLevelDistance(1000)
+            .nodeId('id')           // ← tell the library which field is the ID
+            .linkSource('source')
+            .linkTarget('target')
+
+            .nodeLabel(null)
+            .nodeOpacity(0.55)
+            .warmupTicks(0)
+            .cooldownTicks(0)
+            .cooldownTime(0)
+            .nodeId('id')
+            .linkSource('source')
+            .linkTarget('target')
+            .nodeLabel('data')
+            .linkWidth(2)
+            .linkColor(() => 'rgba(200, 200, 255, 0.4)')
+            .nodeColor(n => {
+                return t.getHierarchicalColor(t, (n.item?.level ?? 0)/2 + 1);
+            })
+            .nodeRelSize(10)           // slightly bigger nodes so they don't get lost
+            .nodeRelSize(6)
+            .nodeVal(n => {
+                if (n._isTreeRoot) return 40;   // Tree roots: big
+                if (n._isTrunk)    return 20;   // Trunk nodes: medium
+                return 6;                        // Branch nodes: small
+            })
+            .nodeColor(n => {
+                if (n.item?.level === 0) return '#ffffff';         // root
+                if (n._isTreeRoot)       return '#ffdd00';         // tree roots: gold
+                if (n._isTrunk)          return '#ff8800';         // trunk: orange
+                const depth = (n.item?.level ?? 0) / 2 + 1;
+                return t.getHierarchicalColor(t, depth);           // branches: normal
+            })
+            .d3AlphaDecay(0.02)        // slower cooling = more final spread
+            // === Custom Nodes & Links ===
+            /*
+             *         .nodeThreeObjectExtend(true)
+             *         .nodeThreeObject(node => {
+             *        //     //debugger;
+             *        //
+             *
+             *             const text = node.name != parseInt(node.name) ? node.name : node.data;//`${node.filepath.replace(/\/\//g, '/')}/${node.data}`;
+             *             const sprite = new SpriteText(text);
+             *             node.sprite = sprite;
+             *             sprite.color = 'rgba(255,255,255,0.7)';
+             *             sprite.textHeight = 5;
+             *             sprite.fontFace = 'Arial';
+             *             sprite.position.set(0, 18, 0);
+             *        //
+             *        //     // Optional: make sure it renders in front
+             *             sprite.material.depthWrite = false;
+             *             sprite.material.depthTest = false;
+             *        //
+             *        //     //t.graph.scene().add(sprite);
+             *             return sprite;
+             *
         })
+        */
+            .nodeThreeObjectExtend(false)
+            .nodeThreeObject(null)
 
-        .onNodeClick(node => {
-            if (!node) return;
-            var t = this;
-            t.currentNode = node;
+            // Custom Link Labels
+            .linkThreeObjectExtend(false)
+            .linkThreeObject(null)
+            // === INTERACTIONS ===
+            .onNodeHover(node => {
+                t.currentHoverNode = node;
 
-            t.pushHistory(t, {
-                timestamp: Date.now(),
+                // Remove old hover label
+                if (t.hoverLabel) {
+                    t.graph.scene().remove(t.hoverLabel);
+                    t.hoverLabel.material.dispose();  // ← add this
+                    t.hoverLabel = null;
+                };
 
-                // Navigation
-                scrollY: window.scrollY,
-                activeItemId: document.querySelector('.active')?.id || null,
+                if (!node) {
+                    tooltip.style.display = 'none';
+                    // Reset when hover ends
+                    t.graph.nodeColor(n => {
+                        var depth = n?.item?.level ?? n.item.level ?? 0;
+                        depth = depth / 2 + 1;
+                        return t.getHierarchicalColor(t,depth);
+                    });
+                } else {
 
-                // Camera (customize these properties to match your viewer)
-                camera: window.currentCamera ? {
-                    x: window.currentCamera.x ?? 0,
-                    y: window.currentCamera.y ?? 0,
-                    z: window.currentCamera.z ?? 0,
-                    zoom: window.currentCamera.zoom ?? 1,
-                    rotation: window.currentCamera.rotation
-                    ? {
-                        x: window.currentCamera.rotation.x,
-                        y: window.currentCamera.rotation.y,
-                        z: window.currentCamera.rotation.z,
-                        order: window.currentCamera.rotation.order
-                    }
-                    : null,
-                    pos : window.threed.graph.cameraPosition()
-                } : null
-            }, `Before node clicked : ${node.data}`)
+                    var path = node.filepath
+                    .replace(/\/0\/filesAtRoot\/folders/, "")
+                    .replace(/\/folders/g,"")
+                    .replace('\/filesAtRoot','')
+                    .replace(/\/\//g,'/')
+                    .replace(/\'/g, '\\');
 
-            const distance = 180;
-            const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
+                    // Fill content
+                    tooltip.innerHTML = `
+                    <div class="na-tooltip-icon">📁</div>
+                    <div class="na-tooltip-name">${node.data}</div>
+                    <div class="na-tooltip-path">${path ?? ''}</div>
+                    `;
 
-            // If node is at/near origin, approach from current camera direction
-            if (nodeDistance < 1) {
-                t.graph.cameraPosition(
-                    { x: distance, y: distance, z: distance },
-                    { x: 0, y: 0, z: 0 },
-                    1600
-                );
-            } else {
-                const distRatio = 1 + distance / nodeDistance;
-                t.graph.cameraPosition(
-                    {
-                        x: (node.x || 0) * distRatio,
-                                       y: (node.y || 0) * distRatio,
-                                       z: (node.z || 0) * distRatio
-                    },
-                    node,
-                    1600
-                );
-            }
+                    tooltip.style.display = 'block';
 
-            setTimeout (function(node) {
+                    // Big hover label
+                    //node.sprite.visibile = false;
+
+                    //debugger;
+                    /*
+                     *                const text = (node.data!=parseInt(node.data)?node.data:node.name);//('.'+(node?.item?.filepath.replace(/\/\//g,'./') || '') + '/' + node.name).replace('..','.');
+                     *                t.hoverLabel = new SpriteText(text);
+                     *                t.hoverLabel.color = '#ffff88';
+                     *                t.hoverLabel.textHeight = 5;
+                     *                t.hoverLabel.fontFace = 'Arial';
+                     *                t.hoverLabel.fontWeight = 'bold';
+                     *                t.hoverLabel.position.set(node.x, node.y + 18, node.z);
+                     *                t.hoverLabel.material.depthWrite = false;
+                     *                t.hoverLabel.material.depthTest = false;
+                     *                t.graph.scene().add(t.hoverLabel);
+                     *                // t.graph.refresh();
+                     */
+
+                    // Get all nodes to highlight
+                    const ancestors = t.getAllAncestors(node);
+                    const descendants = t.getAllDescendants(t, node);
+                    const highlightedNodes = new Set([...ancestors, ...descendants, node.id || node]);
+
+                    t.graph
+                    .nodeColor(n => {
+                        if (n === node) return '#ffff44';                    // hovered node
+
+                        var depth = n?.item?.level ?? n.item.level;
+                        depth = depth / 2 + 1;
+                        if (highlightedNodes.has(n.id)) { return t.getHierarchicalColor(t,depth); };
+                        return 'rgba(150,150,150,0.5)';
+
+                    })
+                    .linkColor(link => {
+                        const defaultColor = 'rgba(200,200,255,0.4)'
+                        const hovered = t.currentHoverNode;
+                        if (!hovered) return defaultColor;
+
+                        const hoveredAncestors = t.getAllAncestors(hovered);
+                        const sourceAncestors = t.getAllAncestors(link.source);
+                        if (sourceAncestors.size===0) return defaultColor;
+                        var sourceDepth = t.items[Array.from(sourceAncestors)[sourceAncestors.size-1]].level ?? 0;
+                        sourceDepth = Math.round(sourceDepth / 2) + 1;
+
+                        const targetAncestors = t.getAllAncestors(link.target);
+                        if (targetAncestors.size===0) return defaultColor;
+                        var targetDepth = t.items[Array.from(targetAncestors)[targetAncestors.size-1]].level ?? 0;
+                        targetDepth = Math.round(targetDepth / 2) + 1;
+
+                        //const sourceDescendants = t.getAllDescendants(t, link.source);
+                        //const targetDescendants = t.getAllDescendants(t, link.target);
+
+                        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+
+                        const isAncestorLink =  ancestors.has(sourceId) && ancestors.has(targetId);
+                        const isDescendantLink = descendants.has(sourceId) && descendants.has(targetId);
+
+
+                        if (ancestors.has(sourceId) && ancestors.has(targetId)) {
+                            return t.getHierarchicalColor(t,sourceDepth);
+                        }
+                        // Direct children
+                        if (isDescendantLink) {
+                            return t.getHierarchicalColor(t,targetDepth);
+                        }
+
+                        return defaultColor;
+
+                    })
+                    .linkWidth(link => {
+                        const hovered = t.currentHoverNode;
+                        if (!hovered) return 1;
+
+                        const sourceId = link.source?.id ?? link.source;
+                        const targetId = link.target?.id ?? link.target;
+                        const hoverId  = hovered.id ?? hovered;
+                        const allRelated = new Set([...ancestors, ...descendants, hoverId]);
+
+                        if (allRelated.has(sourceId) && allRelated.has(targetId)) {
+                            return 4;
+                        } else {
+                            return 1;
+                        }
+                    })
+                }
+            })
+
+            .onNodeClick(node => {
+                if (!node) return;
+                var t = na.threed;
+                t.currentNode = node;
+
                 t.pushHistory(t, {
                     timestamp: Date.now(),
 
-                    // Navigation
-                    scrollY: window.scrollY,
-                    activeItemId: document.querySelector('.active')?.id || null,
+                              // Navigation
+                              scrollY: window.scrollY,
+                              activeItemId: document.querySelector('.active')?.id || null,
 
-                    // Camera (customize these properties to match your viewer)
-                    camera: window.currentCamera ? {
-                        x: window.currentCamera.x ?? 0,
-                        y: window.currentCamera.y ?? 0,
-                        z: window.currentCamera.z ?? 0,
-                        zoom: window.currentCamera.zoom ?? 1,
-                        rotation: window.currentCamera.rotation
-                        ? {
-                            x: window.currentCamera.rotation.x,
-                            y: window.currentCamera.rotation.y,
-                            z: window.currentCamera.rotation.z,
-                            order: window.currentCamera.rotation.order
-                        }
-                        : null,
-                        pos : window.threed.graph.cameraPosition()
-                    } : null
-                }, `After node clicked : ${node.data}`)
-            }, 1700, node);
-            if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
-        })
-        .nodeLabel('')           // disable built-in tooltip entirely
+                              // Camera (customize these properties to match your viewer)
+                              camera: window.currentCamera ? {
+                                  x: window.currentCamera.x ?? 0,
+                                  y: window.currentCamera.y ?? 0,
+                                  z: window.currentCamera.z ?? 0,
+                                  zoom: window.currentCamera.zoom ?? 1,
+                                  rotation: window.currentCamera.rotation
+                                  ? {
+                                      x: window.currentCamera.rotation.x,
+                                      y: window.currentCamera.rotation.y,
+                                      z: window.currentCamera.rotation.z,
+                                      order: window.currentCamera.rotation.order
+                                  }
+                                  : null,
+                                  pos : window.threed.graph.cameraPosition()
+                              } : null
+                }, `Before node clicked : ${node.data}`)
 
-        .graphData({ nodes: data.nodes, links: validLinks })
+                const distance = 180;
+                const nodeDistance = Math.hypot(node.x || 0, node.y || 0, node.z || 0);
 
-        .numDimensions(3);
+                // If node is at/near origin, approach from current camera direction
+                if (nodeDistance < 1) {
+                    t.graph.cameraPosition(
+                        { x: distance, y: distance, z: distance },
+                        { x: 0, y: 0, z: 0 },
+                        1600
+                    );
+                } else {
+                    const distRatio = 1 + distance / nodeDistance;
+                    t.graph.cameraPosition(
+                        {
+                            x: (node.x || 0) * distRatio,
+                                           y: (node.y || 0) * distRatio,
+                                           z: (node.z || 0) * distRatio
+                        },
+                        node,
+                        1600
+                    );
+                }
 
+                setTimeout (function(node) {
+                    t.pushHistory(t, {
+                        timestamp: Date.now(),
 
-        // Move tooltip on mousemove — offset ABOVE the cursor
-        const tooltip = document.createElement('div');
-        tooltip.className = 'na-node-tooltip';
-        tooltip.style.display = 'none';
-        document.body.appendChild(tooltip);
+                                  // Navigation
+                                  scrollY: window.scrollY,
+                                  activeItemId: document.querySelector('.active')?.id || null,
 
-        document.addEventListener('mousemove', e => {
-            if (tooltip.style.display === 'none') return;
-            const w = tooltip.offsetWidth;
-            const h = tooltip.offsetHeight;
-            // Position above and horizontally centered on cursor
-            tooltip.style.left = (e.clientX - w / 2) + 'px';
-            tooltip.style.top  = (e.clientY - h - 24) + 'px';  // 24px above cursor tip
-        });
+                                  // Camera (customize these properties to match your viewer)
+                                  camera: window.currentCamera ? {
+                                      x: window.currentCamera.x ?? 0,
+                                      y: window.currentCamera.y ?? 0,
+                                      z: window.currentCamera.z ?? 0,
+                                      zoom: window.currentCamera.zoom ?? 1,
+                                      rotation: window.currentCamera.rotation
+                                      ? {
+                                          x: window.currentCamera.rotation.x,
+                                          y: window.currentCamera.rotation.y,
+                                          z: window.currentCamera.rotation.z,
+                                          order: window.currentCamera.rotation.order
+                                      }
+                                      : null,
+                                      pos : window.threed.graph.cameraPosition()
+                                  } : null
+                    }, `After node clicked : ${node.data}`)
+                }, 1700, node);
+                if (typeof t.onclick_node === 'function') t.onclick_node(t, node);
+            })
+            .nodeLabel('')           // disable built-in tooltip entirely
 
-        // Access the underlying d3 simulation and stop it cold after 1 tick
-        const sim = t.graph.d3Force('charge')?.strength ? t.graph : null;
-        t.graph.d3Force('charge', null);
-        t.graph.d3Force('center', null);
-        //t.graph.d3ReheatSimulation();
+            .graphData({ nodes: data.nodes, links: validLinks })
 
-        window.currentCamera = t.graph.camera();
-        t.setupFlightControls(t);
+            .numDimensions(3);
 
-        console.time('timed 5_resumeAnimation');
-        t.graph.resumeAnimation();
-        console.timeEnd('timed 5_resumeAnimation');
+            if (vm !== 'checkbox_bushView' && vm !== 'checkbox_treeView') {
+                t.graph.dagMode('radialout');
+            } else {
+                t.graph.dagMode(null);    // ← critical: let your fx/fy/fz positions win
+                t.graph.d3Force('link', null);
+            }
 
-        console.log('stats : dagMode:', t.graph.dagMode());
-        console.log('stats : charge force:', t.graph.d3Force('charge'));
+            // Move tooltip on mousemove — offset ABOVE the cursor
+            const tooltip = document.createElement('div');
+            tooltip.className = 'na-node-tooltip';
+            tooltip.style.display = 'none';
+            document.body.appendChild(tooltip);
 
-        setTimeout(() => {
-            t.graph.zoomToFit(1000, 50);  // 1000ms transition, 50px padding
-        }, 500);
+            document.addEventListener('mousemove', e => {
+                if (tooltip.style.display === 'none') return;
+                const w = tooltip.offsetWidth;
+                const h = tooltip.offsetHeight;
+                // Position above and horizontally centered on cursor
+                tooltip.style.left = (e.clientX - w / 2) + 'px';
+                tooltip.style.top  = (e.clientY - h - 24) + 'px';  // 24px above cursor tip
+            });
+
+            // Access the underlying d3 simulation and stop it cold after 1 tick
+            const sim = t.graph.d3Force('charge')?.strength ? t.graph : null;
+            t.graph.d3Force('charge', null);
+            t.graph.d3Force('center', null);
+            //t.graph.d3ReheatSimulation();
+
+            window.currentCamera = t.graph.camera();
+            t.setupFlightControls(t);
+
+            console.time('timed 5_resumeAnimation');
+            t.graph.resumeAnimation();
+            console.timeEnd('timed 5_resumeAnimation');
+
+            console.log('stats : dagMode:', t.graph.dagMode());
+            console.log('stats : charge force:', t.graph.d3Force('charge'));
+
+            setTimeout(() => {
+                t.graph.zoomToFit(1000, 50);  // 1000ms transition, 50px padding
+            }, 500);
+
+        }, 200);
     }
 
+    positionBushTree(t, levels, nodeMap, childMap, parentMap, goldenAngle) {
+
+        // ── Tuning ────────────────────────────────────────────────────────────────
+        const BUSH_RADIUS      = 4000;  // much further apart — was 1800
+        const TREE_RING_RADIUS =  600;  // wider ring — was 320
+        const TRUNK_STEP_Y     =  300;  // taller trunk steps — was 180
+        const TRUNK_LEAN       = 0.12;  // slightly more lean — was 0.08
+        const BRANCH_LENGTH    =  250;  // longer branches — was 120
+        const BRANCH_SPREAD    =  2.2;  // wider fan — was 1.8
+        const BRANCH_DROOP_Y   = -0.08; // less droop — was -0.15
+        // ─────────────────────────────────────────────────────────────────────────
+
+        function cross3(a, b) {
+            return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
+        }
+        function normalize3(v) {
+            const len = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+            return len < 0.0001 ? { x: 0, y: 1, z: 0 } : { x: v.x/len, y: v.y/len, z: v.z/len };
+        }
+
+        // Root at origin
+        const rootId  = levels[0]?.[0];
+        const rootNode = nodeMap.get(rootId);
+        if (rootNode) { rootNode.fx = rootNode.x = 0; rootNode.fy = rootNode.y = 0; rootNode.fz = rootNode.z = 0; }
+
+        // ── Step 1 : Bush nodes (level-1, e.g. /music) on a Fibonacci sphere ─────
+        // The Bush NODE IS the bush — its position is the bush center.
+        const bushIds  = levels[1] ?? [];
+        const bushCount = bushIds.length;
+
+        bushIds.forEach((bushId, i) => {
+            const phi   = Math.acos(1 - 2 * (i + 0.5) / Math.max(bushCount, 1));
+            const theta = goldenAngle * i;
+
+            const bx = BUSH_RADIUS * Math.sin(phi) * Math.cos(theta);
+            const by = BUSH_RADIUS * Math.sin(phi) * Math.sin(theta);
+            const bz = BUSH_RADIUS * Math.cos(phi);
+
+            const bushNode = nodeMap.get(bushId);
+            if (bushNode) { bushNode.fx = bushNode.x = bx; bushNode.fy = bushNode.y = by; bushNode.fz = bushNode.z = bz; }
+
+            // ── Step 2 : Tree nodes (level-2, e.g. /music/Artists) ───────────────
+            // Placed in a ring around the Bush node, in the plane perpendicular
+            // to the radial direction from origin → Bush.
+            const bushDir = normalize3({ x: bx, y: by, z: bz });
+            const right3  = normalize3(cross3(
+                Math.abs(bushDir.y) < 0.9 ? { x: 0, y: 1, z: 0 } : { x: 1, y: 0, z: 0 },
+                                              bushDir
+            ));
+            const fwd3    = normalize3(cross3(bushDir, right3));
+
+            const treeIds  = childMap.get(bushId) ?? [];
+            const treeCount = treeIds.length;
+
+            treeIds.forEach((treeId, ti) => {
+                const angle = (2 * Math.PI * ti) / Math.max(treeCount, 1);
+
+                const tx = bx + TREE_RING_RADIUS * (Math.cos(angle) * right3.x + Math.sin(angle) * fwd3.x);
+                const ty = by + TREE_RING_RADIUS * (Math.cos(angle) * right3.y + Math.sin(angle) * fwd3.y);
+                const tz = bz + TREE_RING_RADIUS * (Math.cos(angle) * right3.z + Math.sin(angle) * fwd3.z);
+
+                const treeNode = nodeMap.get(treeId);
+                if (treeNode) {
+                    treeNode.fx = treeNode.x = tx;
+                    treeNode.fy = treeNode.y = ty;
+                    treeNode.fz = treeNode.z = tz;
+                    treeNode._isTrunk = true;
+                    treeNode._isTreeRoot = true;
+                }
+
+                // Lean direction = away from Bush center, in the ring plane
+                const leanLen = Math.sqrt((tx-bx)**2 + (tz-bz)**2) || 1;
+                const leanDirX = (tx - bx) / leanLen;
+                const leanDirZ = (tz - bz) / leanLen;
+
+                // ── Step 3 : Trunk + Branches grow from each Tree node upward ────
+                t.positionTrunk(
+                    t, treeId,
+                    { x: tx, y: ty, z: tz },
+                    leanDirX, leanDirZ,
+                    bushDir,
+                    t.nodeMap, t.childMap,
+                    TRUNK_STEP_Y, TRUNK_LEAN,
+                    BRANCH_LENGTH, BRANCH_SPREAD, BRANCH_DROOP_Y
+                );            });
+        });
+    }
+    positionTrunk(t, trunkRootId, origin, leanDirX, leanDirZ,
+                  outDir,                // ← new: normalized direction away from scene center
+                  nodeMap, childMap,
+                  TRUNK_STEP_Y, TRUNK_LEAN,
+                  BRANCH_LENGTH, BRANCH_SPREAD, BRANCH_DROOP_Y) {
+
+        // Two axes perpendicular to outDir — used for branch fanning
+        function cross3(a, b) {
+            return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
+        }
+        function normalize3(v) {
+            const len = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+            return len < 0.0001 ? { x: 0, y: 1, z: 0 } : { x: v.x/len, y: v.y/len, z: v.z/len };
+        }
+
+        // Build two axes perpendicular to outDir for the branch fan plane
+        const branchRight = normalize3(cross3(
+            Math.abs(outDir.y) < 0.9 ? { x: 0, y: 1, z: 0 } : { x: 1, y: 0, z: 0 },
+                                              outDir
+        ));
+        const branchUp = normalize3(cross3(outDir, branchRight));
+
+        let currentId = trunkRootId;
+
+        while (true) {
+            const children = (childMap.get(currentId) ?? []).slice();
+            if (children.length === 0) break;
+
+            // Trunk spine = child with most descendants
+            children.sort((a, b) => {
+                const aCount = (childMap.get(a) ?? []).length;
+                const bCount = (childMap.get(b) ?? []).length;
+                return bCount - aCount ||
+                (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '');
+            });
+
+            const nextTrunkId = children[0];
+            const trunkNode   = nodeMap.get(nextTrunkId);
+            if (!trunkNode) break;
+
+            const parentNode = nodeMap.get(currentId);
+            const px = parentNode?.fx ?? parentNode?.x ?? origin.x;
+            const py = parentNode?.fy ?? parentNode?.y ?? origin.y;
+            const pz = parentNode?.fz ?? parentNode?.z ?? origin.z;
+
+            // Step outward along outDir (+ tiny lean in branchRight for visual interest)
+            trunkNode.fx = trunkNode.x = px + outDir.x * TRUNK_STEP_Y + branchRight.x * TRUNK_LEAN * TRUNK_STEP_Y;
+            trunkNode.fy = trunkNode.y = py + outDir.y * TRUNK_STEP_Y + branchRight.y * TRUNK_LEAN * TRUNK_STEP_Y;
+            trunkNode.fz = trunkNode.z = pz + outDir.z * TRUNK_STEP_Y + branchRight.z * TRUNK_LEAN * TRUNK_STEP_Y;
+            trunkNode._isTrunk = true;
+
+            // Branches fan out in the branchRight/branchUp plane (perpendicular to trunk)
+            const branchChildren = children.slice(1);
+            const bCount = branchChildren.length;
+
+            if (bCount > 0) {
+                branchChildren.forEach((branchId, bi) => {
+                    const branchNode = nodeMap.get(branchId);
+                    if (!branchNode) return;
+
+                    const fanFraction = bCount === 1 ? 0 : (bi / (bCount - 1)) - 0.5;
+                    const angle       = fanFraction * BRANCH_SPREAD;
+                    const branchScale = 1 + Math.abs(fanFraction) * 0.4;
+
+                    // Fan in the plane perpendicular to outDir
+                    const fanX = Math.cos(angle) * branchRight.x + Math.sin(angle) * branchUp.x;
+                    const fanY = Math.cos(angle) * branchRight.y + Math.sin(angle) * branchUp.y;
+                    const fanZ = Math.cos(angle) * branchRight.z + Math.sin(angle) * branchUp.z;
+
+                    // Add a slight backward droop (toward origin) instead of Y droop
+                    branchNode.fx = branchNode.x = trunkNode.fx + fanX * BRANCH_LENGTH * branchScale + outDir.x * BRANCH_DROOP_Y * BRANCH_LENGTH;
+                    branchNode.fy = branchNode.y = trunkNode.fy + fanY * BRANCH_LENGTH * branchScale + outDir.y * BRANCH_DROOP_Y * BRANCH_LENGTH;
+                    branchNode.fz = branchNode.z = trunkNode.fz + fanZ * BRANCH_LENGTH * branchScale + outDir.z * BRANCH_DROOP_Y * BRANCH_LENGTH;
+
+                    t.positionBranchChildren(
+                        t, branchId, angle, outDir, branchRight, branchUp,
+                        { x: branchNode.fx, y: branchNode.fy, z: branchNode.fz },
+                        nodeMap, childMap,
+                        BRANCH_LENGTH * 0.65, BRANCH_SPREAD * 0.7, BRANCH_DROOP_Y * 1.3,
+                        0
+                    );
+                });
+            }
+
+            currentId = nextTrunkId;
+        }
+                  }
+                  positionBranchChildren(t, parentId, parentAngle, outDir, branchRight, branchUp,
+                                         parentPos, nodeMap, childMap,
+                                         branchLen, branchSpread, droopY, depth) {
+                      if (depth > 4) return;
+
+                      const children = (childMap.get(parentId) ?? []).slice().sort((a, b) =>
+                      (nodeMap.get(a)?.name ?? '').localeCompare(nodeMap.get(b)?.name ?? '')
+                      );
+                      if (children.length === 0) return;
+
+                      children.forEach((childId, ci) => {
+                          const childNode = nodeMap.get(childId);
+                          if (!childNode) return;
+
+                          const fanFraction = children.length === 1 ? 0 : (ci / (children.length - 1)) - 0.5;
+                          const angle       = parentAngle + fanFraction * branchSpread;
+                          const scale       = 1 + Math.abs(fanFraction) * 0.35;
+
+                          const fanX = Math.cos(angle) * branchRight.x + Math.sin(angle) * branchUp.x;
+                          const fanY = Math.cos(angle) * branchRight.y + Math.sin(angle) * branchUp.y;
+                          const fanZ = Math.cos(angle) * branchRight.z + Math.sin(angle) * branchUp.z;
+
+                          childNode.fx = childNode.x = parentPos.x + fanX * branchLen * scale + outDir.x * droopY * branchLen;
+                          childNode.fy = childNode.y = parentPos.y + fanY * branchLen * scale + outDir.y * droopY * branchLen;
+                          childNode.fz = childNode.z = parentPos.z + fanZ * branchLen * scale + outDir.z * droopY * branchLen;
+
+                          t.positionBranchChildren(
+                              t, childId, angle, outDir, branchRight, branchUp,
+                              { x: childNode.fx, y: childNode.fy, z: childNode.fz },
+                              nodeMap, childMap,
+                              branchLen * 0.65, branchSpread * 0.75, droopY * 1.2,
+                              depth + 1
+                          );
+                      });
+                                         }
 
     setupFlightControls(t) {
         const container = t.el;
@@ -1732,6 +2113,7 @@ export class na3D_fileBrowser {
         const startFlying = (direction) => {
             if (flyInterval) return;
             flyInterval = setInterval(() => {
+                na.threeD.autoRotate = !na.threeD.autoRotate; na.threeD.applyAutoRotate(na.threeD)
                 const camera = t.graph.camera();
                 const forward = getForwardVector();
                 const delta = forward.multiplyScalar(FLY_SPEED * direction);
@@ -1756,6 +2138,7 @@ export class na3D_fileBrowser {
                 clearTimeout(holdTimer);
                 holdTimer = null;
             }
+            na.threeD.autoRotate = !na.threeD.autoRotate; na.threeD.applyAutoRotate(na.threeD);
             mouseButton = null;
         };
 
@@ -1800,6 +2183,21 @@ export class na3D_fileBrowser {
                 { x: (pos?.lookAt?.x ?? 0) + delta.x, y: (pos?.lookAt?.y ?? 0) + delta.y, z: (pos?.lookAt?.z ?? 0) + delta.z }
             );
         }, { passive: false });
+
+
+        // Alongside mousedown:
+        container.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            // treat as equivalent to mousedown with button 0
+            mouseButton = 0;
+            holdTimer = setTimeout(() => startFlying(1), HOLD_THRESHOLD);
+        }, { passive: true });
+
+        container.addEventListener('touchend', stopFlying);
+        container.addEventListener('touchmove', (e) => {
+            // map touch delta to camera pan
+        }, { passive: true });
+
 
         // After graph is created, unlock the internal OrbitControls
         const internalControls = t.graph.controls();
@@ -1878,22 +2276,22 @@ export class na3D_fileBrowser {
 
             // Only create link if parent is also visible
             /*if (item.parent && item.parent.idx !== undefined && visibleIdxSet.has(item.parent.idx)) {
-                links.push({
-                    source: item.parent.idx,
-                    target: item.idx
-                });
-            }
-            // If parent is NOT visible, walk up until we find one that is
-            else if (item.parent && item.parent.idx !== undefined && !visibleIdxSet.has(item.parent.idx)) {
-                let ancestor = item.parent.parent;
-                while (ancestor) {
-                    if (visibleIdxSet.has(ancestor.idx)) {
-                        links.push({ source: ancestor.idx, target: item.idx });
-                        break;
-                    }
-                    ancestor = ancestor.parent;
-                }
-            }*/
+             *                links.push({
+             *                    source: item.parent.idx,
+             *                    target: item.idx
+        });
+        }
+        // If parent is NOT visible, walk up until we find one that is
+        else if (item.parent && item.parent.idx !== undefined && !visibleIdxSet.has(item.parent.idx)) {
+            let ancestor = item.parent.parent;
+            while (ancestor) {
+                if (visibleIdxSet.has(ancestor.idx)) {
+                    links.push({ source: ancestor.idx, target: item.idx });
+        break;
+        }
+        ancestor = ancestor.parent;
+        }
+        }*/
 
             if (item.parent?.idx !== undefined) {
                 // Walk up until we hit a visible ancestor
@@ -1967,7 +2365,7 @@ export class na3D_fileBrowser {
             $("#showLines").removeClass("vividButtonSelected").addClass("vividButton");
         }
     }
-    
+
 }
 
 
@@ -1978,40 +2376,40 @@ export class na3D_demo_models {
         t.p = parent;
         t.el = el;
         t.t = $(t.el).attr("theme");
-        
+
         t.data = data;
-        
+
         t.lights = [];
         t.folders = [];
-   
+
         t.items = [];
-        
+
 
         t.scene = new THREE.Scene();
         t.graph.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
-        
+
 
         t.renderer = new THREE.WebGLRenderer({alpha:true, antialias : true});
         t.renderer.physicallyCorrectLights = true;
         t.renderer.outputEncoding = sRGBEncoding;
         t.renderer.setPixelRatio (window.devicePixelRatio);
         t.renderer.setSize( $(el).width()-20, $(el).height()-20 );
-        
+
         t.renderer.toneMappingExposure = 1.0;
-        
+
         el.appendChild( t.renderer.domElement );
-        
+
         t.controls = new OrbitControls( t.graph.camera, t.renderer.domElement );
         //t.graph.controls().listenToKeyEvents( window ); // optional
-        
+
         t.loader = new GLTFLoader();
-        
+
         t.loader.load( "/NicerAppWebOS/3rd-party/3D/models/human armor/scene.gltf", function ( gltf ) {
             gltf.scene.position.x = -150;
             gltf.scene.scale.setScalar (10);
             t.cube = gltf.scene;
             t.scene.add (t.cube);
-            
+
             t.updateTextureEncoding(t, t.cube);
         }, function ( xhr ) {
             console.log( "model 'human armor' : " + ( xhr.loaded / xhr.total * 100 ) + "% loaded" );
@@ -2022,15 +2420,15 @@ export class na3D_demo_models {
             gltf.scene.position.x = 200;
             t.cube2 = gltf.scene;
             t.scene.add (t.cube2);
-            
+
             t.updateTextureEncoding(t, t.cube2);
-            
+
         }, function ( xhr ) {
             console.log( "model 'photoCamera' : " + ( xhr.loaded / xhr.total * 100 ) + "% loaded" );
         }, function ( error ) {
             console.error( error );
         } );
-        
+
         const light1  = new AmbientLight(0xFFFFFF, 0.3);
         light1.name = "ambient_light";
         light1.intensity = 0.3;
@@ -2046,12 +2444,12 @@ export class na3D_demo_models {
         //t.graph.camera().add( light2 );
 
         t.lights.push(light1, light2);
-        
+
         t.pmremGenerator = new PMREMGenerator( t.renderer );
         t.pmremGenerator.compileEquirectangularShader();
-        
+
         t.updateEnvironment(this);
-        
+
         el.addEventListener("mousemove", function() { t.onMouseMove (event, t) });
         el.addEventListener("pointerup", function() { t.onPointerUp (event, t) });
 
@@ -2062,30 +2460,30 @@ export class na3D_demo_models {
 
         //t.animate(this);
     }
-    
-    /*
-    animate(t) {
-        requestAnimationFrame( function() { t.st) } );
-        
-        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
 
-        const intersects = t.raycaster.intersectObjects (t.scene.children, true);
-        if (intersects[0] && t.cube && t.cube2) {
-            t.cube.rotation.x += 0.015;
-            t.cube.rotation.y += 0.02;
-            t.cube2.rotation.x += 0.015;
-            t.cube2.rotation.y += 0.02;
-            //t.cube2.rotation.y += 0.02;
-        }
-        
-        t.renderer.render( t.scene, t.graph.camera );
-    }*/
-    
-    
+    /*
+     *    animate(t) {
+     *        requestAnimationFrame( function() { t.st) } );
+     *
+     *        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
+     *
+     *        const intersects = t.raycaster.intersectObjects (t.scene.children, true);
+     *        if (intersects[0] && t.cube && t.cube2) {
+     *            t.cube.rotation.x += 0.015;
+     *            t.cube.rotation.y += 0.02;
+     *            t.cube2.rotation.x += 0.015;
+     *            t.cube2.rotation.y += 0.02;
+     *            //t.cube2.rotation.y += 0.02;
+}
+
+t.renderer.render( t.scene, t.graph.camera );
+}*/
+
+
     updateTextureEncoding (t, content) {
         /*const encoding = t.state.textureEncoding === "sRGB"
-        ? sRGBEncoding
-        : LinearEncoding;*/
+         *        ? sRGBEncoding
+         *        : LinearEncoding;*/
         const encoding = sRGBEncoding;
         t.traverseMaterials(content, (material) => {
             if (material.map) material.map.encoding = encoding;
@@ -2093,17 +2491,17 @@ export class na3D_demo_models {
             if (material.map || material.emissiveMap) material.needsUpdate = true;
         });
     }
-    
+
     traverseMaterials (object, callback) {
         object.traverse((node) => {
             if (!node.isMesh) return;
             const materials = Array.isArray(node.material)
-                ? node.material
-                : [node.material];
+            ? node.material
+            : [node.material];
             materials.forEach(callback);
         });
     }
-    
+
     updateEnvironment (t) {
 
         const environment = {
@@ -2113,21 +2511,21 @@ export class na3D_demo_models {
             format: ".hdr"
         };
         /*
-        const environment = {
-            id: "footprint-court",
-            name: "Footprint Court (HDR Labs)",
-            path: "/NicerAppWebOS/3rd-party/3D/assets/environment/footprint_court_2k.hdr",
-            format: ".hdr"
-        }*/
+         *        const environment = {
+         *            id: "footprint-court",
+         *            name: "Footprint Court (HDR Labs)",
+         *            path: "/NicerAppWebOS/3rd-party/3D/assets/environment/footprint_court_2k.hdr",
+         *            format: ".hdr"
+    }*/
 
         t.getCubeMapTexture( environment ).then(( { envMap } ) => {
 
             /*
-            if (!envMap || !t.state.background) && t.activeCamera === t.defaultCamera) {
-                t.scene.add(t.vignette);
-            } else {
-                t.scene.remove(t.vignette);
-            }*/
+             *            if (!envMap || !t.state.background) && t.activeCamera === t.defaultCamera) {
+             *                t.scene.add(t.vignette);
+        } else {
+            t.scene.remove(t.vignette);
+        }*/
             t.scene.add(t.vignette);
 
             t.scene.environment = envMap;
@@ -2135,8 +2533,8 @@ export class na3D_demo_models {
 
         });
 
-    }    
-    
+    }
+
     getCubeMapTexture ( environment ) {
         const { path } = environment;
 
@@ -2145,19 +2543,19 @@ export class na3D_demo_models {
 
         return new Promise( ( resolve, reject ) => {
             new RGBELoader()
-                //.setDataType( UnsignedByteType )
-                .load( path, ( texture ) => {
+            //.setDataType( UnsignedByteType )
+            .load( path, ( texture ) => {
 
-                    const envMap = t.pmremGenerator.fromEquirectangular( texture ).texture;
-                    t.pmremGenerator.dispose();
+                const envMap = t.pmremGenerator.fromEquirectangular( texture ).texture;
+                t.pmremGenerator.dispose();
 
-                    resolve( { envMap } );
+                resolve( { envMap } );
 
-                }, undefined, reject );
+            }, undefined, reject );
         });
     }
 
-    
+
     onMouseMove(event, t) {
         if (!t.renderer || !t.renderer.domElement) return;
 
@@ -2181,7 +2579,7 @@ export class na3D_demo_models {
 
         console.log('Intersects:', intersects.length, intersects[0] ? intersects[0].object.it?.name : null);
     }
-    
+
     onMouseWheel( event, t ) {
         debugger;
     }
@@ -2208,14 +2606,14 @@ export class na3D_demo_cube {
         t.p = parent;
         t.el = el;
         t.t = $(t.el).attr("theme");
-        
+
         t.scene = new THREE.Scene();
         t.graph.camera = new THREE.PerspectiveCamera( 75, $(el).width() / $(el).height(), 0.1, 1000 );
 
         t.renderer = new THREE.WebGLRenderer({ alpha : true });
         t.renderer.setSize( $(el).width()-20, $(el).height()-20 );
         el.appendChild( t.renderer.domElement );
-        
+
         const geometry = new THREE.BoxGeometry();
         const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
         var materials = [
@@ -2242,7 +2640,7 @@ export class na3D_demo_cube {
         t.scene.add( t.cube );
         var t = this;
         $(el).bind("mousemove", function() { t.onMouseMove (event, t) });
-        
+
         t.raycaster = new THREE.Raycaster();
         t.mouse = new THREE.Vector2();
 
@@ -2251,7 +2649,7 @@ export class na3D_demo_cube {
         t.cube.rotation.y = 0.4;
         t.animate(this);
     }
-    
+
     onMouseMove( event, t ) {
         // calculate mouse position in normalized device coordinates
         // (-1 to +1) for both components
@@ -2259,22 +2657,22 @@ export class na3D_demo_cube {
         //t.mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
         var rect = t.renderer.domElement.getBoundingClientRect();
         t.mouse.x = ( ( event.clientX - rect.left ) / ( rect.width - rect.left ) ) * 2 - 1;
-        t.mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;        
+        t.mouse.y = - ( ( event.clientY - rect.top ) / ( rect.bottom - rect.top) ) * 2 + 1;
         t.raycaster.setFromCamera(t.mouse, t.graph.camera);
     }
-    
+
 
     /*
-    animate(t) {
-        requestAnimationFrame( function() { t.animate (t) } );
-        //t.cube.rotation.x += 0.02;
-        //t.cube.rotation.y += 0.02;
-        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
-        const intersects = t.raycaster.intersectObjects (t.scene.children, true);
-        for (var i=0; i<intersects.length; i++) {
-            intersects[i].object.rotation.x += 0.02;
-            intersects[i].object.rotation.y += 0.02;
-        }
-        t.renderer.render( t.scene, t.graph.camera );
-    }*/
+     *    animate(t) {
+     *        requestAnimationFrame( function() { t.animate (t) } );
+     *        //t.cube.rotation.x += 0.02;
+     *        //t.cube.rotation.y += 0.02;
+     *        t.raycaster.setFromCamera (t.mouse, t.graph.camera);
+     *        const intersects = t.raycaster.intersectObjects (t.scene.children, true);
+     *        for (var i=0; i<intersects.length; i++) {
+     *            intersects[i].object.rotation.x += 0.02;
+     *            intersects[i].object.rotation.y += 0.02;
+}
+t.renderer.render( t.scene, t.graph.camera );
+}*/
 }

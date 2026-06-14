@@ -1,6 +1,6 @@
 <?php
     global $naWebOS;
-    require_once ($naWebOS->basePath.'/domainConfig/'.$naWebOS->domainFolder.'/mainmenu.items.php');
+    require_once ($naWebOS->codePath.'/domainConfig/'.$naWebOS->domainFolder.'/mainmenu.items.php');
     global $naURLs; // from .../domainConfig/nicer.app/mainmenu.items.php
     global $na_apps_structure;
     if (false) {

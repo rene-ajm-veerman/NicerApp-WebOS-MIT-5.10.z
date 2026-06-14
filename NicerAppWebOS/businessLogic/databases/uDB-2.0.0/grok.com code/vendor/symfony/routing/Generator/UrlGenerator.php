@@ -322,16 +322,16 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
      * - "/a/b/c/other" -> "other"
      * - "/a/x/y"       -> "../../x/y"
      *
-     * @param string $basePath   The base path
+     * @param string $codePath   The base path
      * @param string $targetPath The target path
      */
-    public static function getRelativePath(string $basePath, string $targetPath): string
+    public static function getRelativePath(string $codePath, string $targetPath): string
     {
-        if ($basePath === $targetPath) {
+        if ($codePath === $targetPath) {
             return '';
         }
 
-        $sourceDirs = explode('/', isset($basePath[0]) && '/' === $basePath[0] ? substr($basePath, 1) : $basePath);
+        $sourceDirs = explode('/', isset($codePath[0]) && '/' === $codePath[0] ? substr($codePath, 1) : $codePath);
         $targetDirs = explode('/', isset($targetPath[0]) && '/' === $targetPath[0] ? substr($targetPath, 1) : $targetPath);
         array_pop($sourceDirs);
         $targetFile = array_pop($targetDirs);

@@ -1,14 +1,14 @@
 <?php
 //require_once (dirname(__FILE__).'/../../../../boot_stage_001.php');
     
-function saPhotoAlbum ($basePath=null) {
+function saPhotoAlbum ($codePath=null) {
     global $saSiteHTTP; global $saSiteDomain; global $saSiteRootFolder; global $saFrameworkFolder;
     global $saSiteHD; global $saFrameworkHD; 
     global $saSiteURL; global $saFrameworkURL;global $saCMS;
     
     $baseURL = $saSiteURL.'nicerapp/siteData/'.$_SERVER['HTTP_HOST'];
     $baseDir = $saSiteHD.'nicerapp/siteData/'.$_SERVER['HTTP_HOST'];
-    $targetDir = $baseDir.'/'.$basePath;
+    $targetDir = $baseDir.'/'.$codePath;
     $thumbDir = $targetDir.'/thumbs';
     
     $smID = $_GET['smID'];

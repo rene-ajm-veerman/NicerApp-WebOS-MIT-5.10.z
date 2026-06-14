@@ -3,7 +3,7 @@
 //na.analytics.logMetaEvent ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer : init-stage-1');
 
 delete na.mp;
-na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering'] = na.musicPlayer = na.mp = {
+na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse'] = na.musicPlayer = na.mp = {
 	about : {
 		whatsThis : 'Complete application code for the music playback-and-download site on http://nicer.app/musicPlayer',
 		copyright : 'Copyrighted (c) 2011-2026 by Rene AJM Veerman - rene.veerman.netherlands@gmail.com',
@@ -16,7 +16,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
 		]
 	},
     globals : {
-        url : '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering/'
+        url : '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse/'
     },
 	settings : {
 		playingIndex : 0,
@@ -32,7 +32,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
         loadedIn : {
             '#siteContent' : {
                 onload : function (settings) {
-                    na.site.settings.app = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering';
+                    na.site.settings.app = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse';
                     //na.analytics.logMetaEvent ("na.musicPlayer.onload() called.");
 
                     $('#siteContent > .vividDialogContent').css({ overflow : 'hidden', direction:'ltr'});
@@ -57,11 +57,11 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
                     $('.lds-facebook').fadeOut('normal');
                     
                     /*TOXIC!
-                     * na.desktop.registerProgress ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering', function() {
+                     * na.desktop.registerProgress ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse', function() {
                         var div = $('#siteContent')[0];
                         na.mp.onresize(div);
                     });*/
-                    na.desktop.registerCallback ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering', '#siteContent', function (cb, div, calculationResults, sectionIdx, section, divOrderIdx) {
+                    na.desktop.registerCallback ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse', '#siteContent', function (cb, div, calculationResults, sectionIdx, section, divOrderIdx) {
                         if (div.id=='siteContent') {
                             na.mp.onresize(div);
                             $('#siteContent .vividDialogContent').show();
@@ -73,8 +73,8 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
                     na.desktop.resize();
                 },
                 ondestroy : function (settings) {
-                    //na.desktop.deleteProgress ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering');
-                    na.desktop.deleteCallback ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering');
+                    //na.desktop.deleteProgress ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse');
+                    na.desktop.deleteCallback ('/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse');
                     clearInterval (na.mp.settings.timeDisplayInterval);
                 }
             }
@@ -145,7 +145,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
 
         var ajaxCommand = {
 			type : 'GET',
-			url : '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer/music/'+na.site.globals.app['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering']['set']+'/' + file + '.json',
+			url : '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer/music/'+na.site.globals.app['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse']['set']+'/' + file + '.json',
             error: function(l0_jqXHR, l0_textStatus, l0_errorThrown) {
 				var html = '';
                 html += '<div style="height:15px;">&nbsp;</div>';
@@ -206,7 +206,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.ja
 
             
             var 
-            mp3 = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer/music/'+na.site.globals.app['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.javascriptRendering']['set']+'/' + file;
+            mp3 = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer/music/'+na.site.globals.app['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse']['set']+'/' + file;
 
             $('#audioTag')[0].src = mp3;
             $('#audioTag')[0].play();

@@ -35,7 +35,7 @@ class HostsFile
         }
 
         // Windows actually stores the path in the registry under
-        // \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DataBasePath
+        // \HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\DatacodePath
         $path = '%SystemRoot%\\system32\drivers\etc\hosts';
 
         $base = getenv('SystemRoot');

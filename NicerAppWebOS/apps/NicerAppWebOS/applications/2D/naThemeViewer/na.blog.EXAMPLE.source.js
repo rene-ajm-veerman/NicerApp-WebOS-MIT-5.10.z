@@ -104,9 +104,9 @@ na.blog = {
                             path = path.replace(/ /g, '%20'),
                             src = (
                                 na.blog.settings.current.mediaFolderView == 'upload'
-                                //? '/NicerAppWebOS/3rd-party/plupload-2.3.6/examples/jquery/jquery_ui_widget.php?c='+na.m.changedDateTime_current()+/*'&smID='+siteManager.id+'&iid='+iid+'&dialogID='+did+*/'&basePath='+path
-                                ? '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/jquery_ui_widget.php?basePath='+path
-                                : '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/index.php?basePath='+path
+                                //? '/NicerAppWebOS/3rd-party/plupload-2.3.6/examples/jquery/jquery_ui_widget.php?c='+na.m.changedDateTime_current()+/*'&smID='+siteManager.id+'&iid='+iid+'&dialogID='+did+*/'&codePath='+path
+                                ? '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/jquery_ui_widget.php?codePath='+path
+                                : '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/index.php?codePath='+path
                             ),
                             el = $('#jQueryFileUpload')[0];
                             el.onload = na.blog.onresize;
@@ -549,11 +549,11 @@ na.blog = {
         na.blog.mediaFolder_viewChanged();
     },
     
-    onclick_mediaThumbnail : function (evt, basePath, filename) {
+    onclick_mediaThumbnail : function (evt, codePath, filename) {
         var 
         arr = {
             cmsViewMedia : {
-                basePath : basePath,
+                codePath : codePath,
                 filename : filename
             }
         },
@@ -568,9 +568,9 @@ na.blog = {
         path = path.replace(/ /g, '%20'),
         src = (
             na.blog.settings.current.mediaFolderView == 'upload'
-            //? '/NicerAppWebOS/3rd-party/plupload-2.3.6/examples/jquery/jquery_ui_widget.php?changed='+na.m.changedDateTime_current()+/*'&smID='+siteManager.id+'&iid='+iid+'&dialogID='+did+*/'&basePath='+path
-            ? '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/jquery_ui_widget.php?basePath='+path
-            : '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/index.php?basePath='+path
+            //? '/NicerAppWebOS/3rd-party/plupload-2.3.6/examples/jquery/jquery_ui_widget.php?changed='+na.m.changedDateTime_current()+/*'&smID='+siteManager.id+'&iid='+iid+'&dialogID='+did+*/'&codePath='+path
+            ? '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/jquery_ui_widget.php?codePath='+path
+            : '/NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/index.php?codePath='+path
         ),
         el = $('#jQueryFileUpload')[0];
         el.onload = na.blog.onresize;

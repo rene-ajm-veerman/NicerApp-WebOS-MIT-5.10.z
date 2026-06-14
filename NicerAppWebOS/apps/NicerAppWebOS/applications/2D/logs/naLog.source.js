@@ -25,7 +25,6 @@ export var naLog = {
                     d = b._id.split(' '),
                     c1 = new Date(c[1]+' '+c[2]).getTime()/1000 + (parseInt(c[4].replace('m',''))*60),
                     d1 = new Date(d[1]+' '+d[2]).getTime()/1000 + (parseInt(d[4].replace('m',''))*60);
-                debugger;
                 a.t = c1;
                 b.t = d1;
                 return d1 - c1;
@@ -112,14 +111,38 @@ export var naLog = {
                     dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
                     info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
 
-                    if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                    if (dit.msg.match('Fully started for')) {
+                        try {
+                            var
+                            x = dit.msg.match(/href=\\"(https:\/\/.*?)\\"/),
+                            x1 = x[1].replace(/https:\/\/.*?\/view\//,''),
+                            jsonStr = na.m.decode_base64_url(x1),
+                            json = JSON.parse(jsonStr);
 
-                    var
-                    dt = new Date(parseInt(dit.t*1000)),
-                    dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
-                    info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                            for (var app in json) break;
 
-                    if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                            //if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+JSON.stringify(json)+'<');
+                            if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+app+'<');
+
+
+                            var
+                            dt = new Date(parseInt(dit.t*1000)),
+                            dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                            info3 = { referrer : dit.referrer, target : json, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                            //dit.msg = 'NicerApp WebOS Fully started.';
+                        } catch (e) {
+                        }
+                    } else {
+
+                        if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+
+                        var
+                        dt = new Date(parseInt(dit.t*1000)),
+                        dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                        info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+
+                        if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                    }
 
                     html +=
                     '<span class="naIPlog_header2">'
@@ -268,13 +291,14 @@ export var naLog = {
         return href;
     },
     process_msg : function (msg, dit) {
-        var r = '', prefix1a = 'NicerAppWebOS Fully started for <a href="', prefix1b = '">', prefix1c = '</a>', prefix2 = /Background set to "(.*?)";\s(.*)/, m = [];
+        var r = '', prefix1a = 'NicerAppWebOS Fully started for <a href=\\"', prefix1b = '\\">', prefix1c = '</a>', prefix2 = /Background set to "(.*?)";\s(.*)/, m = [];
         if (msg.indexOf(prefix1a)===0 && dit.ipinfo) {
+            debugger;
             try {
                 var href = naLog.truncateUrl(msg.replace(prefix1a,'').replace(prefix1b,'').replace(prefix1c,''), 40);
 
-                r = { msg : msg, documentLocation : href, ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length};
-            } catch (e) {};
+                r = { msg : msg, documentLocation : href, ipinfo : JSON.parse(dit.ipinfo), 'ipinfo count' : dit.ipinfo.length};
+            } catch (e) {debugger;};
         } else if (m = msg.match(prefix2)) {
             r = { msg : msg, onclickHTML : 'na.site.displayWallpaper(\''+m[2]+'\');', ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length };
         } else r = msg;
@@ -298,7 +322,7 @@ export var naLog = {
         };
         $.ajax(ac);
     },
-    truncateUrl(url, maxLength = 60) {
+    truncateUrl(url, maxLength = 100) {
         if (!url) return '';
         if (url.length <= maxLength) return url;
 
@@ -323,8 +347,8 @@ export var naLog = {
             }
 
             // Smart middle truncation: keep start of path + end of path
-            const start = pathname.slice(0, Math.floor(available * 0.6));
-            const end = pathname.slice(-Math.floor(available * 0.4));
+            const start = pathname.slice(0, Math.floor(available * 0.5));
+            const end = pathname.slice(-Math.floor(available * 0.5));
 
             return urlObj.origin + start + '...' + end;
 

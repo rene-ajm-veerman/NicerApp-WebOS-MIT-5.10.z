@@ -17,7 +17,7 @@
     
     $baseURL = '/NicerAppWebOS/siteData/'.$naWebOS->domainFolder.'/';
     $baseDir = $root.'/NicerAppWebOS/siteData/'.$naWebOS->domainFolder.'/';
-    $targetDir = $baseDir.$_GET['basePath'];
+    $targetDir = $baseDir.$_GET['codePath'];
     $thumbDir = $targetDir.'/thumbs';
     //var_dump ($targetDir);exit();
     $imgStyle = ''; // boxShadow perhaps
@@ -60,7 +60,7 @@
         echo '<div style="overflow:hidden;float:left;width:220px;height:auto;margin:5px;padding:10px;padding-top:20px;border-radius:10px;border:1px solid black;background:rgba(0,0,0,0.7);box-shadow:2px 2px 2px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(0,0,255,0.5), inset -1px -1px 1px rgba(0,0,255,0.5);">';
         
         
-        $onclick = 'onclick="window.top.na.blog.onclick_mediaThumbnail(event, \''.$_GET['basePath'].'\', \''.$fileName.'\')"';
+        $onclick = 'onclick="window.top.na.blog.onclick_mediaThumbnail(event, \''.$_GET['codePath'].'\', \''.$fileName.'\')"';
         
         echo '<center><img src="'.$thumbURL.'" class="mediaThumb" style="width:200px" '.$onclick.'/><br/><span class="filename">'.$fileName.'</span></center></div>';        
     }

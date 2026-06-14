@@ -308,7 +308,7 @@ class naThemeEditor {
                                 var
                                 path = na.te.currentPath(rec),
                                 path = path.replace(/ /g, '%20'),
-                                src = '/NicerAppWebOS/businessLogic/vividUserInterface/v5.y.z/photoAlbum/4.0.0/index.php?basePath='+path,
+                                src = '/NicerAppWebOS/businessLogic/vividUserInterface/v5.y.z/photoAlbum/4.0.0/index.php?codePath='+path,
                                 el = $('#themeEditor_photoAlbum')[0];
                                 el.onload = setTimeout(function(el) {
                                     na.te.onresize()

@@ -231,7 +231,7 @@ if (
                         ) $add['ipinfo'] = json_decode(json_encode($call3->body->docs),true);
 
                     } catch (Exception $e) {
-                        $msg = $e->getMessage;
+                        $msg = $e->getMessage();
                         $cdb->setDatabase($dataSetName);
                         //echo PHP_EOL.$msg.'<br/>'.PHP_EOL;
 
@@ -244,7 +244,7 @@ if (
 
                 }
             } catch (Exception $e) {
-                $msg = $e->getMessage;
+                $msg = $e->getMessage();
                 $cdb->setDatabase($dataSetName);
                 echo PHP_EOL.$msg.'<br/>'.PHP_EOL;
             }

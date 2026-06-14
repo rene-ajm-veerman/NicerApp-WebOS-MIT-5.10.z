@@ -47,7 +47,7 @@ use SebastianBergmann\GitState\Builder as GitStateBuilder;
  *             status: string,
  *         },
  *     },
- *     basePath: string,
+ *     codePath: string,
  *     codeCoverage: ProcessedCodeCoverageData,
  *     testResults: array<string, array{size: string, status: string, time: float}>,
  * }
@@ -96,11 +96,11 @@ final readonly class Serializer
         }
 
         $coverageData = clone $codeCoverage->getData();
-        $basePath     = (new PathReducer)->reduce($coverageData);
+        $codePath     = (new PathReducer)->reduce($coverageData);
 
         $data = [
             'buildInformation' => $buildInformation,
-            'basePath'         => $basePath,
+            'codePath'         => $codePath,
             'codeCoverage'     => $coverageData,
             'testResults'      => $codeCoverage->getTests(),
         ];

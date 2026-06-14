@@ -38,7 +38,7 @@
 			
 			$baseURL = $saSiteURL.'nicerapp/siteData/'.$_SERVER['HTTP_HOST'];
 			$baseDir = $saSiteHD.'nicerapp/siteData/'.$_SERVER['HTTP_HOST'];
-			$targetDir = $baseDir.'/'.$_GET['basePath'];
+			$targetDir = $baseDir.'/'.$_GET['codePath'];
 			$thumbDir = $targetDir.'/thumbs';
 			
 			$smID = $_GET['smID'];

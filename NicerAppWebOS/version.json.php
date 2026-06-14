@@ -2,9 +2,12 @@
 global $naWebOS;
 ?>
 {
-    "whatsThis" : "NicerApp WebOS v5.12.0",
-    "version" : "5.12.0",
-    "copyright" : "Copyright (C) 2002-2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com]",
+    "whatsThis" : "NicerApp WebOS v5.10.14",
+    "version" : "5.10.14",
+    "copyright" : [
+        "Copyright (C) 2002-2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com]",
+        "Copyright (C) 2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com] + grok.com + claude.ai/chat"
+    ],
     "license" : "https://opensource.org/license/mit",
     "history" : {
         "firstCreated" : "2002 around January if i'm not mistaken.",

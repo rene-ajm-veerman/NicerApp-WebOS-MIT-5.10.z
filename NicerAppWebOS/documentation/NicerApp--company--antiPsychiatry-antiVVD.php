@@ -1,7 +1,7 @@
 <?php
 global $naWebOS;
 require_once ($naWebOS->webPath.'/../domains/'.$naWebOS->domainFolder.'/domainConfig/pageHeader.php');
-$fp = $naWebOS->basePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php';
+$fp = $naWebOS->codePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php';
 require_once ($fp);
 $diaries = new naDiaries();
 ?>

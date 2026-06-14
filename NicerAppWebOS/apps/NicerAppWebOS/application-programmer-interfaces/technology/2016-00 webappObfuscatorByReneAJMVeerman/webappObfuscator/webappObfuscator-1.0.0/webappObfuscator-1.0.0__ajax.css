@@ -1,6 +1,6 @@
 .woError { border : 2px solid red; border-radius : 5px; padding : 5px; background : yellow; color : red; }
 .woStacktrace { font-size : 90%; font-weight : bold; }
-.woStacktrace__basePath { color : purple; } 
+.woStacktrace__codePath { color : purple; }
 .woStacktrace__item { }
 .woStacktrace__file { color : navy; }
 .woStacktrace__function { color : #002300; }

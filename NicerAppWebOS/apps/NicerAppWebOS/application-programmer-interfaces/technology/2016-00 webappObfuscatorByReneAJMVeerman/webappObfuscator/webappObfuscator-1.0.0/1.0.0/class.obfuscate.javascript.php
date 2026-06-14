@@ -22,7 +22,7 @@ class webappObfuscator_obfuscate__javascript {
 		
 	}
 	
-	public function writeOutputToDisk ($basePaths=null) {
+	public function writeOutputToDisk ($codePaths=null) {
 		$wd = &$this->workData;
 		$s = &$this->settings;
 		$gs = &$s['globalSettings'];
@@ -38,14 +38,14 @@ class webappObfuscator_obfuscate__javascript {
 			));
 		}
 		
-		// the individual files from $sourcesURLs, obfuscated, written to $basePath 
+		// the individual files from $sourcesURLs, obfuscated, written to $codePath
 		// as a subdirectory structure that mirrors the URL folder structure
 		$wd['output']['stages'][1] = $obfuscator->writeOutput__stage0__walk (
-			'javascript', $basePaths, '', $wd['output']['stages'][0], $sourcesURLs['javascript']
+			'javascript', $codePaths, '', $wd['output']['stages'][0], $sourcesURLs['javascript']
 		);
 		
 		$wd['output__concatenated']['stages'][1] = $obfuscator->writeOutput__stage0__walk (
-			'javascript', $basePaths, '', $wd['output__concatenated']['stages'][0]
+			'javascript', $codePaths, '', $wd['output__concatenated']['stages'][0]
 		);
 		
 		//echo '<pre style="color:orange;background:blue;">wJavascript->writeOutputToDisk $wd["output__concatenated"]["stages"][1]='; var_dump ($wd['output__concatenated']['stages'][1]); echo '</pre>';

@@ -1,7 +1,7 @@
 <?php
 //require_once (dirname(__FILE__).'/../../../../boot_stage_001.php');
     
-function naPhotoAlbum ($basePath=null) {
+function naPhotoAlbum ($codePath=null) {
     $root = realpath(dirname(__FILE__).'/../../../../');
     global $naWebOS;
     $naWebOS = new NicerAppWebOS();
@@ -15,7 +15,7 @@ function naPhotoAlbum ($basePath=null) {
     
     $baseURL = '/NicerAppWebOS/siteData/'.$naWebOS->domainFolder;
     $baseDir = $root.'/NicerAppWebOS/siteData/'.$naWebOS->domainFolder;
-    $targetDir = realpath($baseDir.'/'.$basePath);
+    $targetDir = realpath($baseDir.'/'.$codePath);
     $thumbDir = $targetDir.'/thumbs';
     
 	define ("FILE_FORMATS_photos", "/(.*\.png)|(.*\.gif)|(.*\.jpg)|(.*\.jpeg)/");
@@ -49,7 +49,7 @@ function naPhotoAlbum ($basePath=null) {
         $href = '';
         $arr = array (
             "cmsViewMedia" => array (
-                "basePath" => $basePath,
+                "codePath" => $codePath,
                 "filename" => $fileName
             )
         );

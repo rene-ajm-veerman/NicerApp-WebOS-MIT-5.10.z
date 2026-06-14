@@ -27,7 +27,7 @@ use Defuse\Crypto\Crypto;
     /*
     $username = $_SESSION['cdb_loginName'];
     $fn = dirname(__FILE__).'/configs/config.'.$username.'.json';
-    $fn2 = '...'.str_replace ($naWebOS->basePath,'',$fn);
+    $fn2 = '...'.str_replace ($naWebOS->codePath,'',$fn);
     if (file_exists($fn)) {
         $jsonText = file_get_contents($fn);
         $json = json_decode ($jsonText, true);

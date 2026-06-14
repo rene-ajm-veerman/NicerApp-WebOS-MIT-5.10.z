@@ -9,7 +9,7 @@ class webappObfuscator_obfuscate__html {
 		$this->settings = $settings;
 	}
 	
-	public function writeOutputToDisk ($basePaths=null) {
+	public function writeOutputToDisk ($codePaths=null) {
 		$wd = &$this->workData;
 		$s = &$this->settings;
 		$gs = &$s['globalSettings'];
@@ -25,10 +25,10 @@ class webappObfuscator_obfuscate__html {
 			));
 		}
 
-		// the individual files from $sourcesURLs, obfuscated, written to $basePath 
+		// the individual files from $sourcesURLs, obfuscated, written to $codePath
 		// as a subdirectory structure that mirrors the URL folder structure
 		$wd['output']['stages'][1] = $obfuscator->writeOutput__stage0__walk (
-			'html', $basePaths, '', $wd['output']['stages'][0], $sourcesURLs['html']
+			'html', $codePaths, '', $wd['output']['stages'][0], $sourcesURLs['html']
 		);
 		return 'results are in $my->workData["output"]["stages"][1]';
 	}

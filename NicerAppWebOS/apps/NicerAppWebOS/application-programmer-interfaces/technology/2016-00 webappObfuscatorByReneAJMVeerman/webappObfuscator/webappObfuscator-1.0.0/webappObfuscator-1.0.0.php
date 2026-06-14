@@ -129,20 +129,20 @@ class webappObfuscator {
 		return $this->workClass[$id]['settings'];
 	}
 	
-	public function readTokens ($basePaths=null) {
+	public function readTokens ($codePaths=null) {
 		$r = array('details'=>array());
 		
-		$basePathCheck = $this->checkBasePaths($basePaths, 'webappObfuscator::readTokens()');
-		if (good($basePathCheck)) { // see webappObfuscator/webappObfuscator-1.0.0/functions__internalErrorHandling.php
-			$basePaths = result($basePathCheck);
+		$codePathCheck = $this->checkcodePaths($codePaths, 'webappObfuscator::readTokens()');
+		if (good($codePathCheck)) { // see webappObfuscator/webappObfuscator-1.0.0/functions__internalErrorHandling.php
+			$codePaths = result($codePathCheck);
 		} else {
 			return false;
 		}
-		//echo '$basePaths=<pre>'; var_dump ($basePaths); echo '</pre>'; die();
+		//echo '$codePaths=<pre>'; var_dump ($codePaths); echo '</pre>'; die();
 		
 		$readCmds = array (
-			'tokens' => $basePaths['secretOutput'].'/all.webappObfuscator__obfuscatedTokens.json',
-			'tokens__css_html' => $basePaths['secretOutput'].'/css_html.webappObfuscator__obfuscatedTokens.json'
+			'tokens' => $codePaths['secretOutput'].'/all.webappObfuscator__obfuscatedTokens.json',
+			'tokens__css_html' => $codePaths['secretOutput'].'/css_html.webappObfuscator__obfuscatedTokens.json'
 		);
 		if (array_key_exists('tokens', $this->workData)) {
                     $r['success'] = true;
@@ -182,7 +182,7 @@ class webappObfuscator {
 		return goodResult($r); // see webappObfuscator/webappObfuscator-1.0.0/functions__internalErrorHandling.php
 	}	
 
-	public function checkBasePaths ($paths=null, $calledWhere) {
+	public function checkcodePaths ($paths=null, $calledWhere) {
 		$instructions = 'All paths must be a string containing a full harddisk filepath (starting at the root of the filesystem';
 		if (is_null($paths)) {
 			if (
@@ -267,14 +267,14 @@ class webappObfuscator {
 	}
 
 	
-	public function writeOutputToDisk ($basePaths=null) {
+	public function writeOutputToDisk ($codePaths=null) {
 		foreach ($this->workClass as $wcID => $worker) {
-			$worker['class']->writeOutputToDisk ($basePaths);
+			$worker['class']->writeOutputToDisk ($codePaths);
 		}
 	}
 	
 	
-	public function writeOutput__stage0__walk ($programmingLanguageName, $basePaths, $sourceIDpath, $sources, $sourcesURLs=null) {
+	public function writeOutput__stage0__walk ($programmingLanguageName, $codePaths, $sourceIDpath, $sources, $sourcesURLs=null) {
 		$wd = &$this->workData;
 		$s = &$this->clientSettings;
 		$gs = &$s['globalSettings'];
@@ -282,9 +282,9 @@ class webappObfuscator {
 		global $lowerMemoryUsage;
 		global $reportStatusGoesToStatusfile;
 
-		$basePathCheck = $this->checkBasePaths($basePaths, 'webappObfuscator::writeOutput__stage0__walk("'.$programmingLanguageName.'", .....)');
-		if (good($basePathCheck)) {
-			$basePaths = result($basePathCheck);
+		$codePathCheck = $this->checkcodePaths($codePaths, 'webappObfuscator::writeOutput__stage0__walk("'.$programmingLanguageName.'", .....)');
+		if (good($codePathCheck)) {
+			$codePaths = result($codePathCheck);
 		} else {
 			return false;
 		}
@@ -312,21 +312,21 @@ class webappObfuscator {
                         //echo '<pre>$obfuscator->writeOutput__stage0__walk() : $sourcesURLs2='; var_dump ($sourcesURLs2); echo '$k='; var_dump ($k); 	echo '</pre>';
                         if (is_string($v)) {
                                 reportStatus (1, '<p class="webappObfuscator__process__writeOutput webappObfuscator__process__detail">Writing '.$programmingLanguageName.' output '.formatSourcepath($sourceIDpath, $k).'</span> to :<br/>');
-                                $r[$k] = $this->writeOutput__stage0__node ($programmingLanguageName, $basePaths, $sourceIDpath, $k, $v, $sourcesURLs2);
+                                $r[$k] = $this->writeOutput__stage0__node ($programmingLanguageName, $codePaths, $sourceIDpath, $k, $v, $sourcesURLs2);
                                 reportStatus (1, '</p>');
                         } if (is_array($v)) {
-                                $r[$k] = $this->writeOutput__stage0__walk ($programmingLanguageName, $basePaths, $sourceIDpath.'/'.$k, $v, $sourcesURLs2);
+                                $r[$k] = $this->writeOutput__stage0__walk ($programmingLanguageName, $codePaths, $sourceIDpath.'/'.$k, $v, $sourcesURLs2);
                         }
                     }
 		} elseif (is_string($sources)) {					                                 
                     reportStatus (1, '<p class="webappObfuscator__process__writeOutput webappObfuscator__process__detail">Writing '.$programmingLanguageName.' output '.formatSourcepath($sourceIDpath).' to:<br/>');
-                    $r = $this->writeOutput__stage0__node ($programmingLanguageName, $basePaths, '', '', $sources);
+                    $r = $this->writeOutput__stage0__node ($programmingLanguageName, $codePaths, '', '', $sources);
                     reportStatus (1, '</p>');
 		}
 		return $r;
 	}
 	
-	public function writeOutput__stage0__node ($programmingLanguageName, $basePaths, $sourceIDpath, $k, $sourceObfuscated, $sourceURL=null) {
+	public function writeOutput__stage0__node ($programmingLanguageName, $codePaths, $sourceIDpath, $k, $sourceObfuscated, $sourceURL=null) {
 		$wd = &$this->workData;
 		$s = &$this->clientSettings;
 		$gs = &$s['globalSettings'];
@@ -336,7 +336,7 @@ class webappObfuscator {
 		//echo '<pre style="color:orange;background:blue;">$programmingLanguageName='; var_dump ($programmingLanguageName); echo '</pre>';
 
 		$sourceIDpathComplete = $sourceIDpath.'/'.$k;
-		$basePath = $basePaths['publicOutput'];
+		$codePath = $codePaths['publicOutput'];
 		//echo '<pre style="color:orange;background:blue;">$sourceURL='; var_dump ($sourceURL); echo '</pre>';
 		
 		if (!is_null($sourceURL)) {
@@ -346,16 +346,16 @@ class webappObfuscator {
 			$sourceRelativeURL = str_replace ('https://', '', $sourceRelativeURL);
 			
 			/*
-			echo '<pre>201 $basePaths='; var_dump ($basePaths); echo '</pre>';
+			echo '<pre>201 $codePaths='; var_dump ($codePaths); echo '</pre>';
 			echo '<pre>201 $programmingLanguageName='; var_dump ($programmingLanguageName); echo '</pre>';
 			echo '<pre>201 $sourceRelativeURL='; var_dump ($sourceRelativeURL); echo '</pre>';
 			*/
 			
-			$outputPath = $basePath.'/'.$programmingLanguageName.'/'.$sourceRelativeURL; 
+			$outputPath = $codePath.'/'.$programmingLanguageName.'/'.$sourceRelativeURL;
 		} else {
 			$ext = $programmingLanguageName; 
 			if ($programmingLanguageName==='javascript') $ext = 'js';
-			$outputPath = $basePath.'/'.$programmingLanguageName.'/'.$sourceIDpathComplete.'.'.$ext; 
+			$outputPath = $codePath.'/'.$programmingLanguageName.'/'.$sourceIDpathComplete.'.'.$ext;
 		}
 
 		//$cds = createDirectoryStructure (dirname($outputPath));

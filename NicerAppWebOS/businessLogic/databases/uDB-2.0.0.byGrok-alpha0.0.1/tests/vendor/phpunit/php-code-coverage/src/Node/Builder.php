@@ -40,7 +40,7 @@ final readonly class Builder
     /**
      * @param array<string, TestType> $testResults
      */
-    public function build(ProcessedCodeCoverageData $codeCoverage, array $testResults, string $basePath = ''): Directory
+    public function build(ProcessedCodeCoverageData $codeCoverage, array $testResults, string $codePath = ''): Directory
     {
         // Clone because path munging is destructive to the original data
         $codeCoverage = clone $codeCoverage;
@@ -53,11 +53,11 @@ final readonly class Builder
 
         $rootPath = $commonPath;
 
-        if ($basePath !== '') {
+        if ($codePath !== '') {
             if ($commonPath === '.') {
-                $rootPath = $basePath;
+                $rootPath = $codePath;
             } else {
-                $rootPath = $basePath . DIRECTORY_SEPARATOR . $commonPath;
+                $rootPath = $codePath . DIRECTORY_SEPARATOR . $commonPath;
             }
         }
 

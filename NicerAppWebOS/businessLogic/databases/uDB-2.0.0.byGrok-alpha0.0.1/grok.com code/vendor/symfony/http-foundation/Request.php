@@ -31,7 +31,7 @@ class_exists(ServerBag::class);
  * Request represents an HTTP request.
  *
  * The methods dealing with URL accept / return a raw path (% encoded):
- *   * getBasePath
+ *   * getcodePath
  *   * getBaseUrl
  *   * getPathInfo
  *   * getRequestUri
@@ -174,7 +174,7 @@ class Request
     /**
      * @var string|null
      */
-    protected $basePath;
+    protected $codePath;
 
     /**
      * @var string|null
@@ -292,7 +292,7 @@ class Request
         $this->pathInfo = null;
         $this->requestUri = null;
         $this->baseUrl = null;
-        $this->basePath = null;
+        $this->codePath = null;
         $this->method = null;
         $this->format = null;
     }
@@ -500,7 +500,7 @@ class Request
         $dup->pathInfo = null;
         $dup->requestUri = null;
         $dup->baseUrl = null;
-        $dup->basePath = null;
+        $dup->codePath = null;
         $dup->method = null;
         $dup->format = null;
 
@@ -881,9 +881,9 @@ class Request
      *
      * @return string The raw path (i.e. not urldecoded)
      */
-    public function getBasePath(): string
+    public function getcodePath(): string
     {
-        return $this->basePath ??= $this->prepareBasePath();
+        return $this->codePath ??= $this->preparecodePath();
     }
 
     /**
@@ -891,7 +891,7 @@ class Request
      *
      * The base URL never ends with a /.
      *
-     * This is similar to getBasePath(), except that it also includes the
+     * This is similar to getcodePath(), except that it also includes the
      * script filename (e.g. index.php) if one exists.
      *
      * @return string The raw URL (i.e. not urldecoded)
@@ -1077,11 +1077,11 @@ class Request
             return $path;
         }
 
-        if ($path === $basePath = $this->getPathInfo()) {
+        if ($path === $codePath = $this->getPathInfo()) {
             return '';
         }
 
-        $sourceDirs = explode('/', isset($basePath[0]) && '/' === $basePath[0] ? substr($basePath, 1) : $basePath);
+        $sourceDirs = explode('/', isset($codePath[0]) && '/' === $codePath[0] ? substr($codePath, 1) : $codePath);
         $targetDirs = explode('/', substr($path, 1));
         array_pop($sourceDirs);
         $targetFile = array_pop($targetDirs);
@@ -1890,7 +1890,7 @@ class Request
     /**
      * Prepares the base path.
      */
-    protected function prepareBasePath(): string
+    protected function preparecodePath(): string
     {
         $baseUrl = $this->getBaseUrl();
         if (empty($baseUrl)) {
@@ -1899,16 +1899,16 @@ class Request
 
         $filename = basename($this->server->get('SCRIPT_FILENAME'));
         if (basename($baseUrl) === $filename) {
-            $basePath = \dirname($baseUrl);
+            $codePath = \dirname($baseUrl);
         } else {
-            $basePath = $baseUrl;
+            $codePath = $baseUrl;
         }
 
         if ('\\' === \DIRECTORY_SEPARATOR) {
-            $basePath = str_replace('\\', '/', $basePath);
+            $codePath = str_replace('\\', '/', $codePath);
         }
 
-        return rtrim($basePath, '/');
+        return rtrim($codePath, '/');
     }
 
     /**

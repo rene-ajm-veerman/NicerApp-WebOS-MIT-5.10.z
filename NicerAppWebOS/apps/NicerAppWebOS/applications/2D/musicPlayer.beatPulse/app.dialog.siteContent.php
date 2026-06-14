@@ -21,22 +21,26 @@ global $naWebOS; global $naLAN;
     */
 
 $view = $naWebOS->view;
-if (true) {
+
+if (false) {
     echo '<pre style="color:lime;background:blue;">app.dialog.siteContent.php::';
+
     var_dump($appFolder); echo PHP_EOL;
+
     var_dump ($view); echo PHP_EOL;
+
     var_dump(is_array($view[$appFolder])); echo PHP_EOL;
+
     echo '</pre>';
+
     exit;
-};
+}
+
 if (
     $naLAN
     || ((array_key_exists('pw',$_GET)
             && (
                 $_GET['pw']=='efv7750'
-                || $_GET['pw']=='50plzTolerate'
-                || $_GET['pw']=='alwaysXMASohNoes-50s'
-                || $_GET['pw']=='xmas2025ai-d'
                 || $_GET['pw']=='alwaysXMASzzz'
             )
         )
@@ -44,9 +48,9 @@ if (
 ) {
     if (is_array($view)) {
         if (!array_key_exists('rp', $view))
-            echo require_return (dirname(__FILE__).'/frontpage.php');
+            echo require_return (dirname(__FILE__).'/app.frontpage.php');
         else
-            echo require_return (dirname(__FILE__).'/app.dialog.siteContent_seeAndPlayMusicFolder.php');
+            echo require_return (dirname(__FILE__).'/app.seeAndPlayMusicFolder.php');
 
     }
 } else {

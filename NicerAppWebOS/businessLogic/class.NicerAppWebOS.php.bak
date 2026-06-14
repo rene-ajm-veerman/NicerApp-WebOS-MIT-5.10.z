@@ -8,7 +8,7 @@ class NicerAppWebOS {
 
     public function __construct () {
         $fncn = $this->cn.'->__construct()';
-        $this->basePath = realpath(dirname(__FILE__).'/../..');
+        $this->codePath = realpath(dirname(__FILE__).'/../..');
 
         $this->about = json_decode (file_get_contents(dirname(__FILE__).'/../version.json'));
         $this->browserDebug = false;
@@ -286,7 +286,7 @@ class NicerAppWebOS {
 
     public function getContent__standardErrorMessage ($msg) {
         $ret = [];
-        $file = $this->basePath.'/domainConfig/'.$this->domainFolder.'/errorMessage.default.php';
+        $file = $this->codePath.'/domainConfig/'.$this->domainFolder.'/errorMessage.default.php';
         if (!file_exists($file) || !is_readable($file)) {
             $html = $msg;
             $ret['siteContent'] = $html;
@@ -302,7 +302,7 @@ class NicerAppWebOS {
         $fncn = $this->cn.'::getContent__view_wikipedia()';
         global $naWebOS;
         // output frontpage.dialog.*.php
-        $folder = $this->basePath.'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/3rd-party-site.wikipedia.org/';
+        $folder = $this->codePath.'/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/3rd-party-site.wikipedia.org/';
         $files = getFilePathList($folder, false, '/app.dialog.*\.php/', null, array('file'), 1, 1, true)['files'];
         //{ echo $folder.'<br/>'.PHP_EOL; echo json_encode($files); echo PHP_EOL.PHP_EOL; };
         $ret = [];
@@ -340,7 +340,7 @@ class NicerAppWebOS {
         } else {
             if ($viewID==='/') {
                 // output frontpage.dialog.*.php
-                $folder = $this->basePath.'/domainConfig/'.$naWebOS->domainFolder.'/';
+                $folder = $this->codePath.'/domainConfig/'.$naWebOS->domainFolder.'/';
                 $files = getFilePathList($folder, false, '/frontpage.dialog.*\.php/', null, array('file'), 1, 1, true)['files'];
                 //if ($debug) { echo $folder.'<br/>'.PHP_EOL; echo json_encode($files); echo PHP_EOL.PHP_EOL; };
 
@@ -378,17 +378,17 @@ class NicerAppWebOS {
                     $viewsFolder = $view['appFolder'];
 
                     //foreach ($view as $viewsFolder => $viewSettings) {
-                        if (!file_exists($this->basePath.'/'.$viewsFolder)) {
-                            $msg = 'Folder "'.$this->basePath.'/'.$viewsFolder.'" does not exist.'.PHP_EOL;
+                        if (!file_exists($this->codePath.'/'.$viewsFolder)) {
+                            $msg = 'Folder "'.$this->codePath.'/'.$viewsFolder.'" does not exist.'.PHP_EOL;
                                 //.'$_SERVER='.json_encode($_SERVER,JSON_PRETTY_PRINT)
                                 //.' $VIEW='.json_encode($view,JSON_PRETTY_PRINT)
                                 //.' BACKTRACE='.json_encode(debug_backtrace(), JSON_PRETTY_PRINT);
                             trigger_error ($msg, E_USER_WARNING);
                         } else {
-                            $dbInitPHP = $this->basePath.'/'.$viewsFolder.'/db_init.php';
+                            $dbInitPHP = $this->codePath.'/'.$viewsFolder.'/db_init.php';
                             if (file_exists($dbInitPHP)) execPHP ($dbInitPHP);
 
-                            $files = getFilePathList ($this->basePath.'/'.$viewsFolder, true, '/app.*/', null, array('file'), 1, 1, true);
+                            $files = getFilePathList ($this->codePath.'/'.$viewsFolder, true, '/app.*/', null, array('file'), 1, 1, true);
                             if (!array_key_exists('files', $files)) {
                                 $msg = 'HTTP error 404 : no files matching app.* in "'.$viewsFolder.'"';
                                 trigger_error ($msg, E_USER_ERROR);
@@ -398,8 +398,8 @@ class NicerAppWebOS {
                             $files = $files['files'];
                             //if ($debug) { var_dump ($rootPath.'/'.$viewsFolder); echo '<pre style="color:yellow;background:red;">'; var_dump ($files); echo '</pre>'.PHP_EOL.PHP_EOL;  }; exit();
 
-                            $titleFile = $this->basePath.'/'.$viewsFolder.'/app.title.site.php';
-                            $desktopDefinitionFile = $this->basePath.'/'.$viewsFolder.'/index.desktopDefinition.json';
+                            $titleFile = $this->codePath.'/'.$viewsFolder.'/app.title.site.php';
+                            $desktopDefinitionFile = $this->codePath.'/'.$viewsFolder.'/index.desktopDefinition.json';
                             if (file_exists($titleFile))
                                 $ret['_title'] = require_return ($titleFile);
                             if (file_exists($desktopDefinitionFile))

@@ -192,7 +192,7 @@ final readonly class Facade
         return new Builder(new FileAnalyser(new ParsingSourceAnalyser, false, false))->build(
             $serializedCoverage['codeCoverage'],
             $serializedCoverage['testResults'],
-            $serializedCoverage['basePath'],
+            $serializedCoverage['codePath'],
         );
     }
 }

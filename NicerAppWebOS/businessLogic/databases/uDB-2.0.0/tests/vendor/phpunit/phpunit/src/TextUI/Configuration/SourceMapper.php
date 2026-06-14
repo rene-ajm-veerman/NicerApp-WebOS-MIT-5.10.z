@@ -83,7 +83,7 @@ final class SourceMapper
         $directories = $this->aggregateDirectories($source->includeDirectories());
 
         foreach ($directories as $path => [$prefixes, $suffixes]) {
-            $basePath = realpath($path);
+            $codePath = realpath($path);
 
             foreach ((new FileIteratorFacade)->getFilesAsArray($path, $suffixes, $prefixes) as $file) {
                 $file = realpath($file);
@@ -92,7 +92,7 @@ final class SourceMapper
                     continue;
                 }
 
-                if ($this->isInHiddenDirectory($file, $basePath)) {
+                if ($this->isInHiddenDirectory($file, $codePath)) {
                     continue;
                 }
 
@@ -187,9 +187,9 @@ final class SourceMapper
         return $files;
     }
 
-    private function isInHiddenDirectory(string $path, false|string $basePath): bool
+    private function isInHiddenDirectory(string $path, false|string $codePath): bool
     {
-        $relativePath = str_replace((string) $basePath, '', $path);
+        $relativePath = str_replace((string) $codePath, '', $path);
 
         $separator = DIRECTORY_SEPARATOR === '\\' ? '\\\\' : '/';
 

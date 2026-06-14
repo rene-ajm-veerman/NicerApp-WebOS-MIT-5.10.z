@@ -27,7 +27,7 @@ final class Iterator extends FilterIterator
 {
     public const int PREFIX = 0;
     public const int SUFFIX = 1;
-    private false|string $basePath;
+    private false|string $codePath;
 
     /**
      * @var list<string>
@@ -43,9 +43,9 @@ final class Iterator extends FilterIterator
      * @param list<string> $suffixes
      * @param list<string> $prefixes
      */
-    public function __construct(string $basePath, \Iterator $iterator, array $suffixes = [], array $prefixes = [])
+    public function __construct(string $codePath, \Iterator $iterator, array $suffixes = [], array $prefixes = [])
     {
-        $this->basePath = realpath($basePath);
+        $this->codePath = realpath($codePath);
         $this->prefixes = $prefixes;
         $this->suffixes = $suffixes;
 
@@ -73,7 +73,7 @@ final class Iterator extends FilterIterator
     private function acceptPath(string $path): bool
     {
         // Filter files in hidden directories by checking path that is relative to the base path.
-        if (preg_match('=/\.[^/]*/=', str_replace((string) $this->basePath, '', $path)) === 1) {
+        if (preg_match('=/\.[^/]*/=', str_replace((string) $this->codePath, '', $path)) === 1) {
             return false;
         }
 

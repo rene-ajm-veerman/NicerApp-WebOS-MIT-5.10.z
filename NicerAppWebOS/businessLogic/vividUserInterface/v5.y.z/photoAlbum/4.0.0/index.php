@@ -9,7 +9,7 @@
 //trigger_error (realpath(dirname(__FILE__).'/../../../').'/domainConfigs/'.$naWebOS->domainFolder.'/index.dark.css', E_USER_NOTICE);
     if (!array_key_exists('relPath1', $_GET)) {
         $baseURL = '/siteData/'.$naWebOS->domainFolder.'/';
-        $baseDir = $naWebOS->domainPath.'/siteData/'.$naWebOS->domainFolder.'/';
+        $baseDir = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domainFolder.'/';
     } else {
         $baseDir = $_GET['relPath1'];
         $rt = realpath(dirname(__FILE__).'/../../../../../../');
@@ -17,18 +17,18 @@
     }
 
     // sanity check
-    $_GET['basePath'] = str_replace('//', '/', $_GET['basePath']);
+    $_GET['codePath'] = str_replace('//', '/', $_GET['codePath']);
     //echo '<pre>'; var_dump ($_GET); exit();
 
 
-    $targetDir = $baseDir.$_GET['basePath'];
+    $targetDir = $baseDir.$_GET['codePath'];
     /*
     $targetDir =
         realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'../../../siteData/')
-        .DIRECTORY_SEPARATOR.$naWebOS->domainFolder.DIRECTORY_SEPARATOR.$_GET['basePath']
+        .DIRECTORY_SEPARATOR.$naWebOS->domainFolder.DIRECTORY_SEPARATOR.$_GET['codePath']
         .$relativePath;*/
 
-    $relativePath = $_GET['basePath'];
+    $relativePath = $_GET['codePath'];
     //onzin? $targetDir = $naWebOS->domainPath.'/siteData/'.$relativePath;
     $thumbDir = $targetDir.'/thumbs/300';
     if (!file_exists($thumbDir)) $thumbDir = $targetDir.'/thumbs';
@@ -37,7 +37,7 @@
 
 
     $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'), 1,1,true);
-    //echo '<pre>'; var_dump ($targetDir); var_dump($files);exit();
+    echo '<pre>'; var_dump ($targetDir); var_dump($files);exit();
     if (!array_key_exists('files', $files)) {
         $msg = $naWebOS->getContent__standardErrorMessage('No files found in this folder.')['siteContent'];
         //$msg = '<p>&nbsp;</p><span style="background:rgba(0,0,0,0.5);padding:10px;margin:20px;border-radius:20px;color:ivory;text-shadow:2px 2px 3px rgba(0,0,0,7);">No files found in this folder.</span>';
@@ -116,7 +116,7 @@ if (!array_key_exists('noIframe', $_GET) || $_GET['noIframe']===false) {
         echo '<div style="overflow:hidden;display:inline-block;width:140px;height:auto;margin:5px;padding:10px;padding-top:20px;border-radius:10px;border:1px solid black;background:rgba(0,0,0,0.7);box-shadow:2px 2px 2px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(0,0,255,0.5), inset -1px -1px 1px rgba(0,0,255,0.5);">';
         
         
-        $onclick = 'onclick="window.top.na.cms.onclick_mediaThumbnail(event, \''.$_GET['basePath'].'\', \''.$fileName.'\');"'; // gets overridden by the Theme Editor for it's backgrounds selection procedures.
+        $onclick = 'onclick="window.top.na.cms.onclick_mediaThumbnail(event, \''.$_GET['codePath'].'\', \''.$fileName.'\');"'; // gets overridden by the Theme Editor for it's backgrounds selection procedures.
         
         echo '<center><img src="'.$thumbURL.'" class="mediaThumb" style="width:134px" '.$onclick.'/><br/><span class="filename">'.$fileName.'</span></center></div>';
     }

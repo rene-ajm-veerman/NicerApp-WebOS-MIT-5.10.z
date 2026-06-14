@@ -349,7 +349,7 @@ CHANGELOG
  * Request::getClientIp() method doesn't take a parameter anymore but bases
    itself on the trustProxy parameter.
  * Added isMethod() to Request object.
- * [BC BREAK] The methods `getPathInfo()`, `getBaseUrl()` and `getBasePath()` of
+ * [BC BREAK] The methods `getPathInfo()`, `getBaseUrl()` and `getcodePath()` of
    a `Request` now all return a raw value (vs a urldecoded value before). Any call
    to one of these methods must be checked and wrapped in a `rawurldecode()` if
    needed.

@@ -66,7 +66,7 @@ $wo__logLevel = 1000; global $wo__logLevel; // range = 1 to 1000 ;
 	// what's listed here is the default, the actually-used $wo__logLevel is listed at the bottom of this file..
 	
 
-$errorsBasepath = dirname(__FILE__); global $errorsBasepath;
+$errorscodePath = dirname(__FILE__); global $errorscodePath;
 
 
 

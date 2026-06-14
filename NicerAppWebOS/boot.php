@@ -41,7 +41,10 @@ NicerApp WebOS from Nicer Enterprises
             //ugly hack:
             if ($bn=='NicerAppWebOS') $bn = 'said.by';
 
-            if (strpos($dir,'/news')!==false) {
+            if (
+                strpos($dir,'/news')!==false
+                || strpos($dir,'/musicPlayer.beatPulse')!==false
+            ) {
                 $settingsFilePath = $dir.'/../../../../../../../domains/'.$bn.'/domainConfig/settings.json';
             } else {
                 $settingsFilePath = $dir.'/../../../domains/'.$bn.'/domainConfig/settings.json';
@@ -95,9 +98,9 @@ NicerApp WebOS from Nicer Enterprises
     require_once($rootPath_na.'/NicerAppWebOS/functions.php');
     require_once($rootPath_na.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.errorHandler.php');
     //echo '<h2>'.$rootPath_na.'</h2>'.PHP_EOL;
-    $naDebugAll = false;
+    $naDebugAll = true;
     global $naDebugAll;
-    $naBypassMainErrorHandler = TRUE;
+    $naBypassMainErrorHandler = true;
     global $naBypassMainErrorHandler;
     //$naBypassMainErrorHandler = false;
     if ($naDebugAll) {
@@ -123,22 +126,19 @@ NicerApp WebOS from Nicer Enterprises
 
     global $naIsLatestVersion;
     $naIsLatestVersion = (/*$naWebOS->domain*/$_SERVER['SERVER_NAME']=='new.nicer.app');
-    $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-2.0.0';
 
+
+    $rootPath_na_dbs = $rootPath_na.'/NicerAppWebOS/businessLogic/databases/uDB-2.0.0';
     require_once ($rootPath_na_dbs.'/class.database_API.php');
     require_once ($rootPath_na_dbs.'/uDB-2.5.0.class.byGrok.php');
     //require_once ($rootPath_na_dbs.'/connectors/forFuture_design_coding_debugging_and_usage/class.fileSystemDB-1.0.0.php');
-
     //require_once ($rootPath_na_dbs.'/connectors/forFuture_design_coding_debugging_and_usage/class.adodb5_1.0.0.php');
     //require_once ($rootPath_na.'/NicerAppWebOS/3rd-party/adodb5/adodb.inc.php');
-
     require_once ($rootPath_na_dbs.'/plugins/class.couchdb-3.2.2_2.0.0.php');
     // Sag, the business code layer that i use towards the couchdb.apache.org database system.
     require_once($rootPath_na_dbs.'/plugins/CouchDB-specific/sag/src/Sag.php');
     require_once ($rootPath_na_dbs.'/plugins/CouchDB-specific/Sag-support-functions.php');
     //echo '<h1>'.$rootPath_na_dbs.'</h1>'; exit();
-
-
 
 
     require_once ($rootPath_na.'/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/boot.php');
@@ -423,8 +423,8 @@ NicerApp WebOS from Nicer Enterprises
 
 
 
-    $lanConfigFilepath = $naWebOS->domainPath.'/naLAN.json';
-    $lanConfigExampleFilepath = $naWebOS->domainPath.'/naLAN.EXAMPLE.json';
+    $lanConfigFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.json';
+    $lanConfigExampleFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.EXAMPLE.json';
     if (!file_exists($lanConfigFilepath)) {
         $msg = '"'.$lanConfigFilepath.'" does not exist. See "'.$lanConfigExampleFilepath.'" for a template.';
         echo $msg;

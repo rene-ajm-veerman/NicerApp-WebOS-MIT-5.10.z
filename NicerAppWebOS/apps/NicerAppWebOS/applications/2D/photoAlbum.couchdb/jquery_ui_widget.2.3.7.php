@@ -37,7 +37,7 @@ $(function() {
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight,html4',
-		url : './upload.2.3.7.php?basePath=<?php echo $_GET['basePath']?>',
+		url : './upload.2.3.7.php?codePath=<?php echo $_GET['codePath']?>',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 100 * 1000,

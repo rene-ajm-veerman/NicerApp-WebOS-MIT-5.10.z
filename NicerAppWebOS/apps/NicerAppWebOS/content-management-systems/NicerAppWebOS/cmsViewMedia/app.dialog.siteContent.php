@@ -43,24 +43,37 @@ echo $call->body->document;
 foreach ($view as $viewFolder => $viewSettings) break;
 $fn = $view[$viewFolder]['cmsViewMedia']['filename'];
 
-if (substr($view[$viewFolder]['cmsViewMedia']['basePath'],0,1)!=='/') {
+if (substr($view[$viewFolder]['cmsViewMedia']['codePath'],0,1)!=='/') {
     $baseURL = '/siteData/'.$naWebOS->domainFolder.'/';
-    $baseDir = $naWebOS->domainPath.'/siteData/'.$naWebOS->domainFolder.'/';
+    $baseDir = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domainFolder.'/';
 } else {
+    $baseURL = '/siteData/'.$naWebOS->domainFolder.'/';
     if (
         !array_key_exists('relPath1',$_GET)
         || !is_string($_GET['relPath1'])
         || $_GET['relPath1']===''
     ) $_GET['relPath1']
-        = realpath(dirname(__FILE__).'/../../../../../..');
+        = realpath(dirname(__FILE__).'/../../../../../../..');
 
     $baseDir = $_GET['relPath1'];
-    $rt = realpath(dirname(__FILE__).'/../../../../../..');
-    $baseURL = str_replace($rt, '', $baseDir);
+    $rt = realpath(dirname(__FILE__).'/../../../../../../..');
+    $baseURL = str_replace($rt, '', $baseDir).$baseURL;
+    //echo '<pre>'; var_dump($naWebOS->view);exit;
 }
+$baseDir = str_replace ($naWebOS->path.'/code','', $baseDir);
 $baseDir = str_replace ($naWebOS->path,'', $baseDir);
-$targetDir = $baseDir.$view[$viewFolder]['cmsViewMedia']['basePath'].'/';
-$targetURL = $baseURL.$view[$viewFolder]['cmsViewMedia']['basePath'].'/';
+$baseDir = str_replace ('//','/', $baseDir);
+$baseDir = str_replace ('domains/'.$naWebOS->domainFolder,'', $baseDir);
+$targetDir = $baseDir.$view[$viewFolder]['cmsViewMedia']['codePath'].'/';
+
+
+foreach ($naWebOS->view as $appFolder=>$appRec) {
+    foreach ($appRec as $appName => $appSettings) {
+        //var_dump ($baseURL);
+        //var_dump (str_replace($naWebOS->path.'/domains'.$naWebOS->domainFolder,'',$appSettings['codePath']));
+        $targetURL = $baseURL.str_replace($naWebOS->path.'/domains'.$naWebOS->domainFolder,'',$appSettings['codePath']);
+    }
+}
 $targetURL = str_replace ($naWebOS->domainPath, '', $targetURL);
 
 $dbg = array (
@@ -71,7 +84,7 @@ $dbg = array (
     'fn' => $fn,
     'view' => $view
 );
-//echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; //exit();
+//echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; exit();
 
 $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'), 1, 1, false);
 //echo '<pre>'; var_dump ($files); echo '</pre>'; exit();
@@ -81,6 +94,10 @@ foreach ($files as $idx => $file) {
     $next = '';
     $path = $file['webPath'];
     $path = str_replace('/'.$naWebOS->domainPath,'',$path);
+    $path = str_replace($naWebOS->domainPath,'',$path);
+    $path = str_replace('/domains/'.$naWebOS->domainFolder,'',$path);
+    $path = str_replace('//','/',$path);
+    if (substr($fn,0,2)=='//') $fn = substr ($fn, 1);
     if (substr($fn,0,1)=='/') $fn = substr ($fn, 1);
     if (basename($path)===$fn) {
         $myPath = $path;
@@ -98,7 +115,7 @@ foreach ($files as $idx => $file) {
         $prevArr = array (
             "/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/NicerAppWebOS" => [
                 'cmsViewMedia' => array (
-                    'basePath' => $view[$viewFolder]['cmsViewMedia']['basePath'],
+                    'codePath' => $view[$viewFolder]['cmsViewMedia']['codePath'],
                     'filename' => (is_string($prev) && $prev!=='' ? basename($prev) : '')
                 )
             ]
@@ -109,7 +126,7 @@ foreach ($files as $idx => $file) {
         $nextArr = array (
             "/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/NicerAppWebOS" => [
                 'cmsViewMedia' => array (
-                    'basePath' => $view[$viewFolder]['cmsViewMedia']['basePath'],
+                    'codePath' => $view[$viewFolder]['cmsViewMedia']['codePath'],
                     'filename' => (is_string($next) && $next!=='' ? basename($next) : '' )
                 )
             ]

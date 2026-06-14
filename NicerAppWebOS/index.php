@@ -1,18 +1,26 @@
 <?php
-    require_once(dirname(__FILE__).'/boot.php');
+require_once(dirname(__FILE__).'/boot.php');
 
-    global $naWebOS;
-    global $useRememberMe;
+global $naWebOS;
+global $useRememberMe;
 
-    $siteCurrentlyDown = false;
-    $debugMe = false;
+$siteCurrentlyDown = false;
+$debugMe = false;
 
-    if ($siteCurrentlyDown) {
-        $debugMe = true;
+if ($siteCurrentlyDown) {
+    $debugMe = true;
 ?>
 <div id="siteContent_indexFooter1" class="naVividDialogContent_footer__1">
-<h1>Site currently down for maintenance &amp; upgrading of the code &amp; CSS artwork.</h1>
-<p><a href="https://x.com/ReneVeerma64021">And I have my entire life under re-arrangement too, folks</a>.</p>
+<h1>Site currently down for maintenance.</h1>
+<p>
+2026-06-10 09:45CEST (Amsterdam.NL AMS):<br/>
+I'm working on a major renovation of the base layers of my code.<br/>
+Site will be offline for approx a few days to 4 weeks, as this is an AI oversight job that'll require much human editing by yours truly ;)<br/>
+Even the entire PHP and JS errorhandling will have to be rewritten to allow for huge logs of such data.
+</p>
+<p>
+After these important changes are applied, NicerApp should be far more stable software. :-)
+</p>
 <style>
     pre {
         margin : 10px;
@@ -26,13 +34,14 @@
 <?php
     $useRememberMe = true;
     if ($debugMe) {
-        echo '<pre style="color:lime;">'.json_encode($naWebOS->about, JSON_PRETTY_PRINT).'</pre>';
-        echo '<pre style="color:skyblue;">'.$naWebOS->basePath.'</pre>';
-        echo '<pre style="color:red;">'.$naWebOS->domainFolder.'</pre>';
-        // echo '<pre style="color:brown;">'.json_decode(json_encode($_GET),JSON_PRETTY_PRINT).'</pre>';
-        // echo '<pre style="color:black;">'.json_decode(json_encode($_POST),JSON_PRETTY_PRINT).'</pre>';
-        echo '<pre style="color:white;">'; var_dump($_GET); echo '</pre>';
-        echo '<pre style="color:grey;">'; var_dump($_POST); echo '</pre>';
+        echo '<pre style="color:lime;">$naWebOS->about='.json_encode($naWebOS->about, JSON_PRETTY_PRINT).'</pre>';
+        echo '<pre style="color:skyblue;">$naWebOS->path='.$naWebOS->path.'</pre>';
+        echo '<pre style="color:skyblue;">$naWebOS->codePath='.$naWebOS->codePath.'</pre>';
+        echo '<pre style="color:skyblue;">$naWebOS->webPath='.$naWebOS->webPath.'</pre>';
+        echo '<pre style="color:skyblue;">$naWebOS->domainPath='.$naWebOS->domainPath.'</pre>';
+        echo '<pre style="color:skyblue;">$naWebOS->domainFolder='.$naWebOS->domainFolder.'</pre>';
+        echo '<pre style="color:lime;">$_GET='.json_encode($_GET,JSON_PRETTY_PRINT).'</pre>';
+        echo '<pre style="color:yellow;">$_POST='.json_encode($_POST,JSON_PRETTY_PRINT).'</pre>';
         exit();
     }
     echo $naWebOS->getSite();

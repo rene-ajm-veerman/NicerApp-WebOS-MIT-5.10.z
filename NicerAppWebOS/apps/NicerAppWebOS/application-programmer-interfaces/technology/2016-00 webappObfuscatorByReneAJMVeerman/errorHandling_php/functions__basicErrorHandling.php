@@ -100,15 +100,15 @@ function woBasicErrorHandler ($errno, $errstr, $errfile, $errline, $errcontext) 
 }
 
 function woBasicErrorHandler__prettyStacktrace ($st) {
-	global $errorsBasepath;
+	global $errorscodePath;
 	
 	$r = 
 		'<div class="woStacktrace">'
-		.'<span class="woStacktrace__basePath">All filenames are under : '.$errorsBasepath.'</span><br/>';
+		.'<span class="woStacktrace__codePath">All filenames are under : '.$errorscodePath.'</span><br/>';
 		
 	foreach ($st as $stackNumber => $stackData) {
 		if (array_key_exists('file', $stackData)) {
-			$relPath = '...'.str_replace($errorsBasepath, '', $stackData['file']);
+			$relPath = '...'.str_replace($errorscodePath, '', $stackData['file']);
 		} else {
 			$relPath = '.../';
 		};

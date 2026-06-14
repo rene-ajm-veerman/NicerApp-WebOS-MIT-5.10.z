@@ -469,20 +469,23 @@ function mainErrorHandler ($errno, $errstr, $errfile, $errline) {
         return false;
     }*/
 
-    global $naWebOS; global $naErr; global $naLog;
+    global $naWebOS; global $naErr; global $naLog; global $naLAN;
 
 
     //trigger_error (json_encode(debug_backtrace()), E_USER_NOTICE);
-    /*$dbg = [
-        'errno' => $errno,
-        'errstr' => $errstr,
-        'errfile' => $errfile,
-        'errline' => $errline
-    ];
-    { echo '<pre style="color:white;background:rgba(255,0,0,0.8);border-radius:10px;padding:8px;box-shadow:inset 1px 1px 3px 2px rgba(0,0,0,0.7), 2px 2px 2px 1px rgba(0,0,0,0.8);">'; echo json_encode($dbg, JSON_PRETTY_PRINT);
-        { echo '<pre style="color:white;background:rgba(50,0,0,0.5);border-radius:10px;padding:8px;box-shadow:inset 1px 1px 3px 2px rgba(0,0,0,0.7), 2px 2px 2px 1px rgba(0,0,0,0.8);">'; echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT); echo '</pre>'; }
-        echo '</pre>';
-    }*/
+    if ($naLAN) {
+        $dbg = [
+            'errno' => $errno,
+            'errstr' => $errstr,
+            'errfile' => $errfile,
+            'errline' => $errline
+        ];
+        {
+            echo '<pre style="color:white;background:rgba(255,0,0,0.8);border-radius:10px;padding:8px;box-shadow:inset 1px 1px 3px 2px rgba(0,0,0,0.7), 2px 2px 2px 1px rgba(0,0,0,0.8);">'; echo json_encode($dbg, JSON_PRETTY_PRINT);
+            //{ echo '<pre style="white-space:pre-wrap;word-break:break-all;font-size:small;color:white;background:rgba(50,0,0,0.5);border-radius:10px;padding:8px;box-shadow:inset 1px 1px 3px 2px rgba(0,0,0,0.7), 2px 2px 2px 1px rgba(0,0,0,0.8);">'; echo json_encode(debug_backtrace(), JSON_PRETTY_PRINT); echo '</pre>'; }
+            echo '</pre>';
+        }
+    }
 
     if (
         (
@@ -963,12 +966,17 @@ function require_return($file, $once = false) {
         }
         $output = ob_get_clean();
 
-        return $output !== false ? $output : '';
+        $r = $output !== false ? $output : '';
+        return $r;
     } catch (Throwable $e) {
         ob_end_clean();
         //error_log("require_return error in {$file}: " . $e->getMessage()."\n".json_encode(debug_backtrace(),JSON_PRETTY_PRINT));
         error_log("require_return error in {$file}: " . $e->getMessage());
-        return '<!-- Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .json_encode(debug_backtrace(),JSON_PRETTY_PRINT). ' -->';
+        if ($naLAN) {
+            return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT). '</pre>';
+        } else {
+            return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1>';
+        }
     }
 }
 
@@ -1790,11 +1798,11 @@ another example:
 
 	//if (stripos($path, $pathStart)!==false) {
 		if ($debug) { echo '<pre style="color:black;background:lime;">'; var_dump ($path); var_dump ($excludeFolders); echo '</pre>'; };
-		if (!realpath($path)) {
+		if (!is_dir($path)) {
             $msg = $fncn.' : FATAL ERROR : "'.$path.'" does not exist.';
             $msg = $naWebOS->getContent__standardErrorMessage($msg)['siteContent'];
             echo '<pre  style="background:rgba(0,0,0,0.5);border:1px solid grey; box-shadow:2px 2px 4px 2px rgba(0,0,0,0.7); padding:10px;margin:20px;border-radius:8px;color:ivory;text-shadow:2px 2px 3px rgba(0,0,0,7);">';debug_print_backtrace();
-            trigger_error ($msg, E_USER_ERROR);
+            //trigger_error ($msg, E_USER_ERROR);
             echo $msg;
             exit();
         }
@@ -1973,6 +1981,7 @@ another example:
                                     'realPath' => $realPath.basename($filepath),
                                     'webPath' => '/'.str_replace($naWebOS->path,'',str_replace($pathStart.'/','',$filepath))
                                 ];
+                                $result[$idx]['webPath'] = str_replace('/code','',$result[$idx]['webPath']);
                                 //echo '<pre style="color:white;background:blue;padding:5px;margin:10px;border-radius:8px;">';var_dump($naWebOS->webPath);  var_dump($result[$idx]);echo '</pre>';
                             } else {
                                 if (!array_key_exists('files',$result)) $result['files'] = [];
@@ -1981,9 +1990,11 @@ another example:
                                     'realPath' => $realPath.basename($filepath),
                                     'webPath' => '/'.str_replace($naWebOS->path,'',str_replace($pathStart.'/','',$filepath))
                                 ];
+                                $result['files'][basename($filepath)]['webPath'] = str_replace('/code','',$result['files'][basename($filepath)]['webPath']);
 
                                 //echo '<pre style="color:blue;background:navy;padding:5px;margin:10px;border-radius:8px;">'; var_dump($naWebOS->webPath); var_dump($result['files'][basename($filepath)]);echo '</pre>';
                             }
+
                         }
 
                     } // !dot-files ('.' && '..', current & parent path on OS commandline)

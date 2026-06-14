@@ -44,22 +44,22 @@ global $filePerms_ownerGroup;
 global $filePerms_perms;
 global $filePerms_perms_publicWriteableExecutable;
 
-$debug = false;
+$debug = true;
 
 // Settings
-$relativePath = array_key_exists('basePath',$_GET) ? $_GET['basePath'].(array_key_exists('relativePath', $_POST)?$_POST['relativePath']:'') : '';
+$relativePath = array_key_exists('codePath',$_GET) ? $_GET['codePath'].(array_key_exists('relativePath', $_POST)?$_POST['relativePath']:'') : '';
 $relativePath = rtrim($relativePath, '/');
 if ($debug) { echo '$relativePath='; var_dump ($relativePath); echo PHP_EOL.PHP_EOL; }
 
 /*
 $targetDir = 
         realpath(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'../../../siteData/')
-        .DIRECTORY_SEPARATOR.$naWebOS->domainFolder.DIRECTORY_SEPARATOR.$_GET['basePath']
+        .DIRECTORY_SEPARATOR.$naWebOS->domainFolder.DIRECTORY_SEPARATOR.$_GET['codePath']
         .$relativePath;*/
 
 //var_dump ($naWebOS->domain); die();
-$targetDir = $naWebOS->domainPath.'/siteData/'.$naWebOS->domain.'/'.$relativePath;
-if ($debug) { echo '$targetDir='; var_dump ($targetDir); echo PHP_EOL.PHP_EOL; exit(); }
+$targetDir = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domain.'/'.$relativePath;
+if ($debug) { echo '$targetDir='; var_dump ($targetDir); echo PHP_EOL.PHP_EOL; }
     
 $fileName = $_POST['name'];
 $fileNameParts = pathinfo ($_POST['name']);

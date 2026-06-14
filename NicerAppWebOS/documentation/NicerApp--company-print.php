@@ -2,7 +2,7 @@
     require_once (dirname(__FILE__).'/../../NicerAppWebOS/boot.php');
     global $naWebOS;
     global $naDate;
-    require_once ($naWebOS->basePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php');
+    require_once ($naWebOS->codePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php');
     $diaries = new naDiaries();
 ?>
 <script type="text/javascript" src="/NicerAppWebOS/3rd-party/jQuery/jquery-3.7.0.min.js?c=20250817_120652"></script>
@@ -26,7 +26,7 @@
     <?php
     global $naWebOS;
     require_once ($naWebOS->webPath.'/../domains/'.$naWebOS->domainFolder.'/domainConfig/pageHeader.php');
-    $fp = $naWebOS->basePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php';
+    $fp = $naWebOS->codePath.'/NicerAppWebOS/businessLogic/class.NicerAppWebOS.diaries.php';
     require_once ($fp);
     $diaries = new naDiaries();
     ?>

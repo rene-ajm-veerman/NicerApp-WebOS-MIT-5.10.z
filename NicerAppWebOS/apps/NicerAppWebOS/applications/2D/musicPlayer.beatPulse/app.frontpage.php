@@ -1,7 +1,7 @@
 <?php
     // public vars :
     $rescanContent = false;
-
+//echo decode_base64_url ('eyJhaWQiOjAsImZkcyI6NDYyLCJycCI6IlwvRWFybHkgMjFzdCBDZW50dXJ5XC9BcmFiaWMgVHJvcGljYWwgRWxlY3Ryb25pYyBEb3dudGVtcG9cLzAxXC9NYXVnbGlcLyJ9'); exit;
     // private vars & code :
     $rootPath_vkdmd = realpath(dirname(__FILE__).'/../../../../../..');
     //echo $rootPath_vkdmd; die();
@@ -11,7 +11,7 @@
     require_once ($naWebOS->domainPath.'/domainConfig/mainmenu.items.php');
     //var_dump ($naURLs);
     $appFolder = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/musicPlayer.beatPulse';
-    $rf = dirname(__FILE__).'/music/';
+    $rf = __DIR__.'/music/';
     $ffi = []; // file and folder index
     $views = [];
     $k3 = 0;
@@ -20,25 +20,28 @@
     $pw = 'outtaLuck';
     if (array_key_exists('pw',$_GET)) $pw = $_GET['pw'];
     $idxStart = 0;
-    if (array_key_exists('idxStart', $_GET)) $idxStart = intval($_GET['idxStart']);
+    if (array_key_exists('idxStart', $_GET)) $idxStart = intval($_GET['idxStart']); else $idxStart = 0;
     global $naLAN;
     //var_dump($rf); die();
     $read = false;
     $collectionDurationInSeconds = 0;
     $pageDurationInSeconds = 0;
-    $rescanContent = false; // not really cheating when you're bypassing 10 minutes worth of mp3info exec() calls
-    if (file_exists(dirname(__FILE__).'/index.views.json')) && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
+
+    $cacheFile = __DIR__.'/index.views.json';
+    $rescanContent = (!file_exists($cacheFile) || !is_readable($cacheFile) || file_get_contents($cacheFile)=='');
+    //var_dump($rescanContent);exit;
+    if (!$rescanContent) {
     //if (!$naLAN && file_exists(dirname(__FILE__).'/index.views.json') && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
         // ONLY SLOWS THINGS DOWN CONSIDERABLY $folders = json_decode(file_get_contents($rf.'/index.foldersAndFiles.json'),true);
-        $views = json_decode(file_get_contents(dirname(__FILE__).'/index.views.json'),true);
+        $views = json_decode(file_get_contents($cacheFile),true);
         $read = true;
         //var_dump(json_last_error_msg());
-        //var_dump($views);die();
+        //var_dump($views);exit;
     } else {
         $folders = getFilePathList ($rf,true,'/.*/',null,['dir']);
         sort ($folders);
-        //echo '<pre>'; var_dump ($folders); echo '</pre>'; die();
-        //echo json_encode($folders,JSON_PRETTY_PRINT);die();
+        //echo '<pre>'; var_dump ($rf); var_dump ($folders); echo '</pre>'; exit;
+        //echo json_encode($folders,JSON_PRETTY_PRINT);exit;
         foreach ($folders as $idx => $folder) {
             if (strpos($folder['path'],'/meta')!==false) continue;
             $k1 = 'music__index__';
@@ -88,6 +91,7 @@
                 $output = null;
                 $result = null;
                 exec ($exec, $output, $result);
+
                 if ($result===0) {
                     $folderDurationInSeconds += intval($output[0]);
                 }
@@ -117,13 +121,14 @@
     $urls = [];
     foreach ($views as $viewIDX => &$view) {
         foreach ($view as $viewIDX2 => &$app) {
-            foreach ($app as $appFolder => &$viewSettings) {
+            foreach ($app as $appFolder2 => &$viewSettings) {
                 $urls[$viewIDX2] = '/view/'.encode_base64_url(json_encode($viewSettings)).'?idxStart='.$idxStart.'&pw='.$pw;
             }
         }
     };
     if (!$read) file_put_contents(dirname(__FILE__).'/index.views.json', json_encode($views));
 
+    //$rescanContent = false; // not really cheating when you're bypassing 10 minutes worth of mp3info exec() calls
     if ($rescanContent) {
         function arrayWalk_key_buildMenu ($cd) {
             global $naWebOS;
@@ -160,8 +165,8 @@
             $html .= $naWebOS->html($cd['level'], '<li><a href="'.$urls[$ki].'">'.$vs['rp'].'</a>');
         }
 
-        $folders = getFilePathList ($rf,true,'/.*/',null,['dir'], null, null, true);
-        echo '<pre style="color:yellow;font-size:small;">'; var_dump ($folders); echo '</pre>';
+        $folders = getFilePathList ($rf,false,'/.*/',null,['dir'], null, null, true);
+        //echo '<pre style="color:yellow;font-size:small;">'; var_dump ($folders); echo '</pre>'; exit;
         $keyCount = 0;
         $valueCount = 0;
         $html = '<li><a href="/music?pw='.$_GET['pw'].'">Music</a><ul>';

@@ -55,7 +55,7 @@ $dbg = array (
     'view' => $view
 );
 //echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>';
-$_GET['basePath'] = $view['cmsViewMediaAlbum']['relPath'];
+$_GET['codePath'] = $view['cmsViewMediaAlbum']['relPath'];
 $_GET['relPath1'] = realpath(dirname(__FILE__).'/../../../../../..');
 $_GET['noIframe'] = true;
 require_once (dirname(__FILE__).'/../../../../../../NicerAppWebOS/logic.userInterface/photoAlbum/4.0.0/index.php');

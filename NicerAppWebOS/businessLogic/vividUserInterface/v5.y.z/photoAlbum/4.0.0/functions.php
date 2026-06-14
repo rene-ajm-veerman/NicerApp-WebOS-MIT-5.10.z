@@ -1,7 +1,7 @@
 <?php
 //require_once (dirname(__FILE__).'/../../../../boot_stage_001.php');
     
-function naPhotoAlbum ($basePath=null) {
+function naPhotoAlbum ($codePath=null) {
     $root = realpath(dirname(__FILE__).'/../../../../');
     $fncn = __FILE__;
     global $naWebOS;
@@ -11,8 +11,8 @@ function naPhotoAlbum ($basePath=null) {
     error_reporting(E_ALL);    
     
     $baseURL = '/siteData/'.$naWebOS->domainFolder;
-    $baseDir = $naWebOS->domainPath.'/siteData/'.$naWebOS->domainFolder;
-    $targetDir = realpath($baseDir.'/'.$basePath['mediaFolder']);
+    $baseDir = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domainFolder;
+    $targetDir = $baseDir.'/'.$codePath['mediaFolder'];
     $thumbDir = $targetDir.'/thumbs';
     
     $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'));
@@ -55,7 +55,7 @@ function naPhotoAlbum ($basePath=null) {
         $arr = array (
             "/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/NicerAppWebOS" => [
                 "cmsViewMedia" => array (
-                    "basePath" => $targetDir,
+                    "codePath" => $targetDir,
                     "filename" => $fileName
                 )
             ]

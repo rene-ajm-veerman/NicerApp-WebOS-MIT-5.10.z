@@ -1035,7 +1035,7 @@ class class_NicerAppWebOS_database_API_couchdb_3_2__2_0_0 {
 
         $rec = [
             'index' => [
-                'fields' => [ 'datetimeStr' ]
+                'fields' => [ 'datetimeStr', 'parentID' ]
             ],
             'name' => 'sortIndex_datetimeStr',
             'type' => 'json'

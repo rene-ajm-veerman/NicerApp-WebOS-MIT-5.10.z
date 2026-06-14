@@ -125,7 +125,16 @@ na.backgrounds = na.background = na.bg = {
 
         const seen = new Set(), seenRFP = new Set(); // faster deduplication than .includes() on array
 
+        const banned = function (rfp) {
+            return (
+                // i deleted these folders from my siteMedia/backgrounds folder by now, for reaons of lameness. :p
+                !rfp.match('fantasy')
+                || !rfp.match('flowers')
+            )
+        }
+
         for (const rfp in t.metaInfo) {
+            if (banned(rfp)) continue;
             const r = t.metaInfo[rfp];
             for (const providerName in r) {
                 const pr = r[providerName];
@@ -175,8 +184,12 @@ na.backgrounds = na.background = na.bg = {
                         // For each meaningful token
                         tokens.forEach(tokenRaw => {
                             const token = normalizeToken(tokenRaw);
-                            if (token.length < 2) return;               // skip very short junk
+                            if (token.length < 3) return;               // skip very short junk
                             if (/^\d+$/.test(token)) return;            // skip pure numbers
+                            if (
+                                token=='in' || token=='with' || token=='for'
+                                || token=='and' || token=='the'
+                            ) return;
 
                             if (!t.tokenIndex[token]) {
                                 t.tokenIndex[token] = {
@@ -427,7 +440,6 @@ na.backgrounds = na.background = na.bg = {
                         )
                         && (
                             $(window).width() > w
-                            || $(window).height() > h
                         )
                     ) {
                         hit = false;

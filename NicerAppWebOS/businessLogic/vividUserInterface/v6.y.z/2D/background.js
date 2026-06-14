@@ -433,7 +433,7 @@ na.backgrounds = na.background = na.bg = {
                     }
 
                     if (
-                        !(
+                        (
                             bgk.match(/.*\.jpg$/i)
                             || bgk.match(/.*\.png$/i)
                             || bgk.match(/.*\.gif$/i)

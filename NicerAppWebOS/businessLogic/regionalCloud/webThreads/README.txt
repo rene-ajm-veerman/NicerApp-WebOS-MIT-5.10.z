@@ -3,7 +3,7 @@ introducing (somewhere around 2040 to 2050) : webThreads by Rene AJM Veerman and
 summary:
 
 webThreads aims to be a safe effective non-sentient multi-tasking engine.
-the workhorse for my future businesses nicer.app and said.by
+it will become the workhorse for my future business activities on nicer.app and said.by
 
 it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and performing thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed in parallel on any of a given number of helper servers.
 

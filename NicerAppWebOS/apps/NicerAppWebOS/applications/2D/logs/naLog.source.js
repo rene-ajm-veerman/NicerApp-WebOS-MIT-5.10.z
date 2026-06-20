@@ -93,7 +93,7 @@ export var naLog = {
                 var dto = new Date(dit.t * 1000),
                 dt = dto.format("yyyy-mm-dd HH:MM:ss.l");
 
-                if (dto < (new Date().getTime()-8*3600*1000)) {
+                if (dto > (new Date().getTime()-8*3600*1000)) {
 
                     html +=
                         '<div class="naIPlog_entry '+dit.htmlClasses+'">';
@@ -239,7 +239,7 @@ export var naLog = {
                 stats.forEach((item, index) => {
                     html += `
                     <div class="link-item" style="background:rgba(0,0,0,0.3); border:1px solid #45475a; border-radius:12px; margin:10px 0; padding:16px 20px; display:flex; align-items:center;">
-                    <div style="rgba(0,0,0,0.3); color:#1e1e2e; font-weight:bold; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:16px; flex-shrink:0;">
+                    <div style="rgba(0,0,0,0.3); color:ivory; text-shadow:0px 0px 3px rgba(0,0,0,1), 0px 0px 0px yellow, 2px 2px 4px rgba(0,0,0,0.8);font-size:large;font-weight:bold; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:16px; flex-shrink:0;">
                     ${index + 1}
                     </div>
                     <div style="flex:1; overflow:hidden;">
@@ -247,7 +247,7 @@ export var naLog = {
                     target="_new"
                     class="nomod noPushState"
                     style="text-decoration:none; color:inherit;">
-                    <div style="color:#a6adc8; font-family:monospace; font-size:1.05em; word-break:break-all;">
+                    <div style="color:ivory; text-shadow:0px 0px 3px rgba(0,0,0,1), 0px 0px 0px yellow, 2px 2px 4px rgba(0,0,0,0.8); font-family:monospace; font-size:large;font-weight:bold;; word-break:break-all;">
                     ${item.partial}
                     </div>
                     </a>

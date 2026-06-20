@@ -5,7 +5,7 @@ summary:
 schizoThreads aims to be a safe effective non-sentient multi-tasking engine.
 the workhorse for my future businesses nicer.app and said.by
 
-it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed on any of a given number of helper servers.
+it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed in parallel on any of a given number of helper servers.
 
 it's a way to leverage LANs and WANs to effectively arrive at a youtube.com design, but on home servers instead of in data centers.
 

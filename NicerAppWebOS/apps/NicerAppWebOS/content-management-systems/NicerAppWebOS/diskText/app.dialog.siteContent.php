@@ -21,7 +21,7 @@ foreach ($view as $fp1 => $rec) {
     $fp1 = $naWebOS->domainPath.$fp1;
 
     if (substr($rec['file'],0,1)=='/')
-        $fPath = $naWebOS->domainPath.$rec['file'];
+        $fPath = $naWebOS->domainPath.'/'.$rec['file'];
     else
         $fPath = $fp1.'/'.$rec['file'];
     //echo '<h2>'.$fPath.'</h2>';

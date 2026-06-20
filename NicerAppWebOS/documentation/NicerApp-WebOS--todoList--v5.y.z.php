@@ -1,6 +1,6 @@
 <?php
     global $naWebOS;
-    require_once ($naWebOS->domainPath.'/pageHeader.php');
+    require_once ($naWebOS->domainPath.'/domainConfig/pageHeader.php');
 ?>
 
 <h1 class="contentSectionTitle2"><span class="contentSectionTitle2_span">NicerApp WebOS Development Direction</span></h1><br/><br/>

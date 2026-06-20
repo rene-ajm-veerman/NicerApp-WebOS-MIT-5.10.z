@@ -5,12 +5,12 @@ summary:
 webThreads aims to be a safe effective non-sentient multi-tasking engine.
 the workhorse for my future businesses nicer.app and said.by
 
-it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed in parallel on any of a given number of helper servers.
+it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and performing thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed in parallel on any of a given number of helper servers.
 
 it's a way to leverage LANs and WANs to effectively arrive at a youtube.com design, but on home servers instead of in data centers.
 
 dependencies :
-***** uDB-x.y.z (universal database engine, designed to merge mongodb and sql languages into a neat PHP database Application Programmer Interface), with fsDB plugin finished and debugged, because fsDB which means filesystemDB, would handle storage of documents (ID.json) in folders named 'mydomain.tld__databaseName' somewhere under .../domains/mydomain.tld/siteData/mydomain.tld/fsDB-x.y.z/
+***** uDB-x.y.z (universal database engine, designed to merge the recursive MongoDB and table-based SQL database languages into a neat PHP database Application Programmer Interface), with fsDB plugin finished and debugged, because fsDB which means filesystemDB, would handle storage of documents (ID.json) in folders named 'mydomain.tld__databaseName' somewhere under .../domains/mydomain.tld/siteData/mydomain.tld/fsDB-x.y.z/
 
 **** sshfs by ubuntu.com and kubuntu.com
 

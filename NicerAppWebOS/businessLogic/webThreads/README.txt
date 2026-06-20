@@ -1,8 +1,8 @@
-introducing (somewhere around 2040 to 2050) : schizoThreads by Rene AJM Veerman and a whole bunch of free AI coding tools ;)
+introducing (somewhere around 2040 to 2050) : webThreads by Rene AJM Veerman and a whole bunch of free AI coding tools ;)
 
 summary:
 
-schizoThreads aims to be a safe effective non-sentient multi-tasking engine.
+webThreads aims to be a safe effective non-sentient multi-tasking engine.
 the workhorse for my future businesses nicer.app and said.by
 
 it takes any big tasks, such as uploading a media/data subfolder set into the servers' databases, describing them using AI and thumbnail creation for photos and videos, and turns this task into multiple smaller parts that can each be executed in parallel on any of a given number of helper servers.
@@ -21,4 +21,4 @@ dependencies :
 **** (uDB + fsDB) + (RAM disk + sshfs) = regionalCloud-x.y.z, ultra-fast WWW capable Data Management Software.
 
 so, it's real.
-the rest is still classified, as it's held in explorative investigation until i can reveal more in this document.
+the rest is still classified, as it's held in explorative investigation in it's real relation to human telepathic abilities (shared among a small but significant part of nearly every city and larger town's population) at https://said.by/telepathy-manual, until i can reveal more about webThreads in this document.

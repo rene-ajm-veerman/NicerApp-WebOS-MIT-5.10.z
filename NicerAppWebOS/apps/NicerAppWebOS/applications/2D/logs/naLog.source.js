@@ -90,80 +90,84 @@ export var naLog = {
 
                 };
 
-                html +=
-                    '<div class="naIPlog_entry '+dit.htmlClasses+'">';
-                if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
-                    var dt = new Date(dit.t * 1000),
-                    dt = dt.format("yyyy-mm-dd HH:MM:ss.l");
+                var dto = new Date(dit.t * 1000),
+                dt = dto.format("yyyy-mm-dd HH:MM:ss.l");
+
+                if (dto < (new Date().getTime()-8*3600*1000)) {
 
                     html +=
-                        '<span class="naIPlog_header2a">'
-                            +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
-                            +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
-                            +'<span class="naIPlog_address">'+dit.ip+'</span>'
-                            +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'" class="naIPlog_backgroundSetTo" onclick="'+dit.msgProcessed.onclickHTML+'">'+dit.msgProcessed.msg+'</span>'
-                            //+'<span class="naIPlog_referrer">referrer : '+dit.referrer+'</span> '
-                        +'</span><br>';
+                        '<div class="naIPlog_entry '+dit.htmlClasses+'">';
+                    if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
 
-                } else {
-                    var
-                    dt = new Date(parseInt(dit.t*1000)),
-                    dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
-                    info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                        html +=
+                            '<span class="naIPlog_header2a">'
+                                +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
+                                +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
+                                +'<span class="naIPlog_address">'+dit.ip+'</span>'
+                                +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'" class="naIPlog_backgroundSetTo" onclick="'+dit.msgProcessed.onclickHTML+'">'+dit.msgProcessed.msg+'</span>'
+                                +'<span class="naIPlog_referrer">referrer : '+dit.referrer+'</span> '
+                            +'</span><br>';
 
-                    if (dit.msg.match('Fully started for')) {
-                        try {
-                            var
-                            x = dit.msg.match(/href=\\"(https:\/\/.*?)\\"/),
-                            x1 = x[1].replace(/https:\/\/.*?\/view\//,''),
-                            jsonStr = na.m.decode_base64_url(x1),
-                            json = JSON.parse(jsonStr);
-
-                            for (var app in json) break;
-
-                            //if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+JSON.stringify(json)+'<');
-                            if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+app+'<');
-
-
-                            var
-                            dt = new Date(parseInt(dit.t*1000)),
-                            dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
-                            info3 = { referrer : dit.referrer, target : json, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
-                            //dit.msg = 'NicerApp WebOS Fully started.';
-                        } catch (e) {
-                        }
                     } else {
-
-                        if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
-
                         var
                         dt = new Date(parseInt(dit.t*1000)),
                         dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
                         info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
 
-                        if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                        if (dit.msg.match('Fully started for')) {
+                            try {
+                                var
+                                x = dit.msg.match(/href=\\"(https:\/\/.*?)\\"/),
+                                x1 = x[1].replace(/https:\/\/.*?\/view\//,''),
+                                jsonStr = na.m.decode_base64_url(x1),
+                                json = JSON.parse(jsonStr);
+
+                                for (var app in json) break;
+
+                                //if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+JSON.stringify(json)+'<');
+                                if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+app+'<');
+
+
+                                var
+                                dt = new Date(parseInt(dit.t*1000)),
+                                dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                                info3 = { referrer : dit.referrer, target : json, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                                //dit.msg = 'NicerApp WebOS Fully started.';
+                            } catch (e) {
+                            }
+                        } else {
+
+                            if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+
+                            var
+                            dt = new Date(parseInt(dit.t*1000)),
+                            dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                            info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+
+                            if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                        }
+
+                        html +=
+                        // '<span class="naIPlog_header2">'
+                        //     +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
+                        //     +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
+                        //     +'<span class="naIPlog_address">'+dit.ip+'</span> '
+                        //     +(dit.ipinfo
+                        //         ?'<span class="naIPlog_ipinfo">'+dit.ipinfo.country+', '+dit.ipinfo.region+', '+dit.ipinfo.city+'</span>'
+                        //         :''
+                        //     )+'</span><br>'
+
+                        '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
+                        +'<script type="text/javascript" language="javascript">'
+                        +'setTimeout(function() {'
+                        +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
+                        +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script></span>';
+
                     }
-
                     html +=
-                    '<span class="naIPlog_header2">'
-                        +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
-                        +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
-                        +'<span class="naIPlog_address">'+dit.ip+'</span> '
-                        +(dit.ipinfo
-                            ?'<span class="naIPlog_ipinfo">'+dit.ipinfo.country+', '+dit.ipinfo.region+', '+dit.ipinfo.city+'</span>'
-                            :''
-                        )+'</span><br>'
-
-                    +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
-                    +'<script type="text/javascript" language="javascript">'
-                    +'setTimeout(function() {'
-                    +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
-                    +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script></span>';
-
+                        //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
+                        '</div>';
                 }
-                html +=
-                    //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
-                    '</div>';
             }
 
             // var c1 = 'uneven';
@@ -178,11 +182,11 @@ export var naLog = {
 
             html2 += '<div style="height:500px"><canvas id="viewsByDate"></canvas></div>';
             html2 += '<div style="height:500px"><canvas id="viewsByCountry"></canvas></div>';
-            html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
+            //html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
             html2 += `
             <div id="mostVisitedContainer" style="margin-top: 30px;">
             <h2 style="color:#89b4fa; margin-bottom:20px;">🔥 Most Visited Links</h2>
-            <div id="mostVisitedList" style="max-height: 700px; overflow-y: auto;"></div>
+            <div id="mostVisitedList" class="vividScrollpane" style="max-height: 500px; overflow-y: auto;"></div>
             </div>
             `;
             /*html2 += '<div class="naIPlog_header" style="clear:both;height:fit-content;display:flex;flex-wrap:wrap;">';
@@ -324,6 +328,7 @@ export var naLog = {
                 });
             })();
 
+            /*
             (async function() {
                 const data = [];
                 for (var ahr in naLog.dataByURL) {
@@ -351,7 +356,7 @@ export var naLog = {
                         scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
                     }
                 });
-            })();
+            })();*/
 
             na.desktop.settings.visibleDivs.push ('#siteToolbarLeft');
             na.desktop.resize();

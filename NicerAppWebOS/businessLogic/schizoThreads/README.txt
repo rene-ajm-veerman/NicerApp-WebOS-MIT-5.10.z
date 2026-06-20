@@ -12,5 +12,9 @@ dependencies :
 
 **** fsDB + sshfs = WWW capable distributed datastorage for database and file content.
 
+**** fsDB + RAM disk linux plugin = ultra-fast storage and retrieval of recursive data.
+
+**** fsDB + RAM disk + sshfs = ultra-fast WWW capable Software.
+
 so, it's real.
 the rest is still classified, as it's held in explorative investigation until i can reveal more in this document.

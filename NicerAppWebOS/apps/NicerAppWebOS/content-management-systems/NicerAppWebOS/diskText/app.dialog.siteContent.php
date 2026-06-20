@@ -14,16 +14,17 @@ $view = (array)$naWebOS->view;
 <?php
 global $naWebOS;
 global $rootPath_na;
-//echo '<pre>'; var_dump ($view);
+//echo '<pre>'; var_dump ($view); exit;
 
 foreach ($view as $fp1 => $rec) {
     $rec = (array)$rec;
-    $fp1 = str_replace('/domainConfig','',$naWebOS->domainPath).$fp1;
+    $fp1 = $naWebOS->domainPath.$fp1;
 
     if (substr($rec['file'],0,1)=='/')
-        $fPath = str_replace('/domainConfig','',$naWebOS->domainPath).$rec['file'];
+        $fPath = $naWebOS->domainPath.$rec['file'];
     else
         $fPath = $fp1.'/'.$rec['file'];
+    //echo '<h2>'.$fPath.'</h2>';
     require_once ($fPath);
     //echo $fPath;
 }

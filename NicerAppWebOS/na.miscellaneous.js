@@ -2245,3 +2245,17 @@ const getCircularReplacer = () => {
     return value;
   };
 };
+
+
+function naTarot_openDeck(deckName) {
+    if (!deckName) return;
+
+    const basePath = "/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot/appContent/tarotSite/decks/";
+    const deckPath = basePath + deckName;
+debugger;
+    na.site.loadContent (event, "/view/" + na.m.encode_base64_url(JSON.stringify({
+        "/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/": {
+            "cardgame.tarot": { deck : deckName, reading : "3 Cards" }
+        }
+    })));
+};

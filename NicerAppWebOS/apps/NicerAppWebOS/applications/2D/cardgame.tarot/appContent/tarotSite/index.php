@@ -16,12 +16,14 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 
 	global $naWebOS;
 	$view = $naWebOS->view;
-	//echo '<pre>'; var_dump ($view); //exit();
 	foreach ($view as $viewPath => $viewRec) {
-		$_GET['deck'] = $viewRec['deck'];
-		$_GET['reading'] = $viewRec['reading'];
+		foreach ($viewRec as $appName => $appRec) {
+			$_GET['deck'] = $appRec['deck'];
+			$_GET['reading'] = $appRec['reading'];
+		}
 	}
-	
+	//echo '<pre>'; var_dump ($view); echo '</pre>'; exit();
+
 	/*
 	$url = $_SERVER['REQUEST_URI'];
 	//var_dump ($url); 
@@ -67,7 +69,7 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 					return typeof game == 'object' && game !== null && game !== undefined
 				}, function () {
 					var game = na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot'];
-					game.globals.rootURL = 'http://said.by.app/';
+					game.globals.rootURL = 'http://nicer.app/';
 					game.globals.request_uri = "<?php echo $_SERVER['REQUEST_URI']?>";
 					game.globals.url = "<?php echo str_replace('content/app.2D.cardgame.tarot/','', $_SERVER['REQUEST_URI'])?>";
 					game.settings.reading = <?php echo json_encode($reading); ?>;

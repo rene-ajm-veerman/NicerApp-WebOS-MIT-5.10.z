@@ -1145,7 +1145,7 @@ na.site = {
         na.desktop.settings.visibleDivs = na.desktop.globals.visibleDivs;
         na.desktop.resize();
 
-        if (!url.match(/\/view\//) && url.indexOf('/')===0) {
+        if (url.indexOf('/')===0) {
             var msg = 'na.site.loadContent() : url='+document.location.origin+url;
             History.pushState (null, '', document.location.origin+url);
         } else if (url.indexOf('/')===-1) {

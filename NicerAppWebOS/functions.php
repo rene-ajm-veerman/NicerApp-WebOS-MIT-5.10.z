@@ -872,6 +872,7 @@ function execPHP(string $file, bool $flush = false): string
     if (empty($file) || !file_exists($file)) {
         return '<h2>HTTPS Error : file not found - ' . htmlspecialchars($file) . '</h2>';
     }
+    //echo '<h1>'.$file.'</h1>';
 
     // Parse query string if present (your old trick)
     $p = strpos($file, '?');
@@ -905,7 +906,12 @@ function execPHP(string $file, bool $flush = false): string
         ob_end_clean(); // make sure we don't leave a buffer open on error
 
         error_log("execPHP error in {$f}: " . $e->getMessage());
-        return '<!-- execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()) . ' -->';
+        global $naLAN;
+        if ($naLAN) {
+            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()).'<br/></p><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT).'</pre>';
+        } else {
+            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()) . '</p>';
+        }
     }
 }
 
@@ -972,6 +978,7 @@ function require_return($file, $once = false) {
         ob_end_clean();
         //error_log("require_return error in {$file}: " . $e->getMessage()."\n".json_encode(debug_backtrace(),JSON_PRETTY_PRINT));
         error_log("require_return error in {$file}: " . $e->getMessage());
+        global $naLAN;
         if ($naLAN) {
             return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT). '</pre>';
         } else {

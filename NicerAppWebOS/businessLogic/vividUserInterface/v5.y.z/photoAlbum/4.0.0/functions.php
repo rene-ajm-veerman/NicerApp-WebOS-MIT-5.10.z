@@ -70,4 +70,115 @@ function naPhotoAlbum ($codePath=null) {
     $r .= '</div>';
     return $r;
 }
+
+function naTarotDecksAlbum() {
+    global $naWebOS;
+    $baseDir = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot/appContent/tarotSite/decks';
+    $startDir = $naWebOS->domainPath . $baseDir;
+
+    $files = getFilePathList($startDir,true,'/.*/',null,array('dir'));
+    //echo '<pre>'; var_dump ($files); exit;
+
+    $r = '<style>
+    .tarotDeck {
+    display: inline-block;
+    width: 240px;
+    margin: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #555;
+    background: rgba(0,0,0,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+    transition: all 0.3s ease;
+    text-align: center;
+    vertical-align: top;
+}
+.tarotDeck:hover {
+transform: scale(1.05);
+border-color: #aaa;
+}
+.tarotDeck img {
+width: 200px;
+height: auto;
+border-radius: 8px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.deckName {
+color: #ddd;
+margin-top: 10px;
+font-size: 0.95em;
+line-height: 1.3;
+}
+pre.dbg {
+    color : skyblue;
+    background : rgba(0,0,50,0.5);
+    margin : 20px;
+    padding : 10px;
+    border-radius : 20px;
+    text-shadow : 2px 2px 3px rgba(0,0,0,0.7);
+}
+</style>';
+
+$r .= '<div style="text-align:center; padding:20px;">';
+
+
+foreach ($files as $fileInfo) {
+    $back = 'back.jpg';
+    $backFullPath = $fileInfo['webPath'].$back ?? $fileInfo.$back;
+    $deckDir      = dirname($backFullPath);
+
+    $backURL  = $baseDir.$backFullPath;
+
+    if (!(file_exists($naWebOS->domainPath.$backURL))) {
+        $back = 'back.png';
+        $backFullPath = $fileInfo['webPath'].$back ?? $fileInfo.$back;
+        $deckDir      = dirname($backFullPath);
+
+        $backURL  = $baseDir.$backFullPath;
+
+        if (!(file_exists($naWebOS->domainPath.$backURL))) {
+            $back = 'back.gif';
+            $backFullPath = $fileInfo['webPath'].$back ?? $fileInfo.$back;
+            $deckDir      = dirname($backFullPath);
+
+            $backURL  = $baseDir.$backFullPath;
+        }
+        if (!(file_exists($naWebOS->domainPath.$backURL)))
+            continue;
+    }
+
+    $frontURL = str_replace($back, '21.jpg', $backURL);
+    $b = [
+        '1' => (file_exists($naWebOS->domainPath.$backURL)),
+        '$baseDir' => $baseDir,
+        '$backFullPath' => $backFullPath,
+        '$backURL' => $backURL,
+        '$frontURL' => $frontURL
+    ];
+    //$r .= '<pre class="dbg">'.json_encode($b,JSON_PRETTY_PRINT).'</pre>'; //exit;
+
+    // Create nice display name from relative path
+    $relPath = str_replace($startDir . '/', '', $deckDir);
+    $deckName = substr($relPath,1);           // for JS
+    $deckTitle = str_replace(['/', '-'], ' / ', $relPath); // for display
+
+    $r .= '<div class="tarotDeck">';
+    $r .= '<a href="#" onclick="naTarot_openDeck(\'' . addslashes($deckName) . '\'); return false;">';
+    $r .= '<img loading="lazy" decoding="async" src="' . htmlspecialchars($backURL) . '"
+    onmouseover="this.src=\'' . htmlspecialchars($frontURL) . '\'"
+    onmouseout="this.src=\'' . htmlspecialchars($backURL) . '\'"
+    alt="' . htmlspecialchars($deckTitle) . '">';
+    $r .= '<div class="deckName">' . htmlspecialchars($deckTitle) . '</div>';
+    $r .= '</a>';
+    $r .= '</div>';
+}
+
+$r .= '</div>';
+
+if (empty($files)) {
+    $r .= '<p style="color:#888;">No tarot decks found.</p>';
+}
+
+return $r;
+}
 ?>

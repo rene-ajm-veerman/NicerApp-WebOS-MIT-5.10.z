@@ -10,7 +10,7 @@ class uDB2_InitHelper
     private uDB2 $uDB;
     private string $username;
 
-    public function __construct(uDB2 $uDB, string $username = 'Guest'): void
+    public function __construct(uDB2 $uDB, string $username = 'Guest')
     {
         $this->uDB = $uDB;
         $this->username = $username;
@@ -41,7 +41,7 @@ class uDB2_InitHelper
         return true;
     }
 
-    public function createUserDataSet(string $username): bool
+    public function createUserDataSet(string $username)
     {
         $dataset = "user_{$username}";
         return $this->createDataSet($dataset, [
@@ -54,7 +54,7 @@ class uDB2_InitHelper
         ]);
     }
 
-    public function createAppDataSet(string $appName): bool
+    public function createAppDataSet(string $appName)
     {
         $dataset = "app_{$appName}";
         return $this->createDataSet($dataset, [
@@ -67,7 +67,7 @@ class uDB2_InitHelper
         ]);
     }
 
-    public function createSystemDataSet(string $name): bool
+    public function createSystemDataSet(string $name)
     {
         $dataset = "sys_{$name}";
         return $this->createDataSet($dataset, [
@@ -76,7 +76,7 @@ class uDB2_InitHelper
         ]);
     }
 
-    public function initializeDefaultDatasets(array $extraDatasets = []): void
+    public function initializeDefaultDatasets(array $extraDatasets = [])
     {
         $datasets = array_merge([
             'system_users',
@@ -93,7 +93,7 @@ class uDB2_InitHelper
         echo "uDB2: Initialized " . count($datasets) . " default datasets.\n";
     }
 
-    private function makeDBName(string $name): string
+    private function makeDBName(string $name)
     {
         $name = strtolower(trim($name));
         return preg_replace('/[^a-z0-9_]/', '_', $name);

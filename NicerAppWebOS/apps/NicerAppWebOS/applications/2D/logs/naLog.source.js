@@ -179,6 +179,12 @@ export var naLog = {
             html2 += '<div style="height:500px"><canvas id="viewsByDate"></canvas></div>';
             html2 += '<div style="height:500px"><canvas id="viewsByCountry"></canvas></div>';
             html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
+            html2 += `
+            <div id="mostVisitedContainer" style="margin-top: 30px;">
+            <h2 style="color:#89b4fa; margin-bottom:20px;">🔥 Most Visited Links</h2>
+            <div id="mostVisitedList" style="max-height: 700px; overflow-y: auto;"></div>
+            </div>
+            `;
             /*html2 += '<div class="naIPlog_header" style="clear:both;height:fit-content;display:flex;flex-wrap:wrap;">';
             var c1 = 'uneven';
             for (var aip in d2) {
@@ -191,6 +197,76 @@ export var naLog = {
 
             $('#siteContent > .vividDialogContent').html(html2 + html).delay(100);
             na.site.startTooltips();
+
+
+            // This runs after naLog.view() has populated naLog.dataByURL
+            function renderMostVisited() { // (C) 2026 Rene AJM Veerman and grok.com
+                const container = document.getElementById('mostVisitedList');
+                if (!naLog || !naLog.dataByURL) {
+                    container.innerHTML = '<div style="color:#6c7086; padding:40px; text-align:center;">No visit data available yet.</div>';
+                    return;
+                }
+
+                const stats = [];
+
+                // Convert naLog.dataByURL object into array
+                for (let fullUrl in naLog.dataByURL) {
+                    const entry = naLog.dataByURL[fullUrl];
+                    if (entry.numContentLoads > 0) {
+                        // Create nice partial display
+                        let partial = naLog.truncateUrl(fullUrl);
+
+                        let target = naLog.process_location(fullUrl);
+                        if (typeof target=='object') target='<pre>'+JSON.stringify(target,null,2)+'</pre>';
+
+                        stats.push({
+                            fullUrl: fullUrl,
+                            partial: target,
+                            visits: entry.numContentLoads
+                        });
+                    }
+                }
+
+                // Sort by visits (most visited first)
+                stats.sort((a, b) => b.visits - a.visits);
+
+                let html = '';
+
+                stats.forEach((item, index) => {
+                    html += `
+                    <div class="link-item" style="background:rgba(0,0,0,0.3); border:1px solid #45475a; border-radius:12px; margin:10px 0; padding:16px 20px; display:flex; align-items:center;">
+                    <div style="rgba(0,0,0,0.3); color:#1e1e2e; font-weight:bold; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-right:16px; flex-shrink:0;">
+                    ${index + 1}
+                    </div>
+                    <div style="flex:1; overflow:hidden;">
+                    <a href="${item.fullUrl}"
+                    target="_new"
+                    class="nomod noPushState"
+                    style="text-decoration:none; color:inherit;">
+                    <div style="color:#a6adc8; font-family:monospace; font-size:1.05em; word-break:break-all;">
+                    ${item.partial}
+                    </div>
+                    </a>
+                    </div>
+                    <div style="background:rgba(137,180,250,0.2); color:#89b4fa; padding:6px 14px; border-radius:9999px; font-weight:600; margin-left:16px; white-space:nowrap;">
+                    ${item.visits.toLocaleString()} visits
+                    </div>
+                    </div>
+                    `;
+                });
+
+                container.innerHTML = html || '<div style="color:#6c7086; padding:40px; text-align:center;">No pages recorded yet.</div>';
+            }
+
+            // Auto-run after naLog finishes rendering
+            //setTimeout(() => {
+                //if (typeof naLog !== 'undefined' && naLog.dataByURL) {
+                    renderMostVisited();
+                //} else {
+                    // Fallback: wait a bit longer
+                //    setTimeout(renderMostVisited, 800);
+              //  }
+            //}, 600);
 
             (async function() {
                 const data = [];
@@ -291,11 +367,10 @@ export var naLog = {
         return href;
     },
     process_msg : function (msg, dit) {
-        var r = '', prefix1a = 'NicerAppWebOS Fully started for <a href=\\"', prefix1b = '\\">', prefix1c = '</a>', prefix2 = /Background set to "(.*?)";\s(.*)/, m = [];
+        var r = '', prefix1a = 'NicerAppWebOS Fully started for <a href=\\"', prefix1b = '\\">', prefix1c = /\\\".*?<\/a>/, prefix2 = /Background set to "(.*?)";\s(.*)/, m = [];
         if (msg.indexOf(prefix1a)===0 && dit.ipinfo) {
-            debugger;
             try {
-                var href = naLog.truncateUrl(msg.replace(prefix1a,'').replace(prefix1b,'').replace(prefix1c,''), 40);
+                var href = msg.replace(prefix1a,'').replace(prefix1b,'').replace(prefix1c,'');
 
                 r = { msg : msg, documentLocation : href, ipinfo : JSON.parse(dit.ipinfo), 'ipinfo count' : dit.ipinfo.length};
             } catch (e) {debugger;};

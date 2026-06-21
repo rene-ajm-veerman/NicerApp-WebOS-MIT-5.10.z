@@ -30,6 +30,7 @@ if (array_key_exists('app-grokipedia_com', $_GET)) {
 
     $slug = 'PHP';
     $url  = 'https://grokipedia.com/page/' . rawurlencode($slug);
+    $url  = 'https://grokipedia.com';
 
     try {
         $html = file_get_contents($url);  // or use curl with a proper User-Agent

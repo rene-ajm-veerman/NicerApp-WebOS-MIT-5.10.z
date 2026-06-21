@@ -1278,7 +1278,7 @@ class NicerAppWebOS {
         $path = $this->domainPath.'/NicerAppWebOS/businessLogic/vividUserInterface/v6.y.z/2D/button-4.2.0';
         //echo 't831:'; var_dump ($path); exit;
         if (!file_exists($path)) {
-            $msg = $this->cn.'->getVividButtonCSSfiles() : $path='.$path.' does not exist.';
+            $msg = $this->cn.'->getVividButtonCSSfiles() : $path='.$path.' does not exist.'.PHP_EOL.json_encode(debug_backtrace(),JSON_PRETTY_PRINT);
             trigger_error ($msg, E_USER_ERROR);
             echo $msg;
             exit();

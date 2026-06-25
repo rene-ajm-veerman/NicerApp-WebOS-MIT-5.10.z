@@ -46,6 +46,7 @@ $fn = $view[$viewFolder]['cmsViewMedia']['filename'];
 if (substr($view[$viewFolder]['cmsViewMedia']['codePath'],0,1)!=='/') {
     $baseURL = '/siteData/'.$naWebOS->domainFolder.'/';
     $baseDir = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domainFolder.'/';
+    echo '<h1>'.$baseDir.'</h1>';
 } else {
     $baseURL = '/siteData/'.$naWebOS->domainFolder.'/';
     if (
@@ -73,7 +74,7 @@ $dbg = array (
 //$baseDir = str_replace ($naWebOS->path,'', $baseDir);
 $baseDir = str_replace ('//','/', $baseDir);
 // $baseDir = str_replace ('domains/'.$naWebOS->domainFolder,'', $baseDir);
-$targetDir = $baseDir.$view[$viewFolder]['cmsViewMedia']['codePath'].'/';
+$targetDir = $view[$viewFolder]['cmsViewMedia']['codePath'].'/';
 
 
 foreach ($naWebOS->view as $appFolder=>$appRec) {

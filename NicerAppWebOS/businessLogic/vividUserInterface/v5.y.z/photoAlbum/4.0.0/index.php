@@ -37,7 +37,7 @@
 
 
     $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'), 1,1,true);
-    echo '<pre>'; var_dump ($targetDir); var_dump($files);exit();
+    //echo '<pre>'; var_dump ($targetDir); var_dump($files);exit();
     if (!array_key_exists('files', $files)) {
         $msg = $naWebOS->getContent__standardErrorMessage('No files found in this folder.')['siteContent'];
         //$msg = '<p>&nbsp;</p><span style="background:rgba(0,0,0,0.5);padding:10px;margin:20px;border-radius:20px;color:ivory;text-shadow:2px 2px 3px rgba(0,0,0,7);">No files found in this folder.</span>';
@@ -46,6 +46,7 @@
         $files = $files['files'];
         sort($files);
     }
+    //echo '<pre>'; var_dump ($targetDir); var_dump($files);exit();
 
 
 if (!array_key_exists('noIframe', $_GET) || $_GET['noIframe']===false) {

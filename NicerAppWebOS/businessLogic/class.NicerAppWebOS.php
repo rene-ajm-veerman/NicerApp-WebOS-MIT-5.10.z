@@ -790,7 +790,14 @@ class NicerAppWebOS {
                                         $fn = str_replace('.php','',$fn);
                                         $fn = preg_replace('/_.*/','',$fn);
                                         if (!in_array($fn,$files2)) {
-                                            $c = execPHP ($contentFile['realPath']);
+                                            $cf = (
+                                                array_key_exists('realPath', $contentFile)
+                                                ? $contentFile['realPath']
+                                                : $contentFile
+                                            );
+
+                                            //echo '<pre>tex:'; var_dump($cf); echo '</pre>';
+                                            $c = execPHP ($cf);
                                             if (strpos($divID, '_')!==false) $divID = preg_replace('/_.*/','',$divID);
                                             //echo $divID.'<br/>'; echo $c;
 

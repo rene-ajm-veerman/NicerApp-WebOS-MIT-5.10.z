@@ -212,7 +212,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                     $(document).off('mousedown.jstree');
                     $(document).on('mousedown.jstree', function(e) {
                         if ($(e.target).closest('.mce-widget, .mce-floatpanel, .mce-menu').length) return;
-                        $.jstree._reference(e.target) && $.jstree._reference(e.target)._mousedown(e);
+                        //$.jstree._reference(e.target) && $.jstree._reference(e.target)._mousedown(e);
                     });
                     document.addEventListener('mousedown', function(e) {
                         if ($(e.target).closest('.mce-widget, .mce-floatpanel, .mce-menu, .mce-container').length) {

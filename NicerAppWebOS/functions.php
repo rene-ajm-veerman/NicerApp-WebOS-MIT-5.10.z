@@ -903,14 +903,15 @@ function execPHP(string $file, bool $flush = false): string
         return $output;
 
     } catch (Throwable $e) {
+        $output = ob_get_clean();                   // get everything that was output
         ob_end_clean(); // make sure we don't leave a buffer open on error
 
         error_log("execPHP error in {$f}: " . $e->getMessage());
         global $naLAN;
-        if ($naLAN) {
-            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()).'<br/></p><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT).'</pre>';
+        if (false && $naLAN) {
+            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()).'<br/></p><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT).'</pre>'.$output;
         } else {
-            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()) . '</p>';
+            return '<p>execPHP error in ' . htmlspecialchars($f) . ': ' . htmlspecialchars($e->getMessage()) . '</p>'.$output;
         }
     }
 }

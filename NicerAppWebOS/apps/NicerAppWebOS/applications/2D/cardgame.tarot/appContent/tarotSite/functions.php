@@ -4,40 +4,12 @@ require_once ($rootPath.'/NicerAppWebOS/boot.php');
 require_once(dirname(__FILE__).'/../../appLogic/seo_tarot.php');
 require_once(dirname(__FILE__).'/../../appLogic/functions.php');
 
-global $frameworkSecretFolder;
-//require_once($frameworkSecretFolder.'/sitewide/lib_fileSystem.php');
-//echo ($frameworkSecretFolder.'/sitewide/lib_fileSystem.php'); exit();
-
-function t2_init() {
-    global $naWebOS;
-    
-	$deck = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot']['deck'];
-	$readingName = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot']['reading'];
-	$_GET['deck'] = $deck.'/';
-	$_GET['reading'] = $readingName;
-	$explanationID = 'nicerEnterprises_tarot';
-	$readingType = t2_get_readingType();
-	//var_dump ($readingType); exit();
-	$reading = t2_draw_cards($readingType, $explanationID);
-	//echo '<pre>';var_dump ($reading); exit();
-	$reading = t2_calculate_size_for_cards ($reading); 
-	$numberOfDecks = t2_getNumberOfDecks();
-	$numberOfReadings = t2_getNumberOfReadings();
-
-	global $numberOfReadings;
-	global $numberOfDecks;
-	global $reading;
-	global $readingType;
-	global $explanationID;
-}
-
-
 function t2_getSiteRootURL() {
 	return '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot/appContent/tarotSite';
 }
 
 function t2_getDecksRootURL() {
-	return '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot/appContent/tarotSite'; // doesnt include .../decks, but that's how it works. got a lot on my mind :p
+	return '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot/appContent/tarotSite';
 }
 
 function t2_getDecksFromFilesystem() {
@@ -219,9 +191,9 @@ function t2_html_menu_decks_recurse ($decks, $path="") {
 			if (is_array($v) && count($v)===0) {
 				$viewSettings = [
 					'deck' => $path2,
-					'reading' => $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/']['cardgame.tarot']['reading']
+					'reading' => $_GET['reading'] // should be fine at this point
 				];
-                $hrefJSON = '{"/NicerAppWebOS/apps/NicerAppWebOS/applications/2D":{"cardgame.tarot":'.json_encode($viewSettings).'}}';
+                $hrefJSON = '{"/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot":{'.json_encode($viewSettings).'}}';
                 $href = '/view/'.encode_base64_url($hrefJSON);
                 $n = str_replace ('(','',$n);
                 $n = str_replace (')','',$n);
@@ -256,12 +228,12 @@ function t2_html_menu_readings() {
 				if (array_key_exists('apps',$view)) {
 					$viewSettings = array (
 						'deck' => $view['apps']['deck'],
-						'reading' => $r
+						'reading' => $_GET['reading'] // should be fine at this point
 					);
 				} else {
 					$viewSettings = array (
 						'deck' => $view['deck'],
-						'reading' => $r
+						'reading' => $_GET['reading'] // should be fine at this point
 					);
 				}
                 //var_dump ($naWebOS->view);
@@ -500,13 +472,11 @@ function t2_calculate_size_for_cards ($reading) {
 	return $reading;
 }
 
-function t2_get_readingType() {
+function t2_get_readingType($readingType) {
     global $naWebOS;
 	//echo '<pre>'; var_dump($naWebOS->view); echo '</pre>'; exit;
-	$view = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/'];
+	$view = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot'];
 	//echo '<pre>'; var_dump($view); echo '</pre>'; exit;
-	foreach ($view as $appName => $appRec) break;
-	$readingType = $appRec['reading'];
 	if (!t2_valid_readingType($readingType)) {
 		$readingType = '3 Cards';
 	}

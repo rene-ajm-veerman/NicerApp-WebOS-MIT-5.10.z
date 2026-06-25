@@ -60,10 +60,19 @@ if (substr($view[$viewFolder]['cmsViewMedia']['codePath'],0,1)!=='/') {
     $baseURL = str_replace($rt, '', $baseDir).$baseURL;
     //echo '<pre>'; var_dump($naWebOS->view);exit;
 }
-$baseDir = str_replace ($naWebOS->path.'/code','', $baseDir);
-$baseDir = str_replace ($naWebOS->path,'', $baseDir);
+
+$dbg = array (
+    'baseURL' => $baseURL,
+    'baseDir' => $baseDir,
+    'fn' => $fn,
+    'view' => $view
+);
+//echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; //exit();
+
+//$baseDir = str_replace ($naWebOS->path.'/code','', $baseDir);
+//$baseDir = str_replace ($naWebOS->path,'', $baseDir);
 $baseDir = str_replace ('//','/', $baseDir);
-$baseDir = str_replace ('domains/'.$naWebOS->domainFolder,'', $baseDir);
+// $baseDir = str_replace ('domains/'.$naWebOS->domainFolder,'', $baseDir);
 $targetDir = $baseDir.$view[$viewFolder]['cmsViewMedia']['codePath'].'/';
 
 
@@ -84,7 +93,7 @@ $dbg = array (
     'fn' => $fn,
     'view' => $view
 );
-//echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; exit();
+//echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; //exit();
 
 $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'), 1, 1, false);
 //echo '<pre>'; var_dump ($files); echo '</pre>'; exit();

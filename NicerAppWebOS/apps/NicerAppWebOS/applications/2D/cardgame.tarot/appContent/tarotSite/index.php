@@ -1,8 +1,9 @@
 <?php
-error_reporting (E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require_once (dirname(__FILE__).'/functions.php');
 require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppWebOS/boot.php');
-
 	/*
 	global $saSiteHTTP; global $saSiteDomain; global $saSiteRootFolder; global $saFrameworkFolder;
 	global $saSiteHD; global $saFrameworkHD; global $saSiteURL; global $saFrameworkURL;
@@ -16,13 +17,42 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 
 	global $naWebOS;
 	$view = $naWebOS->view;
-	foreach ($view as $viewPath => $viewRec) {
-		foreach ($viewRec as $appName => $appRec) {
-			$_GET['deck'] = $appRec['deck'];
-			$_GET['reading'] = $appRec['reading'];
-		}
+	//echo '<pre>';var_dump($view); echo '</pre>'; exit;
+	foreach ($view as $viewPath => $appRec) {
+		//foreach ($viewRec as $appName => $appRec) {
+			//echo '<pre>';var_dump($appRec); echo '</pre>';
+			if (is_array ($appRec)) {
+				$_GET['deck'] = $appRec['deck'];
+				try {
+					if (
+						is_array($appRec)
+						&& array_key_exists('reading', $appRec)
+						&& is_string($appRec['reading'])
+					) {
+						$x = json_decode($appRec['reading'], true);
+						if (is_array($x)) $appRec = $x;
+					}
+				} catch (Exception $e) {};
+				$_GET['reading'] = (
+					is_array($appRec)
+					&& array_key_exists('reading', $appRec)
+					&& is_string($appRec['reading'])
+					? $appRec['reading']
+					: (
+						is_array($appRec)
+						&& array_key_exists('reading', $appRec)
+						&& is_array($appRec['reading'])
+						? $appRec['reading']['path']
+						: '3 Cards'
+					)
+				);
+			} else {
+				$_GET['deck'] = $appRec;
+				$_GET['reading'] = '3 Cards';
+			}
+		//}
 	}
-	//echo '<pre>'; var_dump ($view); echo '</pre>'; exit();
+	//echo '<pre>'; var_dump ($_GET); echo '</pre>'; exit();
 
 	/*
 	$url = $_SERVER['REQUEST_URI'];
@@ -40,8 +70,9 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 	//var_dump ($_GET); exit();
 	$explanationID = 'tarot';
 	
-	//var_dump ($viewParams);
-	$readingType = t2_get_readingType();
+	//var_dump ($viewParams); exit;
+	//echo '<pre>'; var_dump ($_GET); echo '</pre>'; exit();
+	$readingType = t2_get_readingType($_GET['reading']);
 	//var_dump ($readingType); exit();
 	$reading = t2_draw_cards($readingType, $explanationID);
 	//echo '<pre>';var_dump ($reading); exit();
@@ -89,12 +120,12 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
                 <ul>
                     <li><a class="menu__dontKeepSelected" href="#">Card Decks</a>
                         <ul>
-                        <?php echo t2_html_menu_decks(); ?>
+                        <?php //echo t2_html_menu_decks(); ?>
                         </ul>
                     </li>
                     <li><a class="menu__dontKeepSelected" href="#">Readings</a>
                         <ul>
-                            <?php echo t2_html_menu_readings(); ?>
+                            <?php //echo t2_html_menu_readings(); ?>
                         </ul>
                     </li>
                     <li><a href="#">Misc</a>
@@ -113,7 +144,7 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 		<?php //getBadDecks(); ?>
 		<div id="card" style="position:relative;float:right;display:none;"></div>
 		<div id="cards" style="position:relative;float:right;display:none;overflow:hidden;margin:30px;height:<?php echo $reading['theme']['size']['y']?>px;width:<?php echo $reading['theme']['size']['x']?>px;">
-			<?php echo t2_html_draw_cards($reading); ?>
+			<?php //echo t2_html_draw_cards($reading); ?>
 		</div>
 		<div id="intro" class="text" style="display:none;">
 			<h1 class="nicerEnterprises_tarot_cardExplanation" id="pageTitle" style="text-shadow:2px 2px 1px rgba(0,0,0,0.7)">Free Tarot Reading (191 decks, 9 reading types)</h1>

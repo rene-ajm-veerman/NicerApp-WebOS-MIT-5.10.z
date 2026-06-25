@@ -57,8 +57,8 @@ if (!array_key_exists('noIframe', $_GET) || $_GET['noIframe']===false) {
         var na = {};
     </script>
     <style></style>
-    <link type="text/css" rel="StyleSheet" href="/domainConfig/<?php echo $naWebOS->domainFolder?>/index.css?c=<?php echo date('Ymd_His',filemtime(realpath(dirname(__FILE__).'/../../../').'/domainConfigs/'.$naWebOS->domainFolder.'/index.css'))?>">
-    <link type="text/css" rel="StyleSheet" href="/domainConfig/<?php echo $naWebOS->domainFolder?>/index.dark.css?c=<?php echo date('Ymd_His',filemtime(realpath(dirname(__FILE__).'/../../../').'/domainConfigs/'.$naWebOS->domainFolder.'/index.dark.css'))?>">
+    <link type="text/css" rel="StyleSheet" href="/domainConfig/<?php echo $naWebOS->domainFolder?>/index.css?c=<?php echo date('Ymd_His',filemtime($naWebOS->domainPath.'/domainConfig/index.css'))?>">
+    <link type="text/css" rel="StyleSheet" href="/domainConfig/<?php echo $naWebOS->domainFolder?>/index.dark.css?c=<?php echo date('Ymd_His',filemtime($naWebOS->domainPath.'/domainConfig/index.dark.css'))?>">
     <script type="text/javascript" src="/NicerAppWebOS/businessLogic/vividUserInterface/v5.y.z/photoAlbum/4.0.0/photoAlbum-4.0.0.source.js?c=<?php echo date('Ymd_His', filemtime($naWebOS->domainPath.'/NicerAppWebOS/businessLogic/vividUserInterface/v5.y.z/photoAlbum/4.0.0/photoAlbum-4.0.0.source.js'));?>"></script>
 <?php
 } else {

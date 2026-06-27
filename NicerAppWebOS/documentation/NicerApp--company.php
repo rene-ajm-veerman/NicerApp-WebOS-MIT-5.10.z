@@ -36,7 +36,7 @@ p {
 <p class="backdropped naComments_onTheSide">
 <a href="https://nicer.app" target="naHP">https://nicer.app</a>, <a href="https://said.by" target="sbHP">https://said.by</a>, <a href="https://zoned.at" target="zAt">https://zoned.at</a>, <a href="https://github.com/Rene-AJM-Veerman" target="githubNicerEnterprises">https://github.com/Rene-AJM-Veerman</a>, <br/>in addition to ALL of the content listed at the social media URLs below, <br/>
 are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:rene.veerman.netherlands@gmail.com" target="_new" class="nomod noPushState">Rene A.J.M. Veerman &lt;rene.veerman.netherlands@gmail.com&gt;</a>.<br/>
-https://x.com/ReneAjmVeerman, https://facebook.com/rene.veerman.90, https://youtube.com/@CheetahKungFu
+<a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <a class="nomod noPushState" target="rvFB" href="https://facebook.com/rene.veerman.90">https://facebook.com/rene.veerman.90</a>, <a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
 </p>
 
 <h2>Going commercial</h2>

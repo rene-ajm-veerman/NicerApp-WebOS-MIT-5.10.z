@@ -206,7 +206,7 @@ if (
                     //echo '<pre>t45:'; var_dump ($call2); echo '</pre>';
                     $add = [ ];
                     foreach ($fields as $idx3=>$field) {
-                        $add[$field] = $call2->body->$field;
+                        if (property_exists($call2->body, $field)) $add[$field] = $call2->body->$field;
                     };
                     //var_dump ($add);
 

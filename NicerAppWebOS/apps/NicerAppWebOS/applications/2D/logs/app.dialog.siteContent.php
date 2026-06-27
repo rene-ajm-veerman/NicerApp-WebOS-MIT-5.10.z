@@ -12,9 +12,8 @@ if (!$openToPublic && !$naLAN) {
 ?>
 
 <link rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.css?m=<?=filemtime(dirname(__FILE__).'/naLog.css')?>"/>
-<script type="module" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m=<?=filemtime(dirname(__FILE__).'/naLog.source.js')?>'"></script>
-<script type="module">
+<script type="text/javascript" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m=<?=filemtime(dirname(__FILE__).'/naLog.source.js')?>"></script>
+<script type="text/javascript">
     var view = <?=json_encode($naWebOS->view);?>;
-    import { naLog } from '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js';
-    na.m.waitForCondition('na initialized?', na.m.HTMLidle, function () { naLog.reload(); }, 500);
+    na.m.waitForCondition('na initialized?', na.m.HTMLidle, function () { debugger; naLog.reload(); }, 500);
 </script>

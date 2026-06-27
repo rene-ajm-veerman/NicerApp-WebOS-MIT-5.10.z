@@ -144,7 +144,7 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 		<?php //getBadDecks(); ?>
 		<div id="card" style="position:relative;float:right;display:none;"></div>
 		<div id="cards" style="position:relative;float:right;display:none;overflow:hidden;margin:30px;height:<?php echo $reading['theme']['size']['y']?>px;width:<?php echo $reading['theme']['size']['x']?>px;">
-			<?php //echo t2_html_draw_cards($reading); ?>
+			<?php echo t2_html_draw_cards($reading); ?>
 		</div>
 		<div id="intro" class="text" style="display:none;">
 			<h1 class="nicerEnterprises_tarot_cardExplanation" id="pageTitle" style="text-shadow:2px 2px 1px rgba(0,0,0,0.7)">Free Tarot Reading (191 decks, 9 reading types)</h1>

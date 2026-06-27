@@ -199,7 +199,7 @@ na.site = {
             'na.site.setStatusMsg(msg,resize,showMilliseconds) : na.m.HTMLidle()?', na.m.HTMLidle,
             function() {
                 if (resize) {
-                    na.site.settings.statusbarVisible = false;//na.desktop.settings.visibleDivs.includes('#siteStatusbar');
+                    na.site.settings.statusbarVisible = na.desktop.settings.visibleDivs.includes('#siteStatusbar');
                     if (!na.site.settings.statusbarVisible) na.desktop.settings.visibleDivs.push('#siteStatusbar');
                     $(window).trigger('resize');
                 };
@@ -210,7 +210,7 @@ na.site = {
                 ) {
                     clearTimeout (na.site.settings.timeoutRevertStatusbarMsg);
                     na.site.settings.timeoutRevertStatusbarMsg = setTimeout (function (showMilliseconds) {
-                        if (!na.site.settings.statusbarVisible) na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteStatusbar');
+                        na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteStatusbar');
                         $(window).trigger('resize');
                     }, showMilliseconds);
                 }
@@ -237,11 +237,11 @@ na.site = {
 
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteTaskbar');
         na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs,'#siteContent');
-        na.d.s.visibleDivs.push ('#siteTaskbar');
         na.d.s.visibleDivs.push ('#siteContent');
+        na.d.s.visibleDivs.push ('#siteTaskbar');
+        na.d.s.visibleDivs.push ('#siteStatusbar');
         $('#siteContent .vividDialogContent').css({display:'none'});
 
-        na.d.s.visibleDivs.push ('#siteStatusbar');
         na.desktop.initialize(desktopDefinition);
 
         na.m.preventScreenLock();

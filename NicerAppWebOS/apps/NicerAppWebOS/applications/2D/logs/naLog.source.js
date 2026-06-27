@@ -1,9 +1,10 @@
-export var naLog = {
+var naLogData = {};
+var naLog = {
     settings : {
 
     },
-    view : function (logData) {
-        naLog.data = JSON.parse(logData);
+    view : function (logData, view) {
+        if (typeof logData=='string') naLog.data = JSON.parse(logData);
         naLog.dataByIP = {};
         naLog.dataByURL = {};
         naLog.dataByCountry = {};
@@ -16,9 +17,19 @@ export var naLog = {
             d5 = naLog.dataByDate,
             html = '',
             html2 =
-                '<script type="module" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m='+(new Date()).getTime()+'"></script>'
-                +'<link rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.css?m='+(new Date()).getTime()+'"/>'
-                +'<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
+                '<h1>NicerApp WebOS Logs for '+na.site.globals.domain+'</h1>';
+
+
+            switch (view) {
+                case 'stats':
+                case 'mostVisited':
+                case 'details':
+                    break;
+                default:
+                    view = 'stats';
+                    break;
+            };
+
             dat.sort (function (a,b) {
                 var
                     c = a._id.split(' '),
@@ -43,8 +54,9 @@ export var naLog = {
                     dit.stacktrace = '<pre>'+dit.stacktrace.replace('\\n','\n')+'</pre>';
 
 
-                if (dit.ipinfo) {
+                if (typeof dit.ipinfo=='string') {
                     dit.ipinfo = JSON.parse(dit.ipinfo);
+                }
                     if (!d2[dit.ip]) d2[dit.ip] = {
                         millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
                         numInits : 0,
@@ -88,85 +100,87 @@ export var naLog = {
                     };
                     if (dit.msgProcessed.documentLocation) d2hr.numContentLoads++;
 
-                };
+                //};
 
-                var dto = new Date(dit.t * 1000),
-                dt = dto.format("yyyy-mm-dd HH:MM:ss.l");
+                if (view=='details') {
+                    var dto = new Date(dit.t * 1000),
+                    dt = dto.format("yyyy-mm-dd HH:MM:ss.l");
 
-                if (dto > (new Date().getTime()-8*3600*1000)) {
-
-                    html +=
-                        '<div class="naIPlog_entry '+dit.htmlClasses+'">';
-                    if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
+                    if (dto > (new Date().getTime()-8*3600*1000)) {
 
                         html +=
-                            '<span class="naIPlog_header2a">'
-                                +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
-                                +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
-                                +'<span class="naIPlog_address">'+dit.ip+'</span>'
-                                +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'" class="naIPlog_backgroundSetTo" onclick="'+dit.msgProcessed.onclickHTML+'">'+dit.msgProcessed.msg+'</span>'
-                                +'<span class="naIPlog_referrer">referrer : '+dit.referrer+'</span> '
-                            +'</span><br>';
+                            '<div class="naIPlog_entry '+dit.htmlClasses+'">';
+                        if (dit.msgProcessed && dit.msgProcessed.onclickHTML) {
 
-                    } else {
-                        var
-                        dt = new Date(parseInt(dit.t*1000)),
-                        dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
-                        info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                            html +=
+                                '<span class="naIPlog_header2a">'
+                                    +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
+                                    +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
+                                    +'<span class="naIPlog_address">'+dit.ip+'</span>'
+                                    +'<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'" class="naIPlog_backgroundSetTo" onclick="'+dit.msgProcessed.onclickHTML+'">'+dit.msgProcessed.msg+'</span>'
+                                    +'<span class="naIPlog_referrer">referrer : '+dit.referrer+'</span> '
+                                +'</span><br>';
 
-                        if (dit.msg.match('Fully started for')) {
-                            try {
-                                var
-                                x = dit.msg.match(/href=\\"(https:\/\/.*?)\\"/),
-                                x1 = x[1].replace(/https:\/\/.*?\/view\//,''),
-                                jsonStr = na.m.decode_base64_url(x1),
-                                json = JSON.parse(jsonStr);
-
-                                for (var app in json) break;
-
-                                //if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+JSON.stringify(json)+'<');
-                                if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+app+'<');
-
-
-                                var
-                                dt = new Date(parseInt(dit.t*1000)),
-                                dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
-                                info3 = { referrer : dit.referrer, target : json, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
-                                //dit.msg = 'NicerApp WebOS Fully started.';
-                            } catch (e) {
-                            }
                         } else {
-
-                            if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
-
                             var
                             dt = new Date(parseInt(dit.t*1000)),
                             dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
                             info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
 
-                            if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                            if (dit.msg.match('Fully started for')) {
+                                try {
+                                    var
+                                    x = dit.msg.match(/href=\\"(https:\/\/.*?)\\"/),
+                                    x1 = x[1].replace(/https:\/\/.*?\/view\//,''),
+                                    jsonStr = na.m.decode_base64_url(x1),
+                                    json = JSON.parse(jsonStr);
+
+                                    for (var app in json) break;
+
+                                    //if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+JSON.stringify(json)+'<');
+                                    if (typeof json=='object') dit.msg = dit.msg.replace(new RegExp('[^"]'+x[1]+'[^"]'), '>'+app+'<');
+
+
+                                    var
+                                    dt = new Date(parseInt(dit.t*1000)),
+                                    dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                                    info3 = { referrer : dit.referrer, target : json, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+                                    //dit.msg = 'NicerApp WebOS Fully started.';
+                                } catch (e) {
+                                }
+                            } else {
+
+                                if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+
+                                var
+                                dt = new Date(parseInt(dit.t*1000)),
+                                dt = dt.format("yyyy-mm-dd HH:MM:ss.l"),
+                                info3 = { referrer : dit.referrer, stacktrace : dit.stacktrace, ipinfo : dit.ipinfo };
+
+                                if (!dit.msg) dit.msg = 'NicerApp WebOS Fully started.';
+                            }
+
+                            html +=
+                            // '<span class="naIPlog_header2">'
+                            //     +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
+                            //     +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
+                            //     +'<span class="naIPlog_address">'+dit.ip+'</span> '
+                            //     +(dit.ipinfo
+                            //         ?'<span class="naIPlog_ipinfo">'+dit.ipinfo.country+', '+dit.ipinfo.region+', '+dit.ipinfo.city+'</span>'
+                            //         :''
+                            //     )+'</span><br>'
+
+                            '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
+                            +'<script type="text/javascript" language="javascript">'
+                            +'setTimeout(function() {'
+                            +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
+                            +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script></span>';
+
                         }
-
                         html +=
-                        // '<span class="naIPlog_header2">'
-                        //     +'<span class="naIPlog_millisecondsSinceEpoch">'+dt+'</span> '
-                        //     +'<span class="naIPlog_timezoneOffset">'+dit.dateTZ+'m</span> '
-                        //     +'<span class="naIPlog_address">'+dit.ip+'</span> '
-                        //     +(dit.ipinfo
-                        //         ?'<span class="naIPlog_ipinfo">'+dit.ipinfo.country+', '+dit.ipinfo.region+', '+dit.ipinfo.city+'</span>'
-                        //         :''
-                        //     )+'</span><br>'
-
-                        '<span id="naIPlog_msg__'+dit.millisecondsSinceEpoch+'"></span>'
-                        +'<script type="text/javascript" language="javascript">'
-                        +'setTimeout(function() {'
-                        +'var hms_tst_js = { info : '+JSON.stringify(info3)+'};'
-                        +'hm (hms_tst_js, "<div class=\\"naIPlog_header\\">'+dt+', '+dit.msg+' <span class=\\"naIPlog_address\\">'+dit.ip+'</span> <span class=\\"naIPlog_origin\\">'+d2ip.loc+'</span></div>", { htmlID : "naIPlog_msg__'+dit.millisecondsSinceEpoch+'", fastInit : true, header : \'minimal\' })},500);</script></span>';
-
+                            //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
+                            '</div>';
                     }
-                    html +=
-                        //'<pre class="naIPlog_stacktrace">'+dit.stacktrace+'</pre>'
-                        '</div>';
                 }
             }
 
@@ -180,13 +194,15 @@ export var naLog = {
             naLog.dataByDate = d5 = Object.keys(d5).sort().reduce((r, k) => (r[k] = d5[k], r), {});
 
 
-            html2 += '<div style="height:500px"><canvas id="viewsByDate"></canvas></div>';
-            html2 += '<div style="height:500px"><canvas id="viewsByCountry"></canvas></div>';
+            if (view=='stats') {
+                html2 += '<div style="height:500px"><canvas id="viewsByDate"></canvas></div>';
+                html2 += '<div style="height:500px"><canvas id="viewsByCountry"></canvas></div>';
+            }
             //html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
-            html2 += `
+            if (view=='mostVisited') html2 += `
             <div id="mostVisitedContainer" style="margin-top: 30px;">
             <h2 style="color:#89b4fa; margin-bottom:20px;">🔥 Most Visited Links</h2>
-            <div id="mostVisitedList" class="vividScrollpane" style="max-height: 500px; overflow-y: auto;"></div>
+            <div id="mostVisitedList" class="vividScrollpane" style="max-height: calc(100% - 40px); overflow-y: auto;"></div>
             </div>
             `;
             /*html2 += '<div class="naIPlog_header" style="clear:both;height:fit-content;display:flex;flex-wrap:wrap;">';
@@ -265,98 +281,100 @@ export var naLog = {
             // Auto-run after naLog finishes rendering
             //setTimeout(() => {
                 //if (typeof naLog !== 'undefined' && naLog.dataByURL) {
-                    renderMostVisited();
+                    if (view=='mostVisited') renderMostVisited();
                 //} else {
                     // Fallback: wait a bit longer
                 //    setTimeout(renderMostVisited, 800);
               //  }
             //}, 600);
 
-            (async function() {
-                const data = [];
-                for (var dateStr in naLog.dataByDate) {
-                    data[data.length] = { date : dateStr, count : naLog.dataByDate[dateStr].numContentLoads};
-                };
-                new Chart( document.getElementById('viewsByDate'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.map(row => row.date),
-                        datasets: [
-                        {
-                            label: 'Views by date',
-                            data: data.map(row => row.count)
-                        }
-                        ],
-                    },
-                    options : { // thanks go to x.com/grok
-                        plugins: {
-                            colors: {
-                            forceOverride: true
+            if (view=='stats') {
+                (async function() {
+                    const data = [];
+                    for (var dateStr in naLog.dataByDate) {
+                        data[data.length] = { date : dateStr, count : naLog.dataByDate[dateStr].numContentLoads};
+                    };
+                    new Chart( document.getElementById('viewsByDate'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(row => row.date),
+                            datasets: [
+                            {
+                                label: 'Views by date',
+                                data: data.map(row => row.count)
                             }
+                            ],
                         },
-                        color : 'rgb(255,255,255)',
-                        scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
-                    }
-                });
-            })();
+                        options : { // thanks go to x.com/grok
+                            plugins: {
+                                colors: {
+                                forceOverride: true
+                                }
+                            },
+                            color : 'rgb(255,255,255)',
+                            scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
+                        }
+                    });
+                })();
 
-            (async function() {
-                const data = [];
-                for (var atld in naLog.dataByCountry) {
-                    data[data.length] = { tld : atld, count : naLog.dataByCountry[atld].numContentLoads};
-                };
-                new Chart( document.getElementById('viewsByCountry'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.map(row => row.tld),
-                        datasets: [
-                        {
-                            label: 'Views by country',
-                            data: data.map(row => row.count)
-                        }
-                        ],
-                    },
-                    options : { // thanks go to x.com/grok
-                        plugins: {
-                            colors: {
-                            forceOverride: true
+                (async function() {
+                    const data = [];
+                    for (var atld in naLog.dataByCountry) {
+                        data[data.length] = { tld : atld, count : naLog.dataByCountry[atld].numContentLoads};
+                    };
+                    new Chart( document.getElementById('viewsByCountry'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(row => row.tld),
+                            datasets: [
+                            {
+                                label: 'Views by country',
+                                data: data.map(row => row.count)
                             }
+                            ],
                         },
-                        color : 'rgb(255,255,255)',
-                        scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
-                    }
-                });
-            })();
+                        options : { // thanks go to x.com/grok
+                            plugins: {
+                                colors: {
+                                forceOverride: true
+                                }
+                            },
+                            color : 'rgb(255,255,255)',
+                            scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
+                        }
+                    });
+                })();
 
-            /*
-            (async function() {
-                const data = [];
-                for (var ahr in naLog.dataByURL) {
-                    data[data.length] = { url : ahr, count : naLog.dataByURL[ahr].numContentLoads};
-                };
-                new Chart( document.getElementById('viewsByPage'), {
-                    type: 'bar',
-                    data: {
-                        labels: data.map(row => row.url),
-                        datasets: [
-                        {
-                            label: 'Views by page',
-                            data: data.map(row => row.count)
-                        }
-                        ]
-                    },
-                    options : { // thanks go to x.com/grok
-                        plugins: {
-                            colors: {
-                            forceOverride: true
+                /*
+                (async function() {
+                    const data = [];
+                    for (var ahr in naLog.dataByURL) {
+                        data[data.length] = { url : ahr, count : naLog.dataByURL[ahr].numContentLoads};
+                    };
+                    new Chart( document.getElementById('viewsByPage'), {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(row => row.url),
+                            datasets: [
+                            {
+                                label: 'Views by page',
+                                data: data.map(row => row.count)
                             }
+                            ]
                         },
-                        color : 'rgb(255,255,255)',
-                        textShadow : '2px 2px 3px rgba(0,0,0,0.8)',
-                        scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
-                    }
-                });
-            })();*/
+                        options : { // thanks go to x.com/grok
+                            plugins: {
+                                colors: {
+                                forceOverride: true
+                                }
+                            },
+                            color : 'rgb(255,255,255)',
+                            textShadow : '2px 2px 3px rgba(0,0,0,0.8)',
+                            scales: { x: { ticks: { color: 'rgb(255,255,255)' } }, y: { ticks: { color: 'rgb(255,255,255)' } } }
+                        }
+                    });
+                })();*/
+            };
 
             na.desktop.settings.visibleDivs.push ('#siteToolbarLeft');
             na.desktop.resize();
@@ -366,8 +384,11 @@ export var naLog = {
     process_location : function (href) {
         if (href.match(document.location.origin+'/view/')) {
             var jsonEncoded = href.replace(document.location.origin+'/view/', '');
-            var json = JSON.parse(na.m.decode_base64_url(jsonEncoded.replace(/\?.*/,'')));
-            return json;//JSON.stringify(json, undefined, 2).replace(/"/g, '\\"');
+            try {
+                var json = JSON.parse(na.m.decode_base64_url(jsonEncoded.replace(/\?.*/,'')));
+                return json;//JSON.stringify(json, undefined, 2).replace(/"/g, '\\"');
+                return href;
+            } catch (e) {}
         };
         return href;
     },
@@ -377,10 +398,10 @@ export var naLog = {
             try {
                 var href = msg.replace(prefix1a,'').replace(prefix1b,'').replace(prefix1c,'');
 
-                r = { msg : msg, documentLocation : href, ipinfo : JSON.parse(dit.ipinfo), 'ipinfo count' : dit.ipinfo.length};
+                r = { msg : msg, documentLocation : href, ipinfo : typeof dit.ipinfo=='string'?JSON.parse(dit.ipinfo):dit.ipinfo, 'ipinfo count' : dit.ipinfo.length};
             } catch (e) {debugger;};
         } else if (m = msg.match(prefix2)) {
-            r = { msg : msg, onclickHTML : 'na.site.displayWallpaper(\''+m[2]+'\');', ipinfo : dit.ipinfo[0].ip_info, 'ipinfo count' : dit.ipinfo.length };
+            r = { msg : msg, onclickHTML : 'na.site.displayWallpaper(\''+m[2]+'\');', ipinfo : dit.ip_info};
         } else r = msg;
         return r;
     },

@@ -1,6 +1,8 @@
-    <div style=\'display:flex;align-items:center;height:100px;max-height:100px;align-items: center;justify-content: space-between;\'>
-<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/smoothness/jquery-ui.css">
-  <link rel="stylesheet" href="/NicerAppWebOS/3rd-party/jQuery/jquery-ui-timepicker-addon.css">
+    <div style=\'display:flex;align-items:center;height:100px;max-height:100px;align-items: center;justify-content: space-between\'>
+    <script type="text/javascript" src="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.source.js?m=<?=date('YMD-hms')?>"></script>'
+    <link rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs/naLog.css?m=<?=date('YMD-hms')?>"/>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="/NicerAppWebOS/3rd-party/jQuery/jquery-ui-timepicker-addon.css">
 
   <style>
     .container {
@@ -155,6 +157,7 @@ echo $naWebOS->html_vividButton (
     null,
     null
 );
+echo '<br/>'.PHP_EOL;
 echo $naWebOS->html_vividButton (
     1, 'order:6',
 
@@ -231,14 +234,75 @@ echo $naWebOS->html_vividButton (
     null
 );
 foreach ($naWebOS->view as $afn => $as) break;
-    $naWebOS->view[$afn]['beginDateTime'] = safeHTTPinput ('beginDateTime', (time() * 1000) - (7 * 24 * 3600 * 1000));
-    $naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
-
+$naWebOS->view[$afn]['beginDateTime'] = safeHTTPinput ('beginDateTime', (time() * 1000) - (7 * 24 * 3600 * 1000));
+$naWebOS->view[$afn]['endDateTime'] = safeHTTPinput ('endDateTime');
 ?>
-  <input type="hidden" id="unixMs" value="<?=$naWebOS->view[$afn]['beginDateTime']?>">
-  <input type="hidden" id="unixMs2" value="<?=$naWebOS->view[$afn]['endDateTime']?>">
-<script src="/NicerAppWebOS/3rd-party/jQuery/jquery-ui-timepicker-addon.js"></script>
+<br/>
+<?php
+echo $naWebOS->html_vividButton (
+  1, 'order:11',
 
+  'btnShowTab_stats', 'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+  '', 'naLog.view(naLog.data,\'stats\');', '', '',
+
+  11, 'Statistics',
+
+  'btnCssVividButton_outerBorder.png',
+  'btnCssVividButton.png',
+  'btnCssVividButton.purple1a.png',
+  'btnStatistics.png',
+
+  '',
+  '',
+
+  null,
+  null,
+  null
+);
+echo $naWebOS->html_vividButton (
+  1, 'order:12',
+
+  'btnShowTab_mostVisited', 'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+  '', 'naLog.view(naLog.data,\'mostVisited\');', '', '',
+
+  12, 'Most Visited',
+
+  'btnCssVividButton_outerBorder.png',
+  'btnCssVividButton.png',
+  'btnCssVividButton.purple1a.png',
+  'btnMostVisited.png',
+
+  '',
+  '',
+
+  null,
+  null,
+  null
+);
+echo $naWebOS->html_vividButton (
+  1, 'order:13',
+
+  'btnShowTab_details', 'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+  '', 'naLog.view(naLog.data,\'details\');', '', '',
+
+  13, 'Details',
+
+  'btnCssVividButton_outerBorder.png',
+  'btnCssVividButton.png',
+  'btnCssVividButton.purple1a.png',
+  'btnDetails.png',
+
+  '',
+  '',
+
+  null,
+  null,
+  null
+);
+?>
+<input type="hidden" id="unixMs" value="<?=$naWebOS->view[$afn]['beginDateTime']?>">
+<input type="hidden" id="unixMs2" value="<?=$naWebOS->view[$afn]['endDateTime']?>">
+<script src="/NicerAppWebOS/3rd-party/jQuery/jquery-ui-timepicker-addon.js"></script>
 <script>
     $('#siteToolbarLeft').addClass('naNoSettings').addClass('naNoComments').css({width:70});
 

@@ -16,7 +16,7 @@ preg_match_all ($pattern, $html, $matches);
 
 $pm = true;
 foreach ($matches[1] as $idx => $m) {
-    //var_dump ($m); echo PHP_EOL;
+    //svar_dump ($m); echo PHP_EOL;
     if (
         (
         stripos ($matches[2][$idx], 'http://') !== false
@@ -68,7 +68,7 @@ if (!$illegal) foreach ($matches2[2] as $idx => $url) {
 }
 
 // !! !! ! --- uncomment the next line to activate the 'open house' mode in the blogging apps of all sites that run this code-file.
-//$illegal = false;
+$illegal = false;
 if ($illegal) {
     exit ('HTTPS ERROR 403 Forbidden - No links allowed.');
 } else {

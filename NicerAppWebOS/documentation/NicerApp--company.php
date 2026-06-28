@@ -42,8 +42,7 @@ are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:ren
 <h2>Going commercial</h2>
 
 <p class="backdropped naComments_onTheSide">
-The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain-names and -content at said.by, zoned.at and nicer.app are on sale for ten million euro.<br/>
-Email me for more details. I'd be willing to, but not insisting on, become/becoming a remote working employee of the buyer too. :-)
+The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain-names and -content at said.by, zoned.at and nicer.app are on sale for 9.95 million Euro.<br/>
 </p>
 
 <h2>Business plan</h2>
@@ -63,6 +62,8 @@ That's a 70W speaker for my smartphone draped around my shoulder,<br/>not a 'gay
 i'm straight.</div>
 <img src="https://nicer.app/NicerAppWebOS/documentation/selfies/rene-ajm-veerman/IMG_20251109_145323_1.jpg" style="width:95%;"/><br/>
 </div>
+
+
 <p class="backdropped naComments_onTheSide">
 Should I unexpectedly die for some strange reason, for instance by long standing "dissident" disputes (In addition to a software and graphics developer, i'm also an assertive peace activist who is not without the ability to look at his own ranks with criticism) suddenly becoming lethal in some way, I want my belongings donated to my parents initially, and to the Amsterdam.NL stedelijk museum after their eventual death, who may all do with it all as they please, on condition of keeping copies of https://nicer.app plus https://said.by up and running.<br/>
 </p>
@@ -91,7 +92,6 @@ $('.naDiaryEntryHeader').each(function(idx,el){
 $('.naDiaryDayHeader')
 .on('click', function (evt) {
     var pn = $(evt.currentTarget).next()[0];
-    debugger;
     while ($(pn).is('.naDiaryEntry,.naDiaryDay,.naDiaryDaySegment')) {
         if (!$(evt.currentTarget).is('.shown')) {
             $('.naFilePath,ol,ul,.naDiaryEntry,.naDiaryDay,.naDiaryDaySegment',pn).add(pn).hide('slow');

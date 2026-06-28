@@ -4,8 +4,9 @@ class naVividMenu {
     if (!menu) return;
 
     const openBtn = document.getElementById(openBtnId);
+    debugger;
 
-    if (menu.dataset.initialized) return;
+    //if (menu.dataset.initialized) return;
     menu.dataset.initialized = 'true';
 
     // Add classes
@@ -30,12 +31,12 @@ class naVividMenu {
     });
 
     // Main menu positioning
-    menu.style.position = 'fixed';
-    menu.style.top = 'auto';
-    menu.style.left = '40px';
+    if (menuElId=='siteMenu')
+      menu.style.position = 'absolute';
+    else
+      menu.style.position = 'relative';
+
     menu.style.width = 'fit-content';
-    menu.style.bottom = '330px';
-    menu.style.display = 'none';
 
     // Toggle main menu
     if (openBtn) {

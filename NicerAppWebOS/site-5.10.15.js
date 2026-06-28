@@ -1556,6 +1556,11 @@ na.site = {
         na.site.settings.running_loadTheme = true;
         na.site.settings.running_loadContent = true;
 
+        na.m.addLogEntry (
+            'Page changed to <a href=\\"'+document.location.href+'\\" target=\\"_new\\">'+document.location.href+'</a>',
+            'naStatus_pageChanged'
+        );
+
         na.m.runFunctions (lcc.ec, na.m.updateEvent (dt, {
             loadContent_displayContent : {
                 labels : { marker : { whatsThis : fncn+'::na.m.runFunctions() called' } },

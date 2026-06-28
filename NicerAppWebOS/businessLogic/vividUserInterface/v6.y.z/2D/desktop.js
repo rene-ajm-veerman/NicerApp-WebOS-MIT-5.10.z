@@ -323,6 +323,7 @@ na.desktop = na.d = {
                             */
 
                             divs[divID].height = $(window).height() - divs[divID].top;
+                            debugger;
                             break;
                     }
 
@@ -415,16 +416,6 @@ na.desktop = na.d = {
 
                     divs[divID].left = divs[divID].left - ml - mr;
                     divs[divID].height = divs[divID].height - mt - mb;
-
-                    if (divID=='#siteComments') {
-                        divs[divID].left -= na.d.g.margin;
-                        divs[divID].height -= na.d.g.margin;
-                    }
-
-                    if (divID=='#siteToolbarLeft') {
-                        divs[divID].height -= na.d.g.margin;
-                    }
-
 
                     if (divID=='#siteContent') {
                         if (na.d.s.visibleDivs.includes('#siteToolbarLeft')) {

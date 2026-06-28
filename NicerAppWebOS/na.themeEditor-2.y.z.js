@@ -2080,13 +2080,13 @@ debugger;
                     });
                     var evt2 = { currentTarget : $('#textSettings')[0] };
 
-                    /*
                     setTimeout(function() {
-                        if (!na.site.c.menus['#textFontFamily'])
-                        na.site.c.menus['#textFontFamily'] = new naVividMenu($('#textFontFamily')[0], true, function(menu) {
+                        debugger;
+                        //if (!na.site.c.menus['#textFontFamily'])
+                        na.site.c.menus['#textFontFamily'] = new naVividMenu('textFontFamily', true, function(menu) {
                         });
                     }, 500);
-                    */
+
 
                     na.te.updateTextSettingsControls(evt2);
 

@@ -2081,9 +2081,8 @@ debugger;
                     var evt2 = { currentTarget : $('#textSettings')[0] };
 
                     setTimeout(function() {
-                        debugger;
                         //if (!na.site.c.menus['#textFontFamily'])
-                        na.site.c.menus['#textFontFamily'] = new naVividMenu('textFontFamily', true, function(menu) {
+                        na.site.c.menus['#textFontFamily'] = new naVividMenu('textFontFamily', 'textFontFamily', function(menu) {
                         });
                     }, 500);
 

@@ -923,7 +923,6 @@ na.site = {
                 theme : na.site.globals.themeName
             },
             success : function (data, ts, xhr) {
-                debugger;
                 if (data.indexOf('status : Success')!==-1) na.site.loadTheme(null, null, true, true, false);
             },
             error : function (xhr, textStatus, errorThrown) {
@@ -940,7 +939,6 @@ na.site = {
             type : 'POST',
             url : url,
             success : function (data, ts, xhr) {
-                debugger;
                 if (data.indexOf('status : Success')!==-1) na.site.loadTheme(null, null, true, true, false);
             },
             error : function (xhr, textStatus, errorThrown) {
@@ -957,7 +955,6 @@ na.site = {
             type : 'POST',
             url : url,
             success : function (data, ts, xhr) {
-                debugger;
                 if (data.indexOf('status : Success')!==-1) na.site.loadTheme(null, null, true, true, false);
             },
             error : function (xhr, textStatus, errorThrown) {
@@ -1714,7 +1711,7 @@ na.site = {
 
         $('.vividMenu'/*, vdc[0]*/).each(function(idx,el){
             if (!na.site.c.menus) na.site.c.menus = {};
-            if (el.id!='siteMenu' && !na.site.c.menus['#'+el.id]) na.site.c.menus['#'+el.id] = new naVividMenu(el);
+            if (el.id!='siteMenu' && !na.site.c.menus['#'+el.id]) na.site.c.menus['#'+el.id] = new naVividMenu(el.id);
         });
 
         $('.noPushState').each(function(idx,el) {
@@ -1908,7 +1905,6 @@ na.site = {
                                     };
                                     script.src = src;
                                     scriptIdx++;
-                                    debugger;
                                     $('head')[0].appendChild(script);
                                 };
                             } else {
@@ -1920,7 +1916,6 @@ na.site = {
                         } else {
                             na.d.s.visibleDivs = arrayRemove (na.d.s.visibleDivs, divID2);
                             na.d.s.visibleDivs.push ('#'+divID2);
-                            debugger;
                             $('.vividDialogContent', $('#'+divID2)).show('normal');
                             na.d.resize();
                         }

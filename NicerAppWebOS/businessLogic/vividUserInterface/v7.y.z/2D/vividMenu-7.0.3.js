@@ -1,187 +1,129 @@
 class naVividMenu {
   constructor(menuElId = 'siteMenu', openBtnId = 'btnShowStartMenu') {
-    const menu = document.getElementById(menuElId);
+    let menu = document.getElementById(menuElId) ||
+    document.getElementById('textFontFamily_container') ||
+    document.querySelector('.vividMenu_vertical, .themeEditorComponent');
     if (!menu) return;
 
-    const openBtn = document.getElementById(openBtnId);
-    debugger;
-
-    //if (menu.dataset.initialized) return;
+    if (menu.dataset.initialized) return;
     menu.dataset.initialized = 'true';
 
-    // Add classes
-    menu.querySelectorAll('li').forEach(li => {
-      li.classList.add('menu-item');
-      if (li.querySelector(':scope > ul')) li.classList.add('has-submenu');
-    });
-    menu.querySelectorAll('ul ul').forEach(ul => ul.classList.add('submenu'));
-    /*
-    if (menu.firstElementChild?.tagName === 'UL') {
-      menu.firstElementChild.classList.add('menu-root');
-    }*/
-    $($('vividMenuLayout')[2]).addClass('menu-root');
+    let currentlyOpen = null;
 
-    // Ultra-high z-index base (no override later)
-    const baseZ = 990000000;
+    const closeAll = () => {
+      menu.querySelectorAll('.submenu').forEach(sm => sm.style.display = 'none');
+      currentlyOpen = null;
+    };
+
+    const prepareItems = () => {
+      menu.querySelectorAll('li').forEach(li => {
+        li.classList.add('menu-item');
+        if (li.querySelector(':scope > ul')) li.classList.add('has-submenu');
+        li.style.position = 'relative';
+        li.style.height = 'auto';
+        li.setAttribute('tabindex', '0'); // Keyboard support
+      });
+    };
+
+    prepareItems();
+
+    const baseZ = 999999999;
     menu.style.zIndex = baseZ;
 
-    const submenus = menu.querySelectorAll('.submenu');
-    submenus.forEach((sm, index) => {
-      sm.style.zIndex = baseZ + (index + 1) * 100; // Big steps for deep levels
-    });
-
-    // Main menu positioning
-    if (menuElId=='siteMenu')
-      menu.style.position = 'absolute';
-    else
-      menu.style.position = 'relative';
-
-    menu.style.width = 'fit-content';
-
-    // Toggle main menu
-    if (openBtn) {
-      openBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-        $('.vividMenu_mainUL',menu).css({display:'block'});
-      });
-    }
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-      if (!menu.contains(e.target) && (!openBtn || e.target !== openBtn)) {
-        menu.style.display = 'none';
-        submenus.forEach(sm => sm.style.display = 'none');
-      }
-    });
-
-    // Submenu hover with full bridging
-    const hoverDelay = 120;
-    let openTimeout, closeTimeout;
-
     const initSubMenu = (item) => {
-      const submenu = item.querySelector(':scope > .submenu');
+      if (item.dataset.initDone) return;
+      item.dataset.initDone = 'true';
+
+      const submenu = item.querySelector('ul');
       if (!submenu) return;
 
+      submenu.style.position = 'fixed';
+      submenu.style.overflow = 'visible';
+      submenu.style.background = 'rgba(15, 15, 35, 0.55)';
+      submenu.style.border = '2px solid rgba(100, 180, 255, 0.55)';
+      submenu.style.borderRadius = '10px';
+      submenu.style.boxShadow = '0 5px 15px rgba(0,0,0,0.7)';
+      submenu.style.padding = '12px';
+      submenu.style.minWidth = '240px';
+      submenu.style.height = 'auto';
+      submenu.style.maxHeight = '65vh';
+      submenu.style.zIndex = baseZ + 1000;
       submenu.style.display = 'none';
-      submenu.style.position = 'absolute';
 
-    const openSubmenu = () => {
-        submenu.style.display = 'flex';
-        submenu.style.opacity = '1';
+      submenu.style.gridTemplateColumns = 'repeat(auto-fit, minmax(220px, 1fr))';
+      submenu.style.gap = '8px 26px';
 
-        // Temporarily position off-screen to measure natural size
-        submenu.style.left = '-9999px';
-        submenu.style.top = '-9999px';
-        submenu.style.right = 'auto';
-        submenu.style.bottom = 'auto';
+      const openSubmenu = () => {
+        closeAll();
+        submenu.style.display = 'grid';
+        currentlyOpen = submenu;
 
-        // Reset to parent for accurate positioning
-        submenu.style.left = '';
-        submenu.style.top = '';
-        submenu.style.right = '';
-        submenu.style.bottom = '';
+        const rect1 = submenu.getBoundingClientRect();
+        const rect2 = item.getBoundingClientRect();
+        let left = rect2.right + 8;
+        let top = rect2.top;
 
-        const parentRect = item.getBoundingClientRect();
+        if (left + 300 > window.innerWidth) left = rect2.left - 8;
 
-        // Available space on each side
-        const spaceRight = window.innerWidth - parentRect.right;
-        const spaceLeft = parentRect.left;
-        const spaceBottom = window.innerHeight - parentRect.bottom;
-        const spaceTop = parentRect.top;
-
-        var sh = spaceRight > spaceLeft ? spaceRight : spaceLeft;
-        var sv = spaceTop > spaceBottom ? spaceTop : spaceBottom;
-
-        submenu.style.width = (
-          (sh / 2.5) > parentRect.width * 3
-          ? parentRect.width * 3
-          : sh / 2.5
-        ) + 'px';
-
-        const submenuWidth = submenu.offsetWidth;
-        const submenuHeight = submenu.offsetHeight;
-
-
-        // Default: try right first (classic cascade)
-        let bestH = 'right';
-        let bestV = 'top';
-
-        // Choose horizontal direction with most space
-        if (spaceLeft > spaceRight && spaceLeft >= submenuWidth) {
-            bestH = 'left';
-        }
-
-        // Choose vertical direction with most space (only if horizontal isn't viable)
-        if (spaceBottom < submenuHeight && spaceTop > spaceBottom && spaceTop >= submenuHeight) {
-            bestV = 'bottom';
-        }
-
-        // Apply best horizontal
-        if (bestH === 'right') {
-            submenu.style.left = '100%';
-            submenu.style.right = 'auto';
-        } else {
-            submenu.style.left = 'auto';
-            submenu.style.right = '100%';
-        }
-
-        // Apply best vertical
-        if (bestV === 'top') {
-            submenu.style.top = '0';
-            submenu.style.bottom = 'auto';
-        } else {
-            submenu.style.top = 'auto';
-            submenu.style.bottom = '0';
-        }
-
-        // Final safeguard: adjust if still overflowing
-        const finalRect = submenu.getBoundingClientRect();
-        if (finalRect.right > window.innerWidth) {
-            submenu.style.left = 'auto';
-            submenu.style.right = '0'; // Pull back
-        }
-        if (finalRect.bottom > window.innerHeight) {
-            submenu.style.top = 'auto';
-            submenu.style.bottom = '0';
-        }
-
-        // Viewport constraints
-        submenu.style.maxHeight = `${window.innerHeight - 40}px`;
-        //submenu.style.overflowY = 'auto';
-        };
-
-      const closeSubmenu = () => {
-        submenu.style.display = 'none';
+        submenu.style.left = left + 'px';
+        submenu.style.top = top + 'px';
+        submenu.style.width = (window.innerWidth - $(submenu).offset().left - rect1.left - rect2.left - 50) + 'px';
       };
 
-      // Open on parent hover
-      item.addEventListener('mouseenter', () => {
-        clearTimeout(closeTimeout);
-        openTimeout = setTimeout(openSubmenu, hoverDelay);
-      });
+      const hideSubmenu = () => {
+        submenu.style.display = 'none';
+        if (currentlyOpen === submenu) currentlyOpen = null;
+      };
 
-      // Start close when leaving parent
-      item.addEventListener('mouseleave', () => {
-        clearTimeout(openTimeout);
-        closeTimeout = setTimeout(closeSubmenu, hoverDelay * 2);
-      });
+        // Mouse
+        item.addEventListener('mouseenter', openSubmenu);
+        item.addEventListener('mouseleave', (e) => {
+          if (!submenu.contains(e.relatedTarget)) hideSubmenu();
+        });
 
-      // *** Critical fix: Cancel close when entering submenu ***
-      submenu.addEventListener('mouseenter', () => {
-        clearTimeout(closeTimeout);
-        clearTimeout(openTimeout); // in case delayed
-      });
+          // Touch support
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (submenu.style.display === 'grid') {
+              hideSubmenu();
+            } else {
+              openSubmenu();
+            }
+          });
 
-      // Close when finally leaving submenu
-      submenu.addEventListener('mouseleave', () => {
-        closeTimeout = setTimeout(closeSubmenu, hoverDelay * 2);
-      });
-    }
+          submenu.addEventListener('mouseleave', hideSubmenu);
 
-    initSubMenu (menu);
-    menu.querySelectorAll('.vividMenu_mainUL .has-submenu').forEach(item => initSubMenu(item));
+          // Keyboard support
+          item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (submenu.style.display === 'grid') hideSubmenu();
+              else openSubmenu();
+            }
+            if (e.key === 'Escape' && currentlyOpen) {
+              closeAll();
+            }
+          });
 
+          // Close on Escape globally
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeAll();
+          });
+    };
+
+    const initAll = () => {
+      prepareItems();
+      menu.querySelectorAll('.has-submenu').forEach(initSubMenu);
+    };
+
+    initAll();
+    new MutationObserver(initAll).observe(menu, { childList: true, subtree: true });
+
+    document.addEventListener('click', (e) => {
+      if (!menu.contains(e.target)) closeAll();
+    });
+
+      console.log('naVividMenu: Touch + Keyboard support added');
   }
 }
 

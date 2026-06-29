@@ -323,7 +323,6 @@ na.desktop = na.d = {
                             */
 
                             divs[divID].height = $(window).height() - divs[divID].top;
-                            debugger;
                             break;
                     }
 

@@ -1527,8 +1527,12 @@ class NicerAppWebOS {
         $debug = $this->debugThemeLoading;
 
         // without this, theme saving & loading is broken for the news app, and possibly other apps as well
+        //echo '<pre>'; var_dump ($this->view); exit;
         foreach ($this->view as $k=>$v) break;
-        unset ($this->view[$k]['appFolder']);
+        if (
+            is_array($this->view[$k])
+            && array_key_exists('appFolder',$this->view[$k])
+        ) unset ($this->view[$k]['appFolder']);
 
         if ($debug) {
             //echo var_dump (decode_base64_url(            'eyJcL05pY2VyQXBwV2ViT1NcL2FwcHNcL05pY2VyQXBwV2ViT1NcL2FwcGxpY2F0aW9uc1wvMkRcL2xvZ3MiOnsicGFnZSI6ImluZGV4IiwiYXBwRm9sZGVyIjoiXC9OaWNlckFwcFdlYk9TXC9hcHBzXC9OaWNlckFwcFdlYk9TXC9hcHBsaWNhdGlvbnNcLzJEXC9sb2dzIiwiYmVnaW5EYXRlVGltZSI6MTc4MjI2NTg2MTAwMCwiZW5kRGF0ZVRpbWUiOm51bGx9fQ'                           ));
@@ -2036,7 +2040,10 @@ class NicerAppWebOS {
                 unset ($this->view[$x]['endDateTime']);
             } else {
                 foreach ($this->view as $k=>$v) break;
-                unset ($this->view[$k]['appFolder']);
+                if (
+                    is_array($this->view[$k])
+                    && array_key_exists('appFolder',$this->view[$k])
+                ) unset ($this->view[$k]['appFolder']);
             }
            // echo '<   pre>'; var_dump ($this->view); exit();
             $url = '/view/'.encode_base64_url(json_encode($this->view));

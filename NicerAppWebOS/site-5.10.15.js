@@ -448,11 +448,11 @@ na.site = {
                         themeData.dialogs = $.extend (themeData.dialogs, na.fetchTheme (selector));
                     }*/
 
-                    if (s) {
-                        themeData = na.site.loadTheme_fetchDialogs(themeData);
-                        na.site.globals.themes[na.site.globals.themeName] = $.extend({}, na.site.globals.themes[na.site.globals.themeName], themeData);
-                        na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
-                    }
+                    // if (s) {
+                    //     themeData = na.site.loadTheme_fetchDialogs(themeData);
+                    //     na.site.globals.themes[na.site.globals.themeName] = $.extend({}, na.site.globals.themes[na.site.globals.themeName], themeData);
+                    //     na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
+                    // }
                     //t.startTooltips();
 
                     for (var appID in na.apps.loaded) {
@@ -3584,15 +3584,28 @@ na.site = {
             themeData.dialogs = $.extend (themeData.dialogs, na.fetchTheme (selector));
         }*/
 
-        themeData = na.site.loadTheme_fetchDialogs(themeData);
+        // Fetch dialogs properly
+        themeData = na.site.loadTheme_fetchDialogs(themeData) || themeData;
+        debugger;
+
         //IS THIS NECESSARY?? na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
         na.site.globals.themes[na.site.globals.themeName] = $.extend({}, themeData);
         na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
 
         // ENCAPSULATE (ENCODE) json objects for HTTP transport
-        themeData.themeSettings = JSON.stringify(themeData.themeSettings);
-        themeData.apps = JSON.stringify(Object.assign({},themeData.apps));
-        themeData.view = JSON.stringify(Object.assign({},themeData.view));
+        try {
+            var themeData2 = $.extend({},themeData);
+            themeData2.themeSettings = JSON.stringify(themeData.themeSettings);
+            themeData2.apps = JSON.stringify(Object.assign({},themeData.apps));
+            themeData2.view = JSON.stringify(Object.assign({},themeData.view));
+        } catch (err) {
+            debugger;
+        }
+        /*
+         * "{\"dbID\":\"zXYQzSQdAQJ29XGtpDEp\",\"themeSettings\":{\"Dialogs\":[],\"Apps\":{},\"Extras\":{}},\"apps\":[],\"background\":\"https://nicer.app//siteMedia/backgrounds/Landscape/scenery/thumbs/3840/mountains_snow_forest_lake_clouds.jpg\",\"backgroundSearchKey\":\"Landscape\",\"textBackgroundOpacity\":0.4,\"changeBackgroundsAutomatically\":false,\"backgroundChange_hours\":\"0\",\"backgroundChange_minutes\":\"1\",\"theme\":\"default\",\"role\":\"nicer_app___Guests\",\"specificityName\":\"current page for user Guest at the client\",\"vdSettings_show\":\"transparent\",\"menusFadingSpeed\":\"300\",\"menusUseRainbowPanels\":\"true\",\"dialogs\":{},\"user\":\"nicer_app___Guest\",\"url\":\"/view/eyJcL05pY2VyQXBwV2ViT1NcL2FwcHNcL05pY2VyQXBwV2ViT1NcL2FwcGxpY2F0aW9uc1wvMkRcL2xvZ3MiOnsicGFnZSI6ImluZGV4IiwiYXBwRm9sZGVyIjoiXC9OaWNlckFwcFdlYk9TXC9hcHBzXC9OaWNlckFwcFdlYk9TXC9hcHBsaWNhdGlvbnNcLzJEXC9sb2dzIiwiYmVnaW5EYXRlVGltZSI6MTc4MjE2MjEwMjAwMCwiZW5kRGF0ZVRpbWUiOm51bGx9fQ\"}"
+         */
+
+
         //if (themeData.dialogs.indexOf('+')!==-1) themeData.dialogs = themeData.dialogs.replace(/\+/g, ' ');
         //if (themeData.dialogs.indexOf('\\')!==-1) themeData.dialogs = themeData.dialogs.replace(/\\/g, '');
 
@@ -3601,7 +3614,7 @@ na.site = {
         ac2 = {
             type : 'POST',
             url : url,
-            data : themeData,
+            data : themeData2,
             success : function (data, ts, xhr) {
                 if (data.match('status : Failed')) {
                     var msg = 'na.saveTheme() : Could not save settings. Please login again.';
@@ -3642,33 +3655,35 @@ na.site = {
                 na.site.ajaxFail(fncn, url, xhr, textStatus, errorThrown);
             }
         };
+        debugger;
         $.ajax(ac2);
     },
 
     loadTheme_fetchDialogs : function (themeData) {
-        themeData = $.extend (na.site.globals.themes[na.site.globals.themeName], themeData);
+        var themeData2 = $.extend ({}, na.site.globals.themes[na.site.globals.themeName], themeData);
         for (var divSel in na.site.c.dialogs) {
-            if (!themeData.themeSettings) {
-                themeData.themeSettings = { // gets initialized through na.onload_phase2() calling na.loadTheme()
+            if (!themeData2.themeSettings) {
+                themeData2.themeSettings = { // gets initialized through na.onload_phase2() calling na.loadTheme()
                     Dialogs : {}, // filled in below here.
                     Apps : {}, // ditto
                     Extras :  na.te.transform_jsTree_to_siteGlobalsThemes() // pulls data modified by end-users from the Theme Editor back into this na.saveTheme() AJAX call
                 };
             }
-            if (!themeData.themeSettings.Apps) themeData.themeSettings.Apps = {};
+            if (!themeData2.themeSettings.Apps) themeData2.themeSettings.Apps = {};
 
             var
             regExDialogs = /#site(.*)[\s\w\.\#\d\>]*/,
             regExApps = /#app__(.*)__(.*)$/;
             if (divSel.match(regExDialogs)) {
                 var divName = divSel.match(regExDialogs)[1];
-                if (!themeData.themeSettings['Dialogs'])
-                    themeData.themeSettings['Dialogs'] = { };
-                if (!themeData.themeSettings['Dialogs'][divName])
-                    themeData.themeSettings['Dialogs'][divName] = { css : {} };
-                themeData.themeSettings['Dialogs'][divName]['css'] =
+                if (!themeData2.themeSettings.Dialogs || themeData2.themeSettings.Dialogs.length===0)
+                    themeData2.themeSettings.Dialogs = { };
+                if (!themeData2.themeSettings.Dialogs[divName])
+                    themeData2.themeSettings.Dialogs[divName] = { css : {} };
+                themeData2.themeSettings.Dialogs[divName]['css'] =
                     $.extend (
-                        themeData.themeSettings['Dialogs'][divName]['css'],
+                        {},
+                        themeData2.themeSettings.Dialogs[divName]['css'],
                         na.site.fetchTheme (divSel)
                     );
             } else if (divSel.match(regExApps)) {
@@ -3676,12 +3691,12 @@ na.site = {
                 m = divSel.match(regExApps),
                 appName = m[1],
                 appDialogName = m[2];
-                if (!themeData.themeSettings['Apps'][appName])
-                    themeData.themeSettings['Apps'][appName] = { css : {} };
+                if (!themeData2.themeSettings['Apps'][appName])
+                    themeData2.themeSettings['Apps'][appName] = { css : {} };
                 //if (!themeData.themeSettings['Apps'][appName]['css'][divSel])
-                themeData.themeSettings['Apps'][appName]['css'] =
-                    $.extend(
-                        themeData.themeSettings['Apps'][appName]['css'],
+                themeData2.themeSettings['Apps'][appName]['css'] =
+                    $.extend({},
+                        themeData2.themeSettings['Apps'][appName]['css'],
                         na.site.fetchTheme(divSel)
                     );
             }
@@ -3689,8 +3704,8 @@ na.site = {
 
         //if (!themeData.themeSettings.Extras)
         try {
-            if (!themeData.themeSettings) themeData.themeSettings = {};
-            themeData.themeSettings.Extras = na.te.transform_jsTree_to_siteGlobalsThemes();
+            if (!themeData2.themeSettings) themeData2.themeSettings = {};
+            themeData2.themeSettings.Extras = na.te.transform_jsTree_to_siteGlobalsThemes();
         } catch (err) {
             var dbg = {
                 msg : err.message,
@@ -3699,15 +3714,15 @@ na.site = {
             na.m.log (6, 'na.site.loadTheme_fetchDialogs(): na.te.transform_jsTree_to_siteGlobalsThemes() failed.', dbg);
         }
 
-        themeData.changeBackgroundsAutomatically =
+        themeData2.changeBackgroundsAutomatically =
             $('#changeBackgroundsAutomatically')[0]
             ? $('#changeBackgroundsAutomatically')[0].checked
             : false;
 
-        themeData.backgroundChange_hours = $('#backgroundChange_hours').val();
-        themeData.backgroundChange_minutes = $('#backgroundChange_minutes').val();
+        themeData2.backgroundChange_hours = $('#backgroundChange_hours').val();
+        themeData2.backgroundChange_minutes = $('#backgroundChange_minutes').val();
 
-        return themeData;
+        return themeData2;
     },
 
     fetchTheme : function (selector) {

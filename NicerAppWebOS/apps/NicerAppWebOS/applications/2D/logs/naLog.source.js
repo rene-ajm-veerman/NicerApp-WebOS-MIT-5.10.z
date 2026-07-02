@@ -201,7 +201,7 @@ var naLog = {
             //html2 += '<div style="height:500px"><canvas id="viewsByPage"></canvas></div>';
             if (view=='mostVisited') html2 += `
             <div id="mostVisitedContainer" style="margin-top: 30px;">
-            <h2 style="color:#89b4fa; margin-bottom:20px;">🔥 Most Visited Links</h2>
+            <h2 style="margin-bottom:20px;">🔥 Most Visited Links</h2>
             <div id="mostVisitedList" class="vividScrollpane" style="max-height: calc(100% - 40px); overflow-y: auto;"></div>
             </div>
             `;

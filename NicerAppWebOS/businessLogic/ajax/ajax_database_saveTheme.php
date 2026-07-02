@@ -5,7 +5,7 @@ global $naIP;
 global $naWebOS;
 
 $useAdminLogin = false; // bugfix when boolean 'true' (NO LONGER NEEDED)
-$debug = false;
+$debug = true;
 if ($debug) {
     echo 'info : '.__FILE__.' : $debug = true.<br/>'.PHP_EOL;
     ini_set('display_errors', 1);
@@ -104,7 +104,7 @@ if (!$proceed) {
 
 if ($debug) { echo 't1 $findCommand='; var_dump ($findCommand); echo PHP_EOL.PHP_EOL; }
 $call = $cdb->find ($findCommand);
-if ($debug) { echo '$call='; var_dump ($call); echo PHP_EOL.PHP_EOL; }
+if ($debug) { echo 't1 $call='; var_dump ($call); echo PHP_EOL.PHP_EOL; }
 
 if (!$call->headers->_HTTP->status===200) { 
     $id = cdb_randomString(20); 
@@ -211,7 +211,7 @@ if (!isset($_SESSION) || !is_array($_SESSION) || !array_key_exists('selectors',$
             '2' => $_POST['specificityName'],
             'selectors' => $selectors
         ];
-        if ($debug) { echo '<pre style="margin:5px;border-radius:10px;padding:5px;background:navy;color:lime">'; var_dump ($dbg2); echo '</pre>'; }
+        //if ($debug) { echo '<pre style="margin:5px;border-radius:10px;padding:5px;background:navy;color:lime">'; var_dump ($dbg2); echo '</pre>'; }
 
         if ($selector['specificityName']===$_POST['specificityName']) $sel = $selector;
     }
@@ -300,6 +300,12 @@ $rec = $rec2;
 if (!is_null($rev)) $rec['_rev'] = $rev;
 $rec['_id'] = $id;
 
+$rec = negotiateOptions ($sel, $rec);
+unset($rec['display']);
+unset($rec['has_read_permission']);
+unset($rec['has_write_permission']);
+unset($rec['beginDateTime']);
+unset($rec['endDateTime']);
 
 if ($debug) { echo '<pre>$rec (merged) : '; var_dump ($rec); var_dump($_POST); var_dump(json_last_error()); echo '</pre>'.PHP_EOL.PHP_EOL; }
 try {
@@ -317,7 +323,7 @@ try {
         echo 'status : Failed.'; exit();
     }
 }
-if ($debug) { echo '<pre>$call3='; var_dump ($call3); var_dump($rec2); var_dump(json_last_error()); echo '</pre>'.PHP_EOL.PHP_EOL; }
+if ($debug) { echo '<pre>$call3='; var_dump ($call3); var_dump($rec); var_dump(json_last_error()); echo '</pre>'.PHP_EOL.PHP_EOL; }
         
 if ($call3->headers->_HTTP->status=='201' || $call3->headers->_HTTP->status=='200') {
     echo 'status : Success';

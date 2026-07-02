@@ -2396,6 +2396,7 @@ debugger;
     }
     
     textSettingsSelected_textColor  (color) {
+        debugger;
         if (color) na.te.s.c.textColor = color; else color = na.te.s.c.textColor;
         if (typeof color=='object') color = 'rgba('+color._r+', '+color._g+', '+color._b+', '+color._a+')'; // firefox bugfix
         if (na.te.s.c.forDialogID) {

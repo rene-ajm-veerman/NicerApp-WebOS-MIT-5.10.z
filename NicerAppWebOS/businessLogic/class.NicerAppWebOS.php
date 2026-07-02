@@ -1525,11 +1525,20 @@ class NicerAppWebOS {
         global $naUsername;
         global $naIsBot;
         $debug = $this->debugThemeLoading;
-        if ($debug) { echo '<h1>'.$fncn.'</h1>'.PHP_EOL; }
+
+        // without this, theme saving & loading is broken for the news app, and possibly other apps as well
+        foreach ($this->view as $k=>$v) break;
+        unset ($this->view[$k]['appFolder']);
+
+        if ($debug) {
+            //echo var_dump (decode_base64_url(            'eyJcL05pY2VyQXBwV2ViT1NcL2FwcHNcL05pY2VyQXBwV2ViT1NcL2FwcGxpY2F0aW9uc1wvMkRcL2xvZ3MiOnsicGFnZSI6ImluZGV4IiwiYXBwRm9sZGVyIjoiXC9OaWNlckFwcFdlYk9TXC9hcHBzXC9OaWNlckFwcFdlYk9TXC9hcHBsaWNhdGlvbnNcLzJEXC9sb2dzIiwiYmVnaW5EYXRlVGltZSI6MTc4MjI2NTg2MTAwMCwiZW5kRGF0ZVRpbWUiOm51bGx9fQ'                           ));
+            //echo var_dump (decode_base64_url(                'eyJcL05pY2VyQXBwV2ViT1NcL2FwcHNcL05pY2VyQXBwV2ViT1NcL2FwcGxpY2F0aW9uc1wvMkRcL2xvZ3MiOnsicGFnZSI6ImluZGV4IiwiYXBwRm9sZGVyIjoiXC9OaWNlckFwcFdlYk9TXC9hcHBzXC9OaWNlckFwcFdlYk9TXC9hcHBsaWNhdGlvbnNcLzJEXC9sb2dzIiwiYmVnaW5EYXRlVGltZSI6MTc4MjI2NTg5ODAwMCwiZW5kRGF0ZVRpbWUiOm51bGx9fQ'                           ));
+            echo '<h1>'.$fncn.'</h1>'.PHP_EOL;
+        }
 
         $viewFolder = '[UNKNOWN VIEW]';
         $db = $this->dbs->findConnection('couchdb');
-
+// 0337505798
         $d1 = $this->getPageCSS_permissionsList($js);
         if ($debug) {
             //echo '<pre style="color:yellow;background:navy">'; var_dump ($d1['selectors']); echo '</pre>';
@@ -1573,7 +1582,6 @@ class NicerAppWebOS {
 
         $mySpecificityName = null;
         foreach ($selectors2 as $idx => $selector) {
-            if ($debug) { echo '<pre style="color:yellow;background:blue;padding:5px;margin:10px;border-radius:10px;"><h2>'.$idx.'</h2>'.PHP_EOL.PHP_EOL.json_encode ($selector,JSON_PRETTY_PRINT).'</pre>'.PHP_EOL.PHP_EOL; }
             if (
                 !array_key_exists('has_read_permission',$selector)
                 || !$selector['has_read_permission']
@@ -1588,6 +1596,15 @@ class NicerAppWebOS {
                 $stickToCurrentSpecificity
                 && $selector['specificityName']!==$specificityName
             ) continue;
+
+            unset($selector['display']);
+            unset($selector['has_read_permission']);
+            unset($selector['has_write_permission']);
+            unset($selector['beginDateTime']);
+            unset($selector['endDateTime']);
+
+
+            if ($debug) { echo '<pre style="color:yellow;background:blue;padding:5px;margin:10px;border-radius:10px;"><h2>'.$idx.'</h2>'.PHP_EOL.PHP_EOL.json_encode ($selector,JSON_PRETTY_PRINT).'</pre>'.PHP_EOL.PHP_EOL; }
 
             $css = $this->getPageCSS_specific($selector);
             if ($debug) { echo '<pre style="color:darkred;background:yellow;padding:5px;margin:10px;border-radius:10px;">$css='.PHP_EOL.PHP_EOL; var_dump($css); echo '</pre>'; }
@@ -1956,7 +1973,7 @@ class NicerAppWebOS {
         //file_put_contents($selectorsCachedFilepath.'.idx', $id2);
         //file_put_contents($selectorsCachedFilepath.'.txt', $ret);
 
-        //if ($this->debugThemeLoading) exit();
+        if ($debug) exit();
 
         return $ret;
     }
@@ -2012,7 +2029,16 @@ class NicerAppWebOS {
         if (is_array($this->view) && !is_null($this->view)) {
             foreach ($this->view as $viewFolder => $viewSettings) break;
             //$viewFolder = preg_replace('/.*\//','', $viewFolder);
-            //echo '<pre>'; var_dump ($this->view); exit();
+            $x = '/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/logs';
+            if (array_key_exists($x, $this->view)) {
+                unset ($this->view[$x]['appFolder']);
+                unset ($this->view[$x]['beginDateTime']);
+                unset ($this->view[$x]['endDateTime']);
+            } else {
+                foreach ($this->view as $k=>$v) break;
+                unset ($this->view[$k]['appFolder']);
+            }
+           // echo '<   pre>'; var_dump ($this->view); exit();
             $url = '/view/'.encode_base64_url(json_encode($this->view));
 
             //if ($viewFolder=='/') $url = '/';

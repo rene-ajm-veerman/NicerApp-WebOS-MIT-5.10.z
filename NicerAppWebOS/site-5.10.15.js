@@ -1621,7 +1621,7 @@ na.site = {
                                 && !na.site.settings.running_loadContent;
                             return r;
                         }, function (f) {
-                            na.site.loadTheme (null, null, false, false, undefined, true, true, false); // calls na.site.getPageSpecificSettings() as well
+                            na.site.loadTheme (null, null, true, true, undefined, true, true, false); // calls na.site.getPageSpecificSettings() as well
                         }, null, f);
                     })] },
 
@@ -3620,7 +3620,7 @@ na.site = {
 
         //IS THIS NECESSARY?? na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
         na.site.globals.themes[na.site.globals.themeName] = $.extend({}, themeData);
-        na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
+        na.site.loadTheme_applySettings (themeData, null, false, false); // apply theme changes, all except .background in this case.
 
         // ENCAPSULATE (ENCODE) json objects for HTTP transport
         try {

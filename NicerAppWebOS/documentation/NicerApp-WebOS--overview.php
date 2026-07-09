@@ -2,6 +2,10 @@
     global $naWebOS;
     require_once ($naWebOS->domainPath.'/domainConfig/pageHeader.php');
 ?>
+<script type="text/javascript">
+na.site.globals.app = { "/docs" : { "page" : "productOverview" }};
+</script>
+
     <style>
         p {
             display : block;

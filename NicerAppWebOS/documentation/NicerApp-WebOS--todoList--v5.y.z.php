@@ -2,6 +2,9 @@
     global $naWebOS;
     require_once ($naWebOS->domainPath.'/domainConfig/pageHeader.php');
 ?>
+<script type="text/javascript">
+na.site.globals.app = { "/docs" : { "page" : "todo" }};
+</script>
 
 <h1 class="contentSectionTitle2"><span class="contentSectionTitle2_span">NicerApp WebOS Development Direction</span></h1><br/><br/>
 

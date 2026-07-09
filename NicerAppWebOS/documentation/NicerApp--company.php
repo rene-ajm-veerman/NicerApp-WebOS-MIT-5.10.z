@@ -8,6 +8,9 @@ $diaries = new naDiaries();
 <!--<script type="text/javascript" src="/NicerAppWebOS/3rd-party/jQuery/jquery-3.7.0.min.js?c=20250817_120652"></script>
 <script type="text/javascript" src="/NicerAppWebOS/3rd-party/jQuery/cookie/jquery.cookie.js?c=20250817_120652"></script>
 -->
+<script type="text/javascript">
+    na.site.globals.app = { "/docs" : { "page" : "companyOverview" }};
+</script>
 <div style="background:rgba(0,0,50,0.007); width:20%;">
 <style>
 p {

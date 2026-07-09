@@ -57,7 +57,7 @@ var naLog = {
                 if (typeof dit.ipinfo=='string') {
                     dit.ipinfo = JSON.parse(dit.ipinfo);
                 }
-                    if (!d2[dit.ip]) d2[dit.ip] = {
+                    if (dit && dit.ipinfo && !d2[dit.ip]) d2[dit.ip] = {
                         millisecondsSinceEpoch : dit.millisecondsSinceEpoch,
                         numInits : 0,
                         numPageLoads : 0,
@@ -65,10 +65,12 @@ var naLog = {
                         loc : dit.ipinfo.city+', '+dit.ipinfo.region+', '+dit.ipinfo.country
                     };
                     var d2ip = d2[dit.ip];
-                    if (!d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
-                        numContentLoads : 0
-                    };
-                    var d4tld = d4[dit.ipinfo.country];
+                    if (dit && dit.ipinfo && dit.ipinfo.country) {
+                        if (!d4[dit.ipinfo.country]) d4[dit.ipinfo.country] = {
+                            numContentLoads : 0
+                        };
+                        var d4tld = d4[dit.ipinfo.country];
+                    }
                     if (dit.msgProcessed.documentLocation) {
                         var hr = dit.msgProcessed.documentLocation;
                         if (!naLog.dataByURL[hr]) naLog.dataByURL[hr] = {

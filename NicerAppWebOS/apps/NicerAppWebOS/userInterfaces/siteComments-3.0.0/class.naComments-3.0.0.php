@@ -231,6 +231,7 @@ class class_naComments {
             $its_id = $it['_id'];
             if (in_array($its_id,$openIDs)) $style='style="display:block"'; else $style='';
             $html = '<div id="naComment_'.($its_id!=='#'?$its_id:'_').'" class="naComment_entry" '.$style.'>'.PHP_EOL;
+                $html .= json_encode ($it, JSON_PRETTY_PRINT);
                 $html .= $naWebOS->html_vividButton(
                     1001, 'float:left',
 
@@ -247,7 +248,7 @@ class class_naComments {
                     'btnPlus_shaded.png',
                     '', '', '', ''
                 ).PHP_EOL;
-                if ($it['clientUsername']==$naUsername) $html .= $naWebOS->html_vividButton(
+                if (array_key_exists('clientUsername',$it) && $it['clientUsername']==$naUsername) $html .= $naWebOS->html_vividButton(
                     1001, 'float:right',
 
                     'btnRemoveComment',
@@ -266,13 +267,13 @@ class class_naComments {
                 $html .= "\t".'<div style="display:none">'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_id">'.$it['_id'].'</span>'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_parentID">'.$it['parentID'].'</span>'.PHP_EOL;
-                $html .= "\t\t".'<span class="naComment_clientIP">'.$it['clientIP'].'</span>'.PHP_EOL;
+                if (array_key_exists('clientIP', $it)) $html .= "\t\t".'<span class="naComment_clientIP">'.$it['clientIP'].'</span>'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_clientDatetime">'.$it['clientDatetime'].'</span>'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_clientTZoffset">'.$it['clientTZoffset'].'</span>'.PHP_EOL;
-                $html .= "\t\t".'<span class="naComment_clientUsername">'.$it['clientUsername'].'</span>'.PHP_EOL;
+                if (array_key_exists('clientUsername', $it)) $html .= "\t\t".'<span class="naComment_clientUsername">'.$it['clientUsername'].'</span>'.PHP_EOL;
                 $html .= "\t".'</div>'.PHP_EOL;
                 $html .= "\t".'<div class="naComment_header">';
-                    $html .= "\t".'<span class="naComment_username">'
+                    if (array_key_exists('clientUsername', $it)) $html .= "\t".'<span class="naComment_username">'
                         .$it['clientUsername']
                         .'</span>'.PHP_EOL;
                     $html .= "\t".'<span class="naComment_datetime">'
@@ -336,6 +337,8 @@ class class_naComments {
         if (!array_key_exists('rec',$in)) trigger_error ($fncn.' : !array_key_exists("rec",$in)', E_USER_ERROR);
         $rec = json_decode($in['rec'], true);
         $rec['_id'] = randomString(20);
+        global $naIP; $rec['clientIP'] = $naIP;
+        $rec['clientDatetime'] =
         $rec['datetimeServer'] = time();
         $rec['datetimeStr'] = naDateTimeStr($rec['clientDatetime'], $rec['clientTZoffset']);
         $rec['msgHTML'] = str_replace ('<p><span class="backdropped"', '<p class="backdropped"', $rec['msgHTML']);

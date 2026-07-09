@@ -5,7 +5,7 @@ global $naIP;
 global $naWebOS;
 
 $useAdminLogin = false; // bugfix when boolean 'true' (NO LONGER NEEDED)
-$debug = true;
+$debug = false;
 if ($debug) {
     echo 'info : '.__FILE__.' : $debug = true.<br/>'.PHP_EOL;
     ini_set('display_errors', 1);
@@ -225,7 +225,7 @@ if (!isset($_SESSION) || !is_array($_SESSION) || !array_key_exists('selectors',$
         if (!array_key_exists('write', $sel['permissions'])) {
             echo 'SESSION selector does not contain a "write" entry under "permissions".'; exit();
         }
-    }
+        }
     foreach ($sel['permissions']['write'] as $pur => $urName) { // pur = permissionsUserRole, urName = userOrRoleName
 
         $permissions = $sel['permissions'];

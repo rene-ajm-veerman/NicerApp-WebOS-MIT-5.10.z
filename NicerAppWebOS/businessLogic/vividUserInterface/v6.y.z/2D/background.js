@@ -88,32 +88,173 @@ na.backgrounds = na.background = na.bg = {
     },
 
     // below here was all written with the free help of grok.com
-    // https://grok.com/c/d62330fc-102c-4835-9a50-e01a1bfa21d8?rid=262ebbfb-944f-4b14-ad21-a1a0d8b9798b
     showBrowser : function () {
         $('#siteBackgrounds_content').html(`
-            <div id="siteBackgrounds_leftPanel" class="siteBackgrounds_panel vividScrollpane">
-                <div id="keywordProgressContainer" style="padding:12px; width:100%; font-size:1.1em;">
-                    <div>Loading keywords… <span id="keywordProgressText">0 / ?</span></div>
-                    <progress id="keywordProgress" value="0" max="100" style="width:100%; height:18px;"></progress>
-                </div>
-            </div>
-            <div id="siteBackgrounds_rightPanel" class="siteBackgrounds_panel vividScrollpane"></div>
+        <div id="siteBackgrounds_leftPanel" class="siteBackgrounds_panel vividScrollpane"></div>
+        <div id="siteBackgrounds_rightPanel" class="siteBackgrounds_panel vividScrollpane"></div>
         `);
-
-        // after loading metaInfo successfully
-        const totalKeywords = na.background.buildBackgroundsDialogContent(na.background); // collects + sorts
-
-        // Show dialog with progress
         $('#siteBackgrounds').css({
             position : 'absolute',
             top : '4%',
             left : '4%',
             width : '92%',
-            height : '80%'
+            height : 'calc(96% - 100px)'
         }).fadeIn('normal');
 
-        // Start rendering
-        na.background.renderKeywordsIncrementally(na.background, 50);   // 80 = ~good batch size; tune if needed
+
+        // Wait for metaInfo if not ready yet
+        na.m.waitForCondition('metaInfo ready', function() {
+            return na.background.metaInfo && Object.keys(na.background.metaInfo).length > 0;
+        }, function() {
+            const totalKeywords = na.background.buildBackgroundsDialogContent(na.background);
+
+            na.background.renderKeywordsIncrementally(na.background, 50);
+        }, 100, 50); // check every 100ms, timeout after 5s
+    },
+
+    processMetaInfoAsync : function (metaInfo, onComplete) {
+        // Split the for..in loop into batches using requestIdleCallback or setTimeout
+        let keys = Object.keys(metaInfo);
+        let idx = 0;
+        var t = this;
+        const batch = 200; // tune
+
+        const re = /^[\d\.]+.*/;
+
+        t.keywords = {};
+        t.sortedKeywords = [];
+        t.tokenIndex = {};           // token → {count, files: Set or Array}
+
+        const seen = new Set(), seenRFP = new Set(); // faster deduplication than .includes() on array
+
+        const banned = function (rfp) {
+            return (
+                // i deleted these folders from my siteMedia/backgrounds folder by now, for reaons of lameness. :p
+                rfp.match(/Australia/i)
+                || rfp.match('fantasy')
+                || rfp.match('flowers')
+            )
+        }
+
+        // Helper to normalize tokens (optional but recommended)
+        function normalizeToken(str) {
+            return str
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9\- ]/g, '')     // remove punctuation except - and space
+            .replace(/\s+/g, ' ');            // normalize spaces
+        }
+
+        function processBatch() {
+            const end = Math.min(idx + batch, keys.length);
+            for (let i = idx; i < end; i++) {
+                // your existing rfp processing logic here
+                let rfp = keys[idx];
+
+                if (banned(rfp)) continue;
+                const r = t.metaInfo[rfp];
+                for (const providerName in r) {
+                    const pr = r[providerName];
+
+                    if (
+                        typeof pr.keywords !== 'string' ||
+                        pr.keywords === '' ||
+                        pr.keywords.startsWith('[')
+                    ) continue;
+
+                    const lines = pr.keywords.split('\n');
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+
+                        const parts = line.split(':');
+                        const kwPart = parts[parts.length - 1];
+                        const kws = kwPart.split(',');
+
+                        for (let kw of kws) {
+                            kw = kw
+                            .replace(/[\[\]"'#*+-]/g, '')
+                            .replace('10 - 20 precise key words for this ', '')
+                            .replace('10 - 20 precise keywords for this ', '')
+                            .replace('10 precise tags for this image include:', '')
+                            .replace('10 - 20 precise tags for this ', '')
+                            .trim();
+
+                            if (!kw || typeof kw === 'number' || kw.match(re)) continue;
+                            if (!kw || kw === '' || typeof kw === 'number') continue;
+
+                            if (!t.keywords[kw]) {
+                                t.keywords[kw] = { f: [] };
+                            }
+                            if (!seenRFP.has(rfp)) {
+                                seenRFP.add(rfp);
+                                t.keywords[kw].f.push(rfp);
+                            }
+
+                            if (!seen.has(kw)) {
+                                seen.add(kw);
+                                t.sortedKeywords.push(kw);
+                            }
+
+                            // Split into tokens
+                            const tokens = kw.split(' ');
+
+                            // For each meaningful token
+                            tokens.forEach(tokenRaw => {
+                                const token = normalizeToken(tokenRaw);
+                                if (token.length < 3) return;               // skip very short junk
+                                if (/^\d+$/.test(token)) return;            // skip pure numbers
+                                if (
+                                    token=='in' || token=='with' || token=='for'
+                                    || token=='and' || token=='the'
+                                ) return;
+
+                                if (!t.tokenIndex[token]) {
+                                    t.tokenIndex[token] = {
+                                        count: 0,
+                                        files: new Set(),           // prevents duplicate rfp per token
+                                           sources: new Set()      // ← uncomment if you want original phrases
+                                    };
+                                }
+
+                                const entry = t.tokenIndex[token];
+
+                                entry.count++;
+                                entry.files.add(rfp);
+
+                                // Optional: remember which full keyword phrase led to this token
+                                entry.sources.add(kw);
+                            });
+                        }
+                    }
+                }
+            }
+            idx = end;
+
+            if (idx < keys.length) {
+                requestIdleCallback(processBatch); // or setTimeout(processBatch, 0)
+            } else {
+                // finish sorting + tokenIndex
+                // ────────────────────────────────────────────────
+                // After all loops have finished – prepare sorted list for rendering
+                t.sortedTokens = Object.keys(t.tokenIndex).sort((a, b) => {
+                    // Option 1: sort by frequency descending (most useful first)
+                    const diff = t.tokenIndex[b].count - t.tokenIndex[a].count;
+                    if (diff !== 0) return diff;
+
+                    // Option 2: frequency tie → alphabetical
+                    return a.localeCompare(b);
+                });
+
+                // Alternative sorts you might want to try:
+                // → alphabetical only:   return a.localeCompare(b);
+                // → longer tokens last:  return b.length - a.length;
+                // → short & frequent first: custom comparator
+
+                return t.sortedKeywords.length; // total count, for progress bar max
+                onComplete();
+            }
+        }
+        requestIdleCallback(processBatch);
     },
 
     buildBackgroundsDialogContent : function (t) {
@@ -128,8 +269,9 @@ na.backgrounds = na.background = na.bg = {
         const banned = function (rfp) {
             return (
                 // i deleted these folders from my siteMedia/backgrounds folder by now, for reaons of lameness. :p
-                !rfp.match('fantasy')
-                || !rfp.match('flowers')
+                rfp.match(/Australia/i)
+                || rfp.match('fantasy')
+                || rfp.match('flowers')
             )
         }
 

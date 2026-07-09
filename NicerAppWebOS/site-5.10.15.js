@@ -1243,6 +1243,7 @@ na.site = {
         na.m.log (1510, 'na.s.c.stateChange(2) : na.site.settings.url='+state.url);
         na.statistics.log ('na.site.stateChange()', 'url='+state.url);
         na.site.settings.url = state.url;
+        na.te.settings.current.specificity.url = state.url;
         na.site.loadContent_getContent (ec, url1); // also displays the content
         na.comments.onreload();
     },
@@ -1611,7 +1612,7 @@ na.site = {
                         }, null, f);
                     }, { dat : dat })] },
 
-                    //{ getPageSpecificSettings : [na.m.newEventFunction (na.site.getPageSpecificSettings)] },
+                    { getPageSpecificSettings : [na.m.newEventFunction (na.site.getPageSpecificSettings)] },
                     { loadTheme : [na.m.newEventFunction (function(f) {
                         na.m.waitForCondition ('loadContent_displayContent::loadTheme : na.m.HTMLidle() && !na.site.settings.running_loadContent?', function () {
                             var r =

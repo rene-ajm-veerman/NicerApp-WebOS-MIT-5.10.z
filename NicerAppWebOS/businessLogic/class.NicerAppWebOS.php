@@ -1528,6 +1528,7 @@ class NicerAppWebOS {
 
         // without this, theme saving & loading is broken for the news app, and possibly other apps as well
         //echo '<pre>'; var_dump ($this->view); exit;
+        if (is_string($this->view)) $this->view=json_decode($this->view,true);
         foreach ($this->view as $k=>$v) break;
         if (
             is_array($this->view[$k])

@@ -4,7 +4,7 @@ var naLog = {
 
     },
     view : function (logData, view) {
-        if (typeof logData=='string') naLog.data = JSON.parse(logData);
+        if (typeof logData=='string') naLog.data = JSON.parse(logData); else naLog.data = logData;
         naLog.dataByIP = {};
         naLog.dataByURL = {};
         naLog.dataByCountry = {};

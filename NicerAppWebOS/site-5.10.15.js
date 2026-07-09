@@ -1243,7 +1243,6 @@ na.site = {
         na.m.log (1510, 'na.s.c.stateChange(2) : na.site.settings.url='+state.url);
         na.statistics.log ('na.site.stateChange()', 'url='+state.url);
         na.site.settings.url = state.url;
-        na.te.settings.current.specificity.url = state.url;
         na.site.loadContent_getContent (ec, url1); // also displays the content
         na.comments.onreload();
     },
@@ -1612,7 +1611,7 @@ na.site = {
                         }, null, f);
                     }, { dat : dat })] },
 
-                    { getPageSpecificSettings : [na.m.newEventFunction (na.site.getPageSpecificSettings)] },
+                    //{ getPageSpecificSettings : [na.m.newEventFunction (na.site.getPageSpecificSettings)] },
                     { loadTheme : [na.m.newEventFunction (function(f) {
                         na.m.waitForCondition ('loadContent_displayContent::loadTheme : na.m.HTMLidle() && !na.site.settings.running_loadContent?', function () {
                             var r =
@@ -1620,7 +1619,7 @@ na.site = {
                                 && !na.site.settings.running_loadContent;
                             return r;
                         }, function (f) {
-                            na.site.loadTheme (null, null, true, true); // calls na.site.getPageSpecificSettings() as well
+                            na.site.loadTheme (null, null, false, false, undefined, true, true, false); // calls na.site.getPageSpecificSettings() as well
                         }, null, f);
                     })] },
 
@@ -2167,7 +2166,10 @@ na.site = {
             || !ec.events[1].loadContent_getContent
             || !ec.events[1].loadContent_getContent.params
             || !ec.events[1].loadContent_getContent.params.urlTransformedB
-        ) debugger;
+        ) {
+            debugger;
+            return false;
+        }
 
         var
         fncn = 'na.site.loadContent():::4::na.site.getPageSpecificSettings()',
@@ -2195,6 +2197,7 @@ na.site = {
                 if (debugThemeLoading) debugger;
                 $('#cssPageSpecific, #jsPageSpecific').remove();
                 $('head').append(data);
+                debugger;
 
 
                 setTimeout(function() {
@@ -2781,7 +2784,7 @@ na.site = {
                 $(divEl).addClass('selected');
                 //$('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.specificityName);
                 na.site.globals.themeDBkeys = na.site.globals.themesDBkeys[lastSelected];
-                na.site.loadTheme_applySettings (na.site.globals.themes[na.site.globals.themeName], function(){na.te.onload('siteContent')});
+                na.site.loadTheme_refetchSettings ();
                 $('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.themeDBkeys.specificityName);
                 na.te.settings.current.specificity = na.site.globals.themeDBkeys;
                 na.m.log (3, 'na.site.setSpecificity() : specificity (simple==='+(simple?'true':'false')+') now set to "'+na.site.globals.themeDBkeys.specificityName+'"')
@@ -2921,6 +2924,27 @@ na.site = {
             //if (na.site.globals.themesDBkeys) na.te.specificitySelected(na.te.settings.current.specificity.specificityName);
     },
 
+    loadTheme_refetchSettings : function () {
+        var s = '';
+        for (var i=0; i < na.d.g.visibleDivs.length; i++) {
+            if (s!=='') s = s + ', ';
+            s += na.d.g.visibleDivs[i] + ', '+na.d.g.visibleDivs[i] + ' > .vividDialogContent';
+        }
+
+        $(s).css ({
+            fontFamily : '',
+            fontSize : '',
+            fontWeight : '',
+            color : '',
+            background : '',
+            padding : '',
+            margin : ''
+        });
+        debugger;
+
+        return s;
+    },
+
     loadTheme : function (callback, theme, doGetPageSpecificSettings, doSwitchSpecificities, specificityName, loadBackground, includeClientOnlyThemes, preserveCurrentTheme, stickToCurrentSpecificity) {
         var
         fncn = 'na.loadTheme(callback,theme)',
@@ -3022,7 +3046,7 @@ na.site = {
             type : 'GET',
             url : url3,
             data : {
-                viewID : na.m.encode_base64_url(JSON.stringify(na.site.globals.app)),// url2
+                viewID : url2,//na.m.encode_base64_url(JSON.stringify(na.site.globals.app)),// url2
                 includeClientOnlyThemes : includeClientOnlyThemes || na.site.globals.specificityName.match(' client')?'true':'false',
                 stickToCurrentSpecificity : stickToCurrentSpecificity,
                 specificityName : na.site.globals.specificityName,
@@ -3041,6 +3065,7 @@ na.site = {
                 ) {
                     $('#cssPageSpecific, #jsPageSpecific').remove();
                     $('head').append(data2).delay(100);
+                    na.site.loadTheme_refetchSettings();
                     if (doSwitchSpecificities) {
                         if (ct && !na.site.globals.themes[ct.theme]) {
                             na.site.globals.themes[ct.theme] = ct;
@@ -3048,7 +3073,7 @@ na.site = {
                         } else {
                             if (theme) na.site.globals.themeName = theme;
                         }
-                        na.site.setSpecificity(true);
+                        na.site.setSpecificity(true, false);
                     }
                 }
                 setTimeout(function () {
@@ -3191,6 +3216,8 @@ na.site = {
         if (typeof loadBackground=='undefined') loadBackground = true;
         if (typeof saveTheme=='undefined') saveTheme = true;
         if (typeof changeInterval=='undefined') changeInterval = true;
+        debugger;
+
         //if (dat.specificityName) {
             $('.na_themes_dropdown__specificity > .vividDropDownBox_selector > div')
                 .removeClass('selected')
@@ -3586,8 +3613,7 @@ na.site = {
         }*/
 
         // Fetch dialogs properly
-        themeData = na.site.loadTheme_fetchDialogs(themeData) || themeData;
-        debugger;
+        themeData = $.extend({}, na.site.loadTheme_fetchDialogs(themeData) || themeData);
 
         //IS THIS NECESSARY?? na.site.loadTheme_applySettings (themeData, null, false); // apply theme changes, all except .background in this case.
         na.site.globals.themes[na.site.globals.themeName] = $.extend({}, themeData);

@@ -225,6 +225,8 @@ na.site = {
         t.components = t.c = { dialogs : {}, buttons : {}, menus : {} };
         let c = t.components;
 
+        console.log (na.m.decode_base64_url("eyJcL05pY2VyQXBwV2ViT1NcL2FwcHNcL05pY2VyQXBwV2ViT1NcL2NvbnRlbnQtbWFuYWdlbWVudC1zeXN0ZW1zXC9OaWNlckFwcFdlYk9TXC9kaXNrVGV4dCI6eyJmaWxlIjoiXC9OaWNlckFwcFdlYk9TXC9MSUNFTlNFLnBocCIsInRpdGxlIjoiXC9OaWNlckFwcFdlYk9TXC9MSUNFTlNFLnRpdGxlLnBocCJ9fQ"))
+
         //na.m.addLogEntry ('NicerAppWebOS starting for <a href="'+document.location.href+'" target="_new">'+document.location.href+'</a>', 'naStatus_fullyBooted');
 
         if (navigator.connection) {
@@ -3110,6 +3112,7 @@ na.site = {
         else app = apps;
         //if (app) acData.app = app;
 
+        na.site.loadTheme_refetchSettings();
 
         if (s) {
             if (s.view) acData.view = s.view;

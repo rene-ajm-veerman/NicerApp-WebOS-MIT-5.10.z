@@ -492,6 +492,8 @@ na.site = {
                     na.site.settings.loadingApps = false;
                     na.site.settings.running_loadContent = false;
 
+                    na.site.loadTheme_applySettings (na.site.globals.themes[na.site.globals.themeName]);
+
                     na.m.addLogEntry ('NicerAppWebOS Fully started for <a href=\\"'+document.location.href+'\\" target=\\"_new\\">'+document.location.href+'</a>', 'naStatus_fullyBooted');
                     if (t.globals.version) {
                         na.site.setStatusMsg ('<a href="https://nicer.app" target="_new" class="nomod noPusState">NicerApp WebOS v'+t.globals.version.version+'</a>&nbsp;(last modified '+t.globals.version.history.lastModified+'&nbsp;CET)&nbsp;is now fully started.');
@@ -1614,7 +1616,7 @@ na.site = {
                     }, { dat : dat })] },
 
                     //{ getPageSpecificSettings : [na.m.newEventFunction (na.site.getPageSpecificSettings)] },
-                    { loadTheme : [na.m.newEventFunction (function(f) {
+                    /*{ loadTheme : [na.m.newEventFunction (function(f) {
                         na.m.waitForCondition ('loadContent_displayContent::loadTheme : na.m.HTMLidle() && !na.site.settings.running_loadContent?', function () {
                             var r =
                                 na.m.HTMLidle()
@@ -1623,7 +1625,7 @@ na.site = {
                         }, function (f) {
                             na.site.loadTheme (null, null, true, true, undefined, true, true, false); // calls na.site.getPageSpecificSettings() as well
                         }, null, f);
-                    })] },
+                    })] },*/
 
                     { reloadMenu : [na.m.newEventFunction (function(f) {
                         na.m.waitForCondition ('loadContent_displayContent::loadTheme : na.m.HTMLidle() && !na.site.settings.running_loadContent?', function () {
@@ -1827,14 +1829,15 @@ na.site = {
             if (divID==='head') {
                 $('#jsPageSpecific, #cssPageSpecific').remove();
                 $('head').append(dat[divID]);
+                na.site.loadTheme_resetCSS();
             } else if (divID==='extraElements') {
                 $('#extraElements').html(dat[divID]);
             } else {
                 var scripts = dat[divID].match(/<script.*?src="\/NicerAppWebOS\/.*?\.js?.*?"/g);
                 if (scripts) {
                     c.scriptsToLoadTotal += scripts.length;
-                    for (var i=0; i<scripts.length; i++) {
-                        var src = scripts[i].replace(/"/g, '');
+                    for (var j=0; j<scripts.length; j++) {
+                        var src = scripts[j].replace(/"/g, '');
                         c.scriptsToLoadTotal -= $('head script[src="'+src+'"]').length;
                     }
                 };
@@ -2786,7 +2789,7 @@ na.site = {
                 $(divEl).addClass('selected');
                 //$('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.specificityName);
                 na.site.globals.themeDBkeys = na.site.globals.themesDBkeys[lastSelected];
-                na.site.loadTheme_refetchSettings ();
+                na.site.loadTheme_resetCSS ();
                 $('.na_themes_dropdown__specificity > .vividDropDownBox_selected').html (na.site.globals.themeDBkeys.specificityName);
                 na.te.settings.current.specificity = na.site.globals.themeDBkeys;
                 na.m.log (3, 'na.site.setSpecificity() : specificity (simple==='+(simple?'true':'false')+') now set to "'+na.site.globals.themeDBkeys.specificityName+'"')
@@ -2926,7 +2929,7 @@ na.site = {
             //if (na.site.globals.themesDBkeys) na.te.specificitySelected(na.te.settings.current.specificity.specificityName);
     },
 
-    loadTheme_refetchSettings : function () {
+    loadTheme_resetCSS : function () {
         var s = '';
         for (var i=0; i < na.d.g.visibleDivs.length; i++) {
             if (s!=='') s = s + ', ';
@@ -3048,7 +3051,7 @@ na.site = {
             type : 'GET',
             url : url3,
             data : {
-                viewID : url2,//na.m.encode_base64_url(JSON.stringify(na.site.globals.app)),// url2
+                viewID : na.m.encode_base64_url(JSON.stringify(na.site.globals.app)),// url2
                 includeClientOnlyThemes : includeClientOnlyThemes || na.site.globals.specificityName.match(' client')?'true':'false',
                 stickToCurrentSpecificity : stickToCurrentSpecificity,
                 specificityName : na.site.globals.specificityName,
@@ -3067,7 +3070,7 @@ na.site = {
                 ) {
                     $('#cssPageSpecific, #jsPageSpecific').remove();
                     $('head').append(data2).delay(100);
-                    na.site.loadTheme_refetchSettings();
+                    na.site.loadTheme_resetCSS();
                     if (doSwitchSpecificities) {
                         if (ct && !na.site.globals.themes[ct.theme]) {
                             na.site.globals.themes[ct.theme] = ct;
@@ -3112,7 +3115,7 @@ na.site = {
         else app = apps;
         //if (app) acData.app = app;
 
-        na.site.loadTheme_refetchSettings();
+        na.site.loadTheme_resetCSS();
 
         if (s) {
             if (s.view) acData.view = s.view;

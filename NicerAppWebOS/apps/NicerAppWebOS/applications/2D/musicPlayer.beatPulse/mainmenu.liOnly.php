@@ -5,7 +5,7 @@
 			<ul>
 			<li><a href="/view/eyJhaWQiOjAsImZkcyI6NTE3MywicnAiOiJcLzIwMjUgQmVzdFwvIn0?idxStart=0&pw=alwaysXMASzzz">/2025 Best/</a>
 			<ul>
-			<li><a href="/view/eyJhaWQiOjAsImZkcyI6NTcxMjAwLCJycCI6IlwvMjAyNiBCZXN0XC8ifQ?idxStart=0&pw=alwaysXMASzzz">/2026 Best/</a>
+			<li><a href="/view/eyJhaWQiOjAsImZkcyI6Mjc3NDk1LCJycCI6IlwvMjAyNiBCZXN0XC8ifQ?idxStart=0&pw=alwaysXMASzzz">/2026 Best/</a>
 			<ul>
 			<li><a href="/view/eyJhaWQiOjAsImZkcyI6Mjc3OSwicnAiOiJcL0FydGlzdHNcLyJ9?idxStart=0&pw=alwaysXMASzzz">/Artists/</a>
 			<ul>

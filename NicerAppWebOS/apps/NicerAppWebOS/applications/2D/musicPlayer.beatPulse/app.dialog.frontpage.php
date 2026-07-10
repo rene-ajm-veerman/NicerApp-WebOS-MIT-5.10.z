@@ -29,7 +29,7 @@
 
     $cacheFile = __DIR__.'/index.views.json';
     $rescanContent = (!file_exists($cacheFile) || !is_readable($cacheFile) || file_get_contents($cacheFile)=='');
-    //var_dump($rescanContent);exit;
+    var_dump($rescanContent);exit;
     if (!$rescanContent) {
     //if (!$naLAN && file_exists(dirname(__FILE__).'/index.views.json') && (!array_key_exists('rc',$_GET) || $_GET['rc']!=='true')) {
         // ONLY SLOWS THINGS DOWN CONSIDERABLY $folders = json_decode(file_get_contents($rf.'/index.foldersAndFiles.json'),true);

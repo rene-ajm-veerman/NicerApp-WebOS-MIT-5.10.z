@@ -3,6 +3,19 @@
 
 class class_naComments {
     public $cn = 'class_naComments';
+    public $themes = [
+        'simple' => [
+            'btnMainCommentAdd' => 'btnCssVividButton.greenBlue.png',
+            'btnDeleteComment' => 'btnCssVividButton.yellow2a.png',
+            'btnAddReply' => 'btnCssVividButton.yellow2a.png'
+        ],
+        'DutchCulture' => [
+            'btnMainCommentAdd' => 'btnCssVividButton.orange1c.png',
+            'btnDeleteComment' => 'btnCssVividButton.yellow1a.png',
+            'btnAddReply' => 'btnCssVividButton.yellow1a.png'
+        ]
+    ];
+    public $theme = 'simple';//'DutchCulture';
 
     public function getHTMLandCSS ($post = null, $rootItemJSON=null) {
 
@@ -116,7 +129,7 @@ class class_naComments {
 
                 1001, 'Add comment',
                 null, null,
-                'btnCssVividButton.orange1c.png',
+                $this->themes[$this->theme]['btnMainCommentAdd'],
                 'btnDocument2.png',
                 '', 'Add comment', '', ''
             ).PHP_EOL
@@ -212,18 +225,18 @@ class class_naComments {
         sortTreeTopLevelNewestOnly($tree);
         //echo '<pre>t777;'; var_dump ($tree); echo '</pre>'; exit();
 
-        function printTree (&$tree, &$openIDs) {
+        function printTree (&$tree, &$openIDs, &$t) {
             $html = '';
             foreach ($tree as $idx => $rootItem) {
-                $html .= printItem ($rootItem, $openIDs);
+                $html .= printItem ($rootItem, $openIDs, $t);
                 if (count($rootItem['children'])>0) {
-                    $html .= printTree ($rootItem['children'], $openIDs);
+                    $html .= printTree ($rootItem['children'], $openIDs, $t);
                 }
             }
             return $html;
         };
 
-        function printItem($it, $openIDs) {
+        function printItem($it, $openIDs, $t) {
             global $naLAN;
             global $naIP;
             global $naWebOS;
@@ -260,7 +273,7 @@ class class_naComments {
 
                     1001, 'Remove comment',
                     null, null,
-                    'btnCssVividButton.yellow1a.png',
+                    $t->themes[$t->theme]['btnDeleteComment'],
                     'btnTrashcan_red.png',
                     '', '', '', ''
                 ).PHP_EOL;
@@ -299,7 +312,7 @@ class class_naComments {
 
                         null,
                         null,
-                        'btnCssVividButton.orange1c.png',
+                        $t->themes[$t->theme]['btnAddReply'],
                         'btnDocument2.png',
 
                         '',
@@ -311,7 +324,7 @@ class class_naComments {
             return $html;
         }
 
-        $html = printTree($tree, $openIDs);
+        $html = printTree($tree, $openIDs, $this);
 
         return $html;
     }

@@ -1030,7 +1030,7 @@ function require_return($file, $once = false) {
         error_log("require_return error in {$file}: " . $e->getMessage());
         global $naLAN;
         if ($naLAN) {
-            return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1><pre>'.json_encode(debug_backtrace(),JSON_PRETTY_PRINT). '</pre>';
+            return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1><pre>'.$e->getTraceAsString(). '</pre>';
         } else {
             return '<h1>Error in template ' . htmlspecialchars($file) . ': ' . ($e->getMessage()) .'</h1>';
         }

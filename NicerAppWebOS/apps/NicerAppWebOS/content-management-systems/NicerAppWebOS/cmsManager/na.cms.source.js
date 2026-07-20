@@ -778,7 +778,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                                 });
                             };
 
-                            na.site.startUIvisuals();
+                            //na.site.startUIvisuals();
 
                             if (
                                 typeof settings == 'object'

@@ -200,6 +200,55 @@ function safeLoadJSONfile($filePath, $mustExist=true, $flush=true) {
     return $jsonData;
 }
 
+function getMediaFolder ($root, $webroot, $recursive=false, $debugMe=false) {
+    $excl = '/(?!.*thumbs).*/'; // exclude anything that includes 'thumbs' in it's filepath.
+    //var_dump (FILE_FORMATS_photos_texts); exit;
+
+    $files1 = getBackgroundFiles_forGetMediaFolder ($root, FILE_FORMATS_photos_texts, $excl, $recursive, $debugMe);
+    $files2 = processBackgroundFiles_forGetMediaFolder ($files1, $root, $webroot, $recursive, $debugMe);
+
+    return $files2;
+}
+function getBackgroundFiles_forGetMediaFolder ($root, $fileFormats, $excl, $recursive, $debugMe) {
+    return getFilePathList ($root, true, $fileFormats, $excl, array('file'), null, 1, $recursive, $debugMe);
+    //echo 'getBackgroundFiles(); $r:'; var_dump($recursive); var_dump ($r); exit();
+}
+function processBackgroundFiles_forGetMediaFolder (&$files, $root, $webRoot, $recursive, $debugMe) {
+    $keyCount = 0;
+    $valueCount = 0;
+    $params = array (
+        'debugMe' => $debugMe,
+        'root' => $root,
+        'webRoot' => $webRoot,
+        'recursive' => $recursive,
+        'a' => &$files,
+        'prevLevel' => 0,
+        'keyCount' => &$keyCount,
+        'valueCount' => &$valueCount
+    );
+    $callKeyForValues = false;
+    walkArray ( $files, /*'processBackgroundFiles_forGetMediaFolder_key'*/null, 'processBackgroundFiles_forGetMediaFolder_value', $callKeyForValues, $params );
+    return $files;
+}
+function processBackgroundFiles_forGetMediaFolder_key ($cd) {
+    $path = $cd['path'].'/'.$cd['k'];
+}
+function processBackgroundFiles_forGetMediaFolder_value ($cd) {
+    $debugMe = $cd['params']['debugMe'];
+    if ($debugMe) echo '<pre style="color:white;background:green;margin-left:10px;margin:10px;border-radius:10px;padding:5px;">';
+
+    if ($cd['k']!=='path') return false;
+}
+
+
+
+
+
+
+
+
+
+
 function getBackgrounds ($root, $webRoot, $recursive=false, $debugMe=false) {
     $excl = '/(?!.*thumbs).*/'; // exclude anything that includes 'thumbs' in it's filepath.
 

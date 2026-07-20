@@ -104,7 +104,7 @@ var naLog = {
 
                 //};
 
-                if (view=='details') {
+                if (view=='details' && dit && dit.t) {
                     var dto = new Date(dit.t * 1000),
                     dt = dto.format("yyyy-mm-dd HH:MM:ss.l");
 

@@ -45,8 +45,13 @@ global $naWebOS;
 $cdb = $naWebOS->dbsAdmin->findConnection('couchdb')->cdb;
 
 $cdb->setDatabase(str_replace('cms_tree','cms_documents',$view['database']),false);
-try { $call = $cdb->get ($view['id']); } catch (Exception $e) { echo $e->getMessage(); exit(); };
-//echo '<pre>'; var_dump ($call); echo '</pre>';
+try { $call = $cdb->get ($view['id']); } catch (Exception $e) {
+    echo $e->getMessage();
+    echo '<pre>'; var_dump ($call); echo '</pre>';
+    exit();
+
+};
+
 $doc = $call->body->document;
 
 

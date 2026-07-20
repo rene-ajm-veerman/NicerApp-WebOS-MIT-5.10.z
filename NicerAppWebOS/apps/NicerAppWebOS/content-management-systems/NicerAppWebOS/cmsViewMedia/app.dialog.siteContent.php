@@ -72,10 +72,10 @@ $dbg = array (
 
 //$baseDir = str_replace ($naWebOS->path.'/code','', $baseDir);
 //$baseDir = str_replace ($naWebOS->path,'', $baseDir);
+$baseDir = str_replace ('domainConfig','', $naWebOS->domainPath);
 $baseDir = str_replace ('//','/', $baseDir);
-// $baseDir = str_replace ('domains/'.$naWebOS->domainFolder,'', $baseDir);
 $targetDir = $view[$viewFolder]['cmsViewMedia']['codePath'].'/';
-
+//var_dump ($targetDir); exit;
 
 foreach ($naWebOS->view as $appFolder=>$appRec) {
     foreach ($appRec as $appName => $appSettings) {
@@ -97,6 +97,9 @@ $dbg = array (
 //echo '<pre>'.json_encode($dbg,JSON_PRETTY_PRINT).'</pre>'; //exit();
 
 $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'), 1, 1, false);
+usort($files, function($a, $b) {
+    return strcmp($a['webPath'], $b['webPath']);
+});
 //echo '<pre>'; var_dump ($files); echo '</pre>'; exit();
 
 foreach ($files as $idx => $file) {

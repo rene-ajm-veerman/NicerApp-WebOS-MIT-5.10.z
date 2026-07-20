@@ -8,7 +8,7 @@ $cdb = $db->cdb;
 $adb = $naWebOS->dbsAdmin->findConnection('couchdb');
 $acdb = $adb->cdb;
 
-// //echo '<pre>'; var_dump ($_POST); die();
+ //echo '<pre>'; var_dump ($_POST); die();
 $html = str_replace('&lt;','<',str_replace('&gt;','>',$_POST['document']));
 $pattern = '/<a.*?href="(.*?)".*?>(.*)<\/a>/i';
 preg_match_all ($pattern, $html, $matches);
@@ -36,7 +36,7 @@ if (
         || strpos ($html, 'javascript:') !== false
         || strpos ($html, '<?') !== false
         || strpos ($html, '<iframe') !== false
-        || !$pm
+        //|| !$pm
     )
 ) exit ('HTTPS ERROR 403 Forbidden - Illegal content.');
 

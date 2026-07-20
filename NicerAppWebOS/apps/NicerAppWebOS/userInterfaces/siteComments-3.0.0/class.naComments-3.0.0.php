@@ -231,7 +231,7 @@ class class_naComments {
             $its_id = $it['_id'];
             if (in_array($its_id,$openIDs)) $style='style="display:block"'; else $style='';
             $html = '<div id="naComment_'.($its_id!=='#'?$its_id:'_').'" class="naComment_entry" '.$style.'>'.PHP_EOL;
-                $html .= json_encode ($it, JSON_PRETTY_PRINT);
+                //$html .= json_encode ($it, JSON_PRETTY_PRINT);
                 $html .= $naWebOS->html_vividButton(
                     1001, 'float:left',
 

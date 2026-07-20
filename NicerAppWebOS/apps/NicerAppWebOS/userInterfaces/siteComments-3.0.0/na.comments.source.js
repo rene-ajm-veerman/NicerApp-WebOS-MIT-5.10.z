@@ -2,7 +2,8 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
     //settings : { current : { mediaFolderView : 'view' } },
     settings : {
         initialized : false,
-        current : { },
+        reloading : true,
+        current : {},
 		loadedIn : {
 			'#siteComments' : {
 				onload : function (settings) {
@@ -45,6 +46,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
 		}
     },
 
+
     openIDs : function() {
         var openIDs = [];
         $('.naComment_entry').each(function(idx,ce){
@@ -76,7 +78,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
                 na.site.ajaxFail (fncn+' : '+errorThrown);
             }
         };
-        $.ajax(ac);
+        if (na.c.settings.reloading) $.ajax(ac);
     },
 
     onload : async function(settings) {
@@ -89,6 +91,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
 
 
         // Thanks go to grok.com for fixing in 20 seconds what I could not fix in an entire day ;-) lolz
+        // -- Rene AJM Veerman, 2026, rene.veerman.netherlands@gmail.com, github.com/rene-ajm-veerman, x.com/ReneAjmVeerman
 
         const childrenOf = {};  // parentID → array of {id, el}
 
@@ -115,6 +118,13 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
 
             children.forEach(child => {
                 const {id, el} = child;
+
+                debugger;
+                el.querySelectorAll('span.backdropped').forEach(span => {
+                    span.outerHTML = span.outerHTML
+                    .replace(/^<span/, '<p')
+                    .replace(/<\/span>$/, '</p>');
+                });
 
                 // ──────────────── Set level on THIS comment ────────────────
                 $(el).attr('data-level', currentLevel);           // easiest to read later

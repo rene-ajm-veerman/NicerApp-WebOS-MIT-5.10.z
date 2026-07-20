@@ -16,6 +16,10 @@ function naPhotoAlbum ($codePath=null) {
     $thumbDir = $targetDir.'/thumbs';
     
     $files = getFilePathList ($targetDir, false, FILE_FORMATS_photos, null, array('file'));
+    usort($files, function($a, $b) {
+        return strcmp($a['webPath'], $b['webPath']);
+    });
+
     $r = '<style>.filename {color : white;}</style>';
     
     $dbg = array (
@@ -48,7 +52,7 @@ function naPhotoAlbum ($codePath=null) {
             'thumbURL' => $thumbURL
         );
         //echo '<pre style="color:black;background:white;border-radius:3px;border:1px solid black;">'; var_dump ($dbg); echo '</pre>';
-        $r .= '<div style="overflow:hidden;float:left;width:220px;height:fit-content;margin:5px;padding:10px;padding-top:20px;border-radius:10px;border:1px solid black;background:rgba(0,0,0,0.7);box-shadow:2px 2px 2px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(0,0,255,0.5), inset -1px -1px 1px rgba(0,0,255,0.5);">';
+        $r .= '<div style="overflow:hidden;float:left;width:300px;height:fit-content;margin:5px;padding:10px;padding-top:20px;border-radius:10px;border:1px solid black;background:rgba(0,0,0,0.7);box-shadow:2px 2px 2px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(0,0,255,0.5), inset -1px -1px 1px rgba(0,0,255,0.5);">';
         
         $onclick = '';
         $href = '';
@@ -65,7 +69,7 @@ function naPhotoAlbum ($codePath=null) {
         $href = "/view/".encode_base64_url($json);
         
         
-        $r .= '<center><a href="'.$href.'"><img src="'.$thumbURL.'" style="width:200px" '.$onclick.'/><br/><span class="filename">'.$fileName.'</span></a></center></div>';        
+        $r .= '<center><a href="'.$href.'"><img src="'.$thumbURL.'" style="width:270px" '.$onclick.'/><br/><span class="filename">'.$fileName.'</span></a></center></div>';
     }
     $r .= '</div>';
     return $r;

@@ -7,6 +7,6 @@ global $naLAN;
 if (!$naLAN) {
     exit ('HTTPS ERROR 403 - Forbidden; *YOU* do not have permission to run this code.');
 } else {
-    $naWebOS->dbsAdmin->listUsers();
+    $naWebOS->dbsAdmin->listUsers_debugFormat();
 }
 ?>

@@ -1,6 +1,6 @@
 <?php
-$rootPath = realpath(dirname(__FILE__).'/../../../../..');
-require_once ($rootPath.'/boot.php');
+$rootPath = realpath(dirname(__FILE__).'/../../../../../..');
+require_once ($rootPath.'/NicerAppWebOS/boot.php');
 $debug = false;
 global $naWebOS;
 $cdb = $naWebOS->dbs->findConnection('couchdb')->cdb;
@@ -175,21 +175,21 @@ if ($_POST['type'] == 'naDocument') {
 }
 
 
-$folder = $rootPath.'/siteData/'.$naWebOS->domainFolder.'/'.$_POST['relFilePath'].'/'.$textFinal;
+$folder = str_replace('/domainConfig','',$naWebOS->domainPath).'/siteData/'.$naWebOS->domainFolder.'/'.$_POST['relFilePath'].'/'.$textFinal;
 
-    global $filePerms_ownerUser;
-    global $filePerms_ownerGroup;
-    global $filePerms_perms_publicWriteableExecutable;
-    global $filePerms_perms_readonly;
-    global $filePerms_perms_readWrite;
-@createDirectoryStructure ($folder, $filePerms_ownerGroup, $filePerms_ownerGroup, $filePerms_perms_readWrite);
+global $filePerms_ownerUser;
+global $filePerms_ownerGroup;
+global $filePerms_perms_publicWriteableExecutable;
+global $filePerms_perms_readonly;
+global $filePerms_perms_readWrite;
+$x = createDirectoryStructure ($folder, $filePerms_ownerGroup, $filePerms_ownerGroup, $filePerms_perms_readWrite);
 
 
 $dbg = array (
+    'msg' => 'Record added',
+    'success' => $x,
     'rootPath' => $rootPath,
     'folder' => $folder,
-    'success' => true,
-    'msg' => 'Record added',
     'recordAdded' => $recordToAdd,
     'record2added' => $dbg
 );

@@ -43,14 +43,38 @@ class vividUserInterface_2D_dialog {
         }
         //debugger;
         //if (idx!==false && na.site.globals.themesDBkeys[idx].display) {
-            var opacity = (
+            let
+            opacity = (
                 $('#vdSettings_show').val()=='hidden'
                 ? 0.000001
                 : $('#vdSettings_show').val()=='transparent'
                     ? 0.5
                     : 1
             );
+
             $('.vdTools, .vdSettings', t.el).remove();
+
+            let
+            roBtnCloseWindow = $(t.el).is('.naHas_btnCloseWindow') ? 5 : 0,
+            roBtnGrok = (
+                roBtnCloseWindow && $(t.el).is('.madeBy_Grok')
+                ? 55
+                : (
+                    $(t.el).is('.madeBy_Grok')
+                    ? 5
+                    : 0
+                )
+            ),
+            roBtnComments = (
+                roBtnGrok && roBtnCloseWindow && $(t.el).is('.naHas_btnComments')
+                ? 110
+                : (
+                    (roBtnGrok || roBtnCloseWindow) && $(t.el).is('.naHas_btnComments')
+                    ? 55
+                    : 5
+                )
+            );
+
             html += (
                     !$(t.el).is('.naNoSettings')
                     ? '<div class="vdSettings" style="z-index:10000;opacity:'+opacity+';position:absolute;top:-15px;left:30px;z-index:7000000">'
@@ -64,7 +88,7 @@ class vividUserInterface_2D_dialog {
                         +(
                             $(t.el).is('.naHas_btnCloseWindow')
                             ? na.m.html_vividButton (
-                                4, 'position:absolute;right:5px;',
+                                4, 'position:absolute;right:'+roBtnCloseWindow+'px;',
 
                                 t.el.id+'__btnCloseWindow', 'vividButton_icon_50x50 btnCloseWindow grouped', '_50x50', 'grouped',
                                 '',
@@ -83,9 +107,30 @@ class vividUserInterface_2D_dialog {
                             :''
                         )
                         +(
+                            $(t.el).is('.madeBy_Grok')
+                            ? na.m.html_vividButton (
+                                4, 'position:absolute;right:'+roBtnGrok+'px;',
+
+                                t.el.id+'__btnMadeBy_Grok', 'vividButton_icon_50x50 btnMadeBy_Grok grouped', '_50x50', 'grouped',
+                                '',
+                                'window.location.href="https://grok.com"',
+                                '',
+                                '',
+
+                                7, 'Made by Grok.com and Rene AJM Veerman, MIT-licensed',
+
+                                'btnCssVividButton_outerBorder.png',
+                                'btnCssVividButton.png',
+                                'btnCssVividButton.grey2a.png',
+                                'Grok-Logo-xAI-Futuristic-AI-785-modded-by-NicerAppSoftware.png',
+                                '', null, null, null
+                            )
+                            :''
+                        )
+                        +(
                             $(t.el).is('.naHas_btnComments')
                             ? na.m.html_vividButton (
-                                4, 'position:absolute;right:70px;',
+                                4, 'position:absolute;right:'+roBtnComments+'px;',
 
                                 t.el.id+'__btnComments', 'vividButton_icon_50x50 btnComments grouped', '_50x50', 'grouped',
                                 '',

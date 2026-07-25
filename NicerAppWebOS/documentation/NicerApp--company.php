@@ -38,14 +38,16 @@ p {
 <div>
 <p class="backdropped naComments_onTheSide">
 <a href="https://nicer.app" target="naHP">https://nicer.app</a>, <a href="https://said.by" target="sbHP">https://said.by</a>, <a href="https://zoned.at" target="zAt">https://zoned.at</a>, <a href="https://github.com/Rene-AJM-Veerman" target="githubNicerEnterprises">https://github.com/Rene-AJM-Veerman</a>, <br/>in addition to all of the content listed at the social media URLs below, <br/>
-are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:rene.veerman.netherlands@gmail.com" target="_new" class="nomod noPushState">Rene A.J.M. Veerman &lt;rene.veerman.netherlands@gmail.com&gt;</a>.<br/>
-<a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
+are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:rene.veerman.netherlands@gmail.com" target="_new" class="nomod noPushState">Rene A.J.M. Veerman &lt;rene.veerman.netherlands@gmail.com&gt;</a>.
+<br/>
+
+<a class="nomod noPushState" target="rvX" href="https://said.by/Rene-AJM-Veerman/in/hisDiary">https://said.by/Rene-AJM-Veerman/in/hisDiary</a>, <a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
 </p>
 
 <h2>Going commercial</h2>
 
 <p class="backdropped naComments_onTheSide">
-The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain-names and -content at said.by, zoned.at and nicer.app is for sale for 49.95 million Euro.<br/>
+The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain-names and -content at said.by, zoned.at and nicer.app is for sale at around 49.95 million Euro.<br/>
 </p>
 
 <h2>Business plan</h2>

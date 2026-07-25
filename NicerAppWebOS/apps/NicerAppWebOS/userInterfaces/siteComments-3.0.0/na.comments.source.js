@@ -3,6 +3,18 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
     settings : {
         initialized : false,
         reloading : true,
+        themes : {
+            default : {
+                marginRight : 10,
+                background : 'rgba(0,50,50,0.7)',
+                border : '1px solid grey',
+                color : 'yellow',
+                textShadow : '0px 0px 2px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.7)',
+                boxShadow : '0px 0px 2px 4px rgba(0,0,0,0.7), 2px 2px 3px 4px rgba(0,0,0,0.8)',
+                padding : 10,
+                borderRadius : 10
+            }
+        },
         current : {},
 		loadedIn : {
 			'#siteComments' : {
@@ -119,7 +131,6 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
             children.forEach(child => {
                 const {id, el} = child;
 
-                debugger;
                 el.querySelectorAll('span.backdropped').forEach(span => {
                     span.outerHTML = span.outerHTML
                     .replace(/^<span/, '<p')
@@ -135,7 +146,8 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
                 // Apply visual indentation (adjust pixel value to taste)
                 const marginLeft = currentLevel * 24;   // e.g. 24px per level
                 $(el).css('margin-left', marginLeft + 'px');
-                $('.naComment_subComments', el).css('margin-left', (20+marginLeft) + 'px');
+                na.comments.settings.themes.default.marginLeft = (20+marginLeft);
+                $('.naComment_subComments', el).css(na.comments.settings.themes.default);
 
                 // ──────────────── Recurse ────────────────
                 const sub = processCommentTree(id, currentLevel + 1);
@@ -206,6 +218,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
         });
     },
 
+    /*
     onclick_btnPostComment : function (event) {
         var
         lpid = $('#siteCommentsEditor')[0].latestParentID,
@@ -239,6 +252,98 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
             c.trim()!==''
             && !c.trim().match(/^<p>(\s+|&nbsp;)<\/p>$/)
         ) $.ajax(ac); else na.c.onclick_btnPostComment_afterDataTransfer('[]');
+    },
+    */
+    onclick_btnEditComment : function (event) {
+        var el = $(event.target).parents('.naComment_entry')[0];
+        var id = $('.naComment_id', el).html().trim();
+        var msgHTML = $('.naComment_msgHTML', el).html();
+
+        // store what we are editing
+        $('#siteCommentsEditor')[0].editID = id;
+        $('#siteCommentsEditor')[0].latestParentID = null;   // not a reply
+
+        // open the same dialog
+        $('#siteCommentsEditor').css({
+            top : 'calc(50% - 5px)',
+                                     left : 'calc(50% - 5px)',
+                                     width : '10px',
+                                     height : '10px',
+                                     zIndex : 1000000,
+                                     opacity : 0.001,
+                                     display : 'flex',
+                                     position : 'absolute'
+        }).animate({
+            top : '10%',
+            left : '10%',
+            width : '80%',
+            height : '80%',
+            opacity : 1
+        }, {
+            duration : 'slow',
+            easing : 'swing',
+            progress : function() {
+                na.tinymce.resize(
+                    $('#siteCommentsEditor .tinymce')[0],
+                                  $('#siteCommentsEditor')[0]
+                );
+            },
+            complete : function() {
+                na.tinymce.resize(
+                    $('#siteCommentsEditor .tinymce')[0],
+                                  $('#siteCommentsEditor')[0]
+                );
+                // load existing content
+                tinymce.get('tinymce3').setContent(msgHTML || '');
+            }
+        });
+    },
+
+    onclick_btnPostComment : function (event) {          // replace / extend the existing one
+        var editorEl = $('#siteCommentsEditor')[0];
+        var isEdit   = !!editorEl.editID;
+        var url      = isEdit
+        ? '/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/ajax_editComment.php'
+        : '/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/ajax_addComment.php';
+
+        var c = tinymce.get('tinymce3').getContent();
+        var dt = new Date();
+        var tz = dt.getTimezoneOffset();
+
+        var data = {
+            rec : JSON.stringify({
+                id               : isEdit ? editorEl.editID : undefined,
+                parentID         : isEdit ? undefined : (editorEl.latestParentID || '#'),
+                                 rootItemJSON     : JSON.stringify({
+                                     url : document.location.href.replace(document.location.search,'') + document.location.search
+                                 }),
+                                 clientDatetime   : dt.getTime(),
+                                 clientTZoffset   : tz,
+                                 clientIP         : na.site.globals.clientIP,
+                                 clientUsername   : na.site.globals.clientUsername,
+                                 msgHTML          : c
+            })
+        };
+
+        var ac = {
+            type : 'POST',
+            url  : url,
+            data : data,
+            success : function (data) {
+                // clear edit state
+                editorEl.editID = null;
+                na.c.onclick_btnPostComment_afterDataTransfer(data);
+            },
+            error : function (xhr, ts, errorThrown) {
+                na.site.ajaxFail('na.comments.onclick_btnPostComment : ' + errorThrown);
+            }
+        };
+
+        if (c.trim() !== '' && !c.trim().match(/^<p>(\s+|&nbsp;)<\/p>$/)) {
+            $.ajax(ac);
+        } else {
+            na.c.onclick_btnPostComment_afterDataTransfer('[]');
+        }
     },
 
     onclick_btnPostComment_afterDataTransfer(data) {

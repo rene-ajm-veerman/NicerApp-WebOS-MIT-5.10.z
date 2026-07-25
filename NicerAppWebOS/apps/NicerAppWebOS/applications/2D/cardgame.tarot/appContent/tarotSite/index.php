@@ -18,8 +18,8 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 	global $naWebOS;
 	$view = $naWebOS->view;
 	//echo '<pre>';var_dump($view); echo '</pre>'; exit;
-	foreach ($view as $viewPath => $appRec) {
-		//foreach ($viewRec as $appName => $appRec) {
+	foreach ($view as $viewPath => $viewRec) {
+		foreach ($viewRec as $appName => $appRec) {
 			//echo '<pre>';var_dump($appRec); echo '</pre>';
 			if (is_array ($appRec)) {
 				$_GET['deck'] = $appRec['deck'];
@@ -50,7 +50,7 @@ require_once (realpath(dirname(__FILE__).'/../../../../../../../..').'/NicerAppW
 				$_GET['deck'] = $appRec;
 				$_GET['reading'] = '3 Cards';
 			}
-		//}
+		}
 	}
 	//echo '<pre>'; var_dump ($_GET); echo '</pre>'; exit();
 

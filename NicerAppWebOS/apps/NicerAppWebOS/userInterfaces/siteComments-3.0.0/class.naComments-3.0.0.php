@@ -7,12 +7,14 @@ class class_naComments {
         'simple' => [
             'btnMainCommentAdd' => 'btnCssVividButton.greenBlue.png',
             'btnDeleteComment' => 'btnCssVividButton.yellow2a.png',
-            'btnAddReply' => 'btnCssVividButton.yellow2a.png'
+            'btnAddReply' => 'btnCssVividButton.yellow2a.png',
+            'btnEditComment'    => 'btnCssVividButton.blue1a.png'
         ],
         'DutchCulture' => [
             'btnMainCommentAdd' => 'btnCssVividButton.orange1c.png',
             'btnDeleteComment' => 'btnCssVividButton.yellow1a.png',
-            'btnAddReply' => 'btnCssVividButton.yellow1a.png'
+            'btnAddReply' => 'btnCssVividButton.yellow1a.png',
+            'btnEditComment'    => 'btnCssVividButton.blue1a.png'
         ]
     ];
     public $theme = 'simple';//'DutchCulture';
@@ -39,7 +41,12 @@ class class_naComments {
         $db = $naWebOS->dbs->findConnection('couchdb');
         $cdb = $db->cdb;
         $in = &$_GET;
-        $fields = [ '_id', 'parentID', 'datetimeStr', 'clientDatetime', 'clientTZoffset', 'clientIP', 'clientUsername', 'msgHTML' ];
+        $fields = [
+            '_id', 'parentID',
+            'datetimeStr', 'clientDatetime', 'clientTZoffset',
+            'editedDatetime', 'editedDatetimeStr', 'editedTZoffset',   // ← new
+            'clientIP', 'clientUsername', 'msgHTML'
+        ];
 
         $dbName = $db->dataSetName ('cms_comments');
         try {
@@ -261,22 +268,38 @@ class class_naComments {
                     'btnPlus_shaded.png',
                     '', '', '', ''
                 ).PHP_EOL;
-                if (array_key_exists('clientUsername',$it) && $it['clientUsername']==$naUsername) $html .= $naWebOS->html_vividButton(
-                    1001, 'float:right',
+                if (array_key_exists('clientUsername',$it) && $it['clientUsername']==$naUsername) {
+                    $html .= $naWebOS->html_vividButton(
+                        1001, 'float:right',
 
-                    'btnRemoveComment',
-                    'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
-                    '',
-                    'na.c.onclick_btnRemoveComment(event);',
-                    '',
-                    '',
+                        'btnRemoveComment',
+                        'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+                        '',
+                        'na.c.onclick_btnRemoveComment(event);',
+                        '',
+                        '',
 
-                    1001, 'Remove comment',
-                    null, null,
-                    $t->themes[$t->theme]['btnDeleteComment'],
-                    'btnTrashcan_red.png',
-                    '', '', '', ''
-                ).PHP_EOL;
+                        1001, 'Remove comment',
+                        null, null,
+                        $t->themes[$t->theme]['btnDeleteComment'],
+                        'btnTrashcan_red.png',
+                        '', '', '', ''
+                    ).PHP_EOL;
+                    $html .= $naWebOS->html_vividButton(
+                        1001, 'float:right',
+                        'btnEditComment',
+                        'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+                        '',
+                        'na.c.onclick_btnEditComment(event);',
+                        '',
+                        '',
+                        1001, 'Edit comment',
+                        null, null,
+                        $t->themes[$t->theme]['btnEditComment'],
+                        'btnDocument.png',          // or any icon you already have
+                        '', '', '', ''
+                     ).PHP_EOL;
+                }
                 $html .= "\t".'<div style="display:none">'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_id">'.$it['_id'].'</span>'.PHP_EOL;
                 $html .= "\t\t".'<span class="naComment_parentID">'.$it['parentID'].'</span>'.PHP_EOL;
@@ -285,14 +308,30 @@ class class_naComments {
                 $html .= "\t\t".'<span class="naComment_clientTZoffset">'.$it['clientTZoffset'].'</span>'.PHP_EOL;
                 if (array_key_exists('clientUsername', $it)) $html .= "\t\t".'<span class="naComment_clientUsername">'.$it['clientUsername'].'</span>'.PHP_EOL;
                 $html .= "\t".'</div>'.PHP_EOL;
-                $html .= "\t".'<div class="naComment_header">';
-                    if (array_key_exists('clientUsername', $it)) $html .= "\t".'<span class="naComment_username">'
-                        .$it['clientUsername']
-                        .'</span>'.PHP_EOL;
-                    $html .= "\t".'<span class="naComment_datetime">'
-                        .naDateTimeHeader($it['clientDatetime'],$it['clientTZoffset']) // in .../NicerAppWebOS/functions.php
-                        .'</span>'.PHP_EOL;
-                $html .= "\t".'</div>'.PHP_EOL;
+
+
+            $html .= "\t".'<div class="naComment_header">';
+
+            if (array_key_exists('clientUsername', $it)) {
+                $html .= "\t".'<span class="naComment_username">'
+                . $it['clientUsername']
+                . '</span>'.PHP_EOL;
+            }
+
+            $html .= "\t".'<span class="naComment_datetime">'
+            . naDateTimeHeader($it['clientDatetime'], $it['clientTZoffset']);
+
+            // show “edited …” only when the field exists
+            if (!empty($it['editedDatetime'])) {
+                $html .= ' <span class="naComment_edited" title="Last edited">'
+                . '(edited ' . naDateTimeHeader($it['editedDatetime'], $it['editedTZoffset'] ?? 0) . ')'
+                . '</span>';
+            }
+
+            $html .= '</span>'.PHP_EOL;
+            $html .= "\t".'</div>'.PHP_EOL;
+
+
 
                 $html .= "\t".'<div class="naComment_msgHTML">'.$it['msgHTML'].'</div>'.PHP_EOL;
                 $html .= "\t".'<div class="naComment_subComments">';
@@ -365,6 +404,60 @@ class class_naComments {
         $results = [$rec];
         $rec['resultHTML'] = $this->formatResults($results, $rec);
         echo json_encode($rec);
+    }
+
+    public function edit($in = null) {
+        $fncn = $this->cn.'::edit($in)';
+        global $naWebOS, $naIP, $naUsername;
+
+        if (!is_array($in)) trigger_error($fncn.' : !is_array($in)', E_USER_ERROR);
+        if (!array_key_exists('rec', $in)) trigger_error($fncn.' : missing rec', E_USER_ERROR);
+
+        $rec = json_decode($in['rec'], true);
+        if (empty($rec['id'])) {
+            echo json_encode(['error' => 'Missing comment id']);
+            return;
+        }
+
+        $db     = $naWebOS->dbs->findConnection('couchdb');
+        $cdb    = $db->cdb;
+        $dbName = $db->dataSetName('cms_comments');
+        $cdb->setDatabase($dbName);
+
+        try {
+            $call = $cdb->get($rec['id']);
+            $doc  = $call->body;
+
+            // security: only the original author may edit
+            if (!isset($doc->clientUsername) || $doc->clientUsername !== $naUsername) {
+                echo json_encode(['error' => 'Not allowed']);
+                return;
+            }
+
+            // update message
+            $doc->msgHTML = str_replace('<p><span class="backdropped"', '<p class="backdropped"', $rec['msgHTML']);
+            $doc->msgHTML = str_replace('</span>', '', $doc->msgHTML);
+            $doc->msgHTML = str_replace('<p>', '<p class="backdropped">', $doc->msgHTML);
+
+            // ─── last-edited timestamp ───
+            $now = time();
+            $doc->editedDatetime   = $now;
+            $doc->editedTZoffset   = $rec['clientTZoffset'] ?? ($doc->clientTZoffset ?? 0);
+            $doc->editedDatetimeStr = naDateTimeStr($now, $doc->editedTZoffset);
+
+            // keep original creation time intact
+            // (optional) also refresh clientIP if you want
+            // $doc->clientIP = $naIP;
+
+            $cdb->put($doc->_id, $doc);
+
+            echo json_encode(['ok' => true, 'id' => $doc->_id]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'errorHTML'       => 'Could not edit comment',
+                'couchdbErrorMsg' => $e->getMessage()
+            ]);
+        }
     }
 
     public function remove($in=null) {

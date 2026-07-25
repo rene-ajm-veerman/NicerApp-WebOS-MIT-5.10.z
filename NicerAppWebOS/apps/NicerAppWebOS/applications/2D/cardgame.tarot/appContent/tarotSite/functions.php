@@ -475,7 +475,7 @@ function t2_calculate_size_for_cards ($reading) {
 function t2_get_readingType($readingType) {
     global $naWebOS;
 	//echo '<pre>'; var_dump($naWebOS->view); echo '</pre>'; exit;
-	$view = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/cardgame.tarot'];
+	$view = $naWebOS->view['/NicerAppWebOS/apps/NicerAppWebOS/applications/2D/']['cardgame.tarot'];
 	//echo '<pre>'; var_dump($view); echo '</pre>'; exit;
 	if (!t2_valid_readingType($readingType)) {
 		$readingType = '3 Cards';

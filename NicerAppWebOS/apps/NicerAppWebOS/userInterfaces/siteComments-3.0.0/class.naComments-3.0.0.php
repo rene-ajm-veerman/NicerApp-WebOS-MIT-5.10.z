@@ -135,10 +135,46 @@ class class_naComments {
                 '',
 
                 1001, 'Add comment',
-                null, null,
+                'btnCssVividButton_outerBorder.png',
+                'btnCssVividButton.png',
                 $this->themes[$this->theme]['btnMainCommentAdd'],
                 'btnDocument2.png',
-                '', 'Add comment', '', ''
+                                         '', 'Add comment', '', ''
+            ).PHP_EOL
+            .$naWebOS->html_vividButton (
+                1000, 'float:right',
+
+                'btnDateRange_lower',
+                'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+                '',
+                'na.c.onclick_btnAddComment(event);',
+                '',
+                '',
+
+                1001, 'Pick begin date',
+                'btnCssVividButton_outerBorder.png',
+                'btnCssVividButton.png',
+                'btnCssVividButton.yellow1a.png',
+                'pngtree-calendar-3d-icon-isolated-on-a-transparent-background-symbolizing-schedules-and-png-image_20358144.png',
+
+                '', 'Pick begin date', '', ''
+            ).PHP_EOL
+            .$naWebOS->html_vividButton (
+                1000, 'float:right',
+
+                'btnDateRange_upper',
+                'vividButton_icon_50x50 grouped', '_50x50', 'grouped',
+                '',
+                'na.c.onclick_btnAddComment(event);',
+                '',
+                '',
+
+                1001, 'Pick end date',
+                'btnCssVividButton_outerBorder.png',
+                'btnCssVividButton.png',
+                'btnCssVividButton.yellow1a.png',
+                'calendar.png',
+                '', 'Pick end date', '', ''
             ).PHP_EOL
             .'</div>'.PHP_EOL;
         return $html;
@@ -263,7 +299,8 @@ class class_naComments {
                     '',
 
                     1001, 'Expand comment',
-                    null, null,
+                    'btnCssVividButton_outerBorder.png',
+                    'btnCssVividButton.png',
                     'btnCssVividButton.greenYellow.png',
                     'btnPlus_shaded.png',
                     '', '', '', ''
@@ -280,7 +317,8 @@ class class_naComments {
                         '',
 
                         1001, 'Remove comment',
-                        null, null,
+                        'btnCssVividButton_outerBorder.png',
+                        'btnCssVividButton.png',
                         $t->themes[$t->theme]['btnDeleteComment'],
                         'btnTrashcan_red.png',
                         '', '', '', ''
@@ -294,7 +332,8 @@ class class_naComments {
                         '',
                         '',
                         1001, 'Edit comment',
-                        null, null,
+                        'btnCssVividButton_outerBorder.png',
+                        'btnCssVividButton.png',
                         $t->themes[$t->theme]['btnEditComment'],
                         'btnDocument.png',          // or any icon you already have
                         '', '', '', ''
@@ -353,8 +392,8 @@ class class_naComments {
 
                         1001, 'Add reply',
 
-                        null,
-                        null,
+                        'btnCssVividButton_outerBorder.png',
+                        'btnCssVividButton.png',
                         $t->themes[$t->theme]['btnAddReply'],
                         'btnDocument2.png',
 

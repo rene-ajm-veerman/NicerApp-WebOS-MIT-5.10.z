@@ -10,7 +10,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
                 border : '1px solid grey',
                 color : 'yellow',
                 textShadow : '0px 0px 2px rgba(255,255,255,0.8), 2px 2px 4px rgba(0,0,0,0.7)',
-                boxShadow : '0px 0px 2px 4px rgba(0,0,0,0.7), 2px 2px 3px 4px rgba(0,0,0,0.8)',
+                boxShadow : '2px 2px 3px 4px rgba(0,0,0,0.8)',
                 padding : 10,
                 borderRadius : 10
             }

@@ -278,6 +278,15 @@ na.site = {
                     });
                     $('.vividMenu_item').css({opacity:0.0001});
                     */
+                    $('#siteMenu')
+                        .attr('type','vertical')
+                        .attr('tabindex','5')
+                        .attr('theme','dark')
+                        .attr('class', 'vividMenu vertical')
+                        .css({
+                            position : 'relative',
+                            zIndex : 920000
+                        });
 
                     if (!na.site.c.menus) na.site.c.menus = {};
                     const menu = $('#siteMenu')[0];

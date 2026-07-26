@@ -119,6 +119,8 @@ NicerApp WebOS from Nicer Enterprises
       $old_error_handler = set_error_handler ('mainErrorHandler');
 
 
+
+
     //ini_set ('log_errors', true);
     //var_dump (["test1a"=>true]); echo PHP_EOL; exit();
 
@@ -238,6 +240,24 @@ NicerApp WebOS from Nicer Enterprises
         echo '</pre>';
     };
     //echo '<pre style="color:lime;background:green;">'; var_dump ($_SERVER); echo '</pre>';
+    $lanConfigFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.json';
+    $lanConfigExampleFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.EXAMPLE.json';
+    if (!file_exists($lanConfigFilepath)) {
+        $msg = '"'.$lanConfigFilepath.'" does not exist. See "'.$lanConfigExampleFilepath.'" for a template.';
+        echo $msg;
+        trigger_error ($msg, E_USER_ERROR);
+    }
+    $lanConfigRaw = file_get_contents($lanConfigFilepath);
+    $lanConfig = json_decode($lanConfigRaw, true);
+    checkForJSONerrors($lanConfigRaw, $lanConfigFilepath, $lanConfigExampleFilepath);
+    //echo '<pre>'; var_dump ($lanConfigFilepath); var_dump ($lanConfigRaw); var_dump ($lanConfig); var_dump (json_last_error_msg()); exit();
+    global $naLAN;
+    $naLAN = (
+        $naIP === '::1'
+        || $naIP === '127.0.0.1'
+        || in_array($naIP, $lanConfig)
+    );
+    //$naLAN = false;
 
 
     $_SESSION['started'] = time();//microtime(true);
@@ -422,25 +442,6 @@ NicerApp WebOS from Nicer Enterprises
     if (array_key_exists('HTTP_SEC_CH_UA_MOBILE', $_SERVER)) $naBrowserInfo['HTTP_SEC_CH_UA_MOBILE'] = $_SERVER['HTTP_SEC_CH_UA_MOBILE'];
 
 
-
-    $lanConfigFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.json';
-    $lanConfigExampleFilepath = $naWebOS->domainPath.'/domainConfig/naLAN.EXAMPLE.json';
-    if (!file_exists($lanConfigFilepath)) {
-        $msg = '"'.$lanConfigFilepath.'" does not exist. See "'.$lanConfigExampleFilepath.'" for a template.';
-        echo $msg;
-        trigger_error ($msg, E_USER_ERROR);
-    }
-    $lanConfigRaw = file_get_contents($lanConfigFilepath);
-    $lanConfig = json_decode($lanConfigRaw, true);
-    checkForJSONerrors($lanConfigRaw, $lanConfigFilepath, $lanConfigExampleFilepath);
-    //echo '<pre>'; var_dump ($lanConfigFilepath); var_dump ($lanConfigRaw); var_dump ($lanConfig); var_dump (json_last_error_msg()); exit();
-    global $naLAN;
-    $naLAN = (
-        $naIP === '::1'
-        || $naIP === '127.0.0.1'
-        || in_array($naIP, $lanConfig)
-    );
-    //$naLAN = false;
 
     $naSiteUnderConstruction = false;
     if (!$naLAN && $naSiteUnderConstruction) {

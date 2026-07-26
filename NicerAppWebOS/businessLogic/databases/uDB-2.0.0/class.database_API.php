@@ -420,13 +420,14 @@ class class_NicerAppWebOS_database_API {
                 if ($localCheck['result']!==true) {
                     $failedAtLeastOne = true;
                     $r['origin'] = $functionName;
-                    if (
+                    // TODO : re-enable logging (one day, when needed)
+                    /*if (
                         stripos($_SERVER['HTTP_USER_AGENT'], 'bot')===false
                         && stripos($_SERVER['SCRIPT_NAME'], 'logs.php')===false
                     ) {
                         $err = $naErr->addStandardResults ($r);
                         $naLog->add ( [ $err ] );
-                    }
+                    }*/
                 }
             } else {
                 echo 't940:'; var_dump ($c); debug_print_backtrace();
@@ -450,13 +451,14 @@ class class_NicerAppWebOS_database_API {
                 if ($localCheck['result']!==true) {
                     $failedAtLeastOne = true;
                     $r['origin'] = $functionName;
-                    if (
+                    // TODO : re-enable logging (one day, when needed)
+                    /*if (
                         stripos($_SERVER['HTTP_USER_AGENT'], 'bot')===false
                         && stripos($_SERVER['SCRIPT_NAME'], 'logs.php')===false
                     ) {
                         $err = $naErr->addStandardResults ($r);
                         $naLog->add ( [ $err ] );
-                    }
+                    }*/
                 }
             }
         }
@@ -467,10 +469,12 @@ class class_NicerAppWebOS_database_API {
     public function addLogEntries ($entries) {
         #TODO 1-2a
         $dbsPostedInto = [];
+        // TODO : re-enable logging (one day, when needed)
+        /*
         foreach ($this->connections as $idx => $c) {
             $connectionType = $c['ct']; // MySQL, postgresql9, couchdb, etc.
             $dbsPostedInto[$connectionType] = $c['conn']->addLogEntries($entries);
-        }
+        }*/
         return $dbsPostedInto;
     }
 

@@ -39,7 +39,7 @@ function getPassword ($u) {
 function naDateTimeStr ($s, $tz) {
     $sa = $s;
     if (date('Y',$s)==1970) $sa = $s * 1000;
-    if (date('Y',$s)>3000) $sa = round($s / 1000); // LOL
+    if (date('Y',$s)>5000) $sa = round($s / 1000); // LOL
     $tza = $tz*60*1000;
     if ($tza<=-12*60*1000-1000) $tza = $tza / 1000;
     if ($tza>=12*60*1000+1000) $tza = $tza / 1000;
@@ -51,7 +51,7 @@ function naDateTimeHeader ($s, $tz) {
     $sa = $s;
     $tz *= -1;
     if (date('Y',$s)==1970) $sa = $s * 1000;
-    if (date('Y',$s)>=3000) $sa = round($s / 1000); // LOL Y3K BUG
+    if (date('Y',$s)>=5000) $sa = round($s / 1000); // LOL Y5K BUG
     $tza = $tz*60*1000;
     if ($tza<=-12*60*1000-1000) $tza = $tza / 1000;
     if ($tza>=12*60*1000+1000) $tza = $tza / 1000;
@@ -537,7 +537,8 @@ function mainErrorHandler ($errno, $errstr, $errfile, $errline) {
     }
 
     if (
-        (
+        is_object($naLog)
+        && (
             !array_key_exists('HTTP_USER_AGENT',$_SERVER)
             || stripos($_SERVER['HTTP_USER_AGENT'], 'bot')===false
         )
@@ -546,6 +547,7 @@ function mainErrorHandler ($errno, $errstr, $errfile, $errline) {
         $err = $naErr->add ($errno, $errstr, $errfile, $errline);
         $naLog->add ( [ $err ] ); // outputs to screen and apache log file as well.
     }
+
     return true;
 
 
@@ -785,9 +787,33 @@ function cdb_login($db, $cdb, $cRec, $username) {
 
 
     //echo 't593:'; var_dump ($done);
-
     if ($done) {
         $cdb_session = $cdb->getSession();
+        //echo '<pre>'; var_dump($cdb_session); echo '</pre>';// exit;
+
+        global $naLAN; // BUG TODO not initialized properly at this point yet....
+        if ($naLAN) {
+            $dbName = '_users';
+            try {
+                $cdb->setDatabase($dbName, true);
+            } catch (Exception $e) {
+                return $e->getMessage();
+            }
+
+            $findCommand = [
+                'selector' => [
+                    'name' => $cdb_session->body->userCtx->name
+                ],
+                'fields' => ['userDisplayName']
+            ];
+
+            try {
+                $call = $cdb->find($findCommand);
+            } catch (Exception $e) {
+                echo '<pre>'; echo $e->getMessage(); echo '</pre>'; exit;
+            }
+            echo '<pre>'; echo json_encode ($call, JSON_PRETTY_PRINT); echo '</pre>'; exit;
+        }
 
         return [
             'username' => $cdb_session->body->userCtx->name,

@@ -44,7 +44,7 @@ class class_naComments {
         $fields = [
             '_id', 'parentID',
             'datetimeStr', 'clientDatetime', 'clientTZoffset',
-            'editedDatetime', 'editedDatetimeStr', 'editedTZoffset',   // ← new
+            'editedDatetime', 'editedDatetimeStr', 'editedTZoffset',
             'clientIP', 'clientUsername', 'msgHTML'
         ];
 
@@ -318,10 +318,12 @@ class class_naComments {
                 . '</span>'.PHP_EOL;
             }
 
-            $html .= "\t".'<span class="naComment_datetime">'
+            $html .= "\t".'<span class="naComment_datetime" '
+            . 'onclick="na.c.onclick_datetime(event)" '
+            . 'style="cursor:pointer;" '
+            . 'title="Click to link to this comment">'
             . naDateTimeHeader($it['clientDatetime'], $it['clientTZoffset']);
 
-            // show “edited …” only when the field exists
             if (!empty($it['editedDatetime'])) {
                 $html .= ' <span class="naComment_edited" title="Last edited">'
                 . '(edited ' . naDateTimeHeader($it['editedDatetime'], $it['editedTZoffset'] ?? 0) . ')'
@@ -329,6 +331,8 @@ class class_naComments {
             }
 
             $html .= '</span>'.PHP_EOL;
+
+
             $html .= "\t".'</div>'.PHP_EOL;
 
 

@@ -45,7 +45,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
                                 }
                             });
                         });
-                        setInterval (na.comments.onreload, 60 * 1000);
+                        //setInterval (na.comments.onreload, 60 * 1000);
 
                         na.c.s.initialized = true;
                     }
@@ -84,7 +84,10 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
             data : data,
             success : function (data, ts, xhr) {
                 $('#siteComments .vividDialogContent').html(data).delay(100);
-                na.comments.onload(na.site.startUIvisuals);
+                na.comments.onload(function () {
+                    na.site.startUIvisuals();
+                    setTimeout(na.comments.scrollToHash, 150);
+                });
             },
             error : function (xhr, ts, errorThrown) {
                 na.site.ajaxFail (fncn+' : '+errorThrown);
@@ -174,10 +177,79 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
         // Kick off from root
         processCommentTree('root');
 
+        // Scroll to the comment indicated by the URL hash (if any)
+        setTimeout(function () {
+            na.comments.scrollToHash();
+        }, 150);   // small delay so the DOM & layout are fully ready
+
         na.tinymce.init (
             $('#siteCommentsEditor .tinymce')[0],
             $('#siteCommentsEditor')[0]
         );
+    },
+
+    /**
+     * Scroll to a comment when the URL contains #naComment_XXXX or just #XXXX
+     * Uses jQuery.scrollTo if the plugin is present, otherwise falls back to native.
+     */
+    scrollToHash : function () {
+        var hash = window.location.hash;
+        if (!hash || hash.length < 2) return;
+
+        // Accept both #naComment_XXXX and #XXXX
+        var id = hash.replace(/^#/, '');
+        if (id.indexOf('naComment_') === 0) {
+            id = id.substring('naComment_'.length);
+        }
+
+        var $target = $('#naComment_' + id);
+        if ($target.length === 0) return;
+
+        // The scrollable container inside the comments dialog
+        var $container = $('#siteComments .vividDialogContent');
+        if ($container.length === 0) {
+            $container = $('#siteComments');
+        }
+        if ($container.length === 0) return;
+
+        // Highlight the target comment briefly
+        $('.naComment_highlighted').removeClass('naComment_highlighted');
+        $target.addClass('naComment_highlighted');
+        setTimeout(function () {
+            $target.removeClass('naComment_highlighted');
+        }, 2200);
+
+        // ---------- jQuery.scrollTo ----------
+        $container.scrollTo($target, {
+            duration : 500,
+            easing   : 'swing',
+            offset   : { top : -30, left : 0 },   // 30px breathing room above the comment
+            axis     : 'y',
+            onAfter  : function () {
+                // optional: anything you want after the scroll finishes
+            }
+        });
+    },
+
+    onclick_datetime : function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        var el = $(event.target).closest('.naComment_entry')[0];
+        if (!el) return;
+
+        var id = $('.naComment_id', el).text().trim();
+        if (!id) return;
+
+        var newHash = '#naComment_' + id;
+
+        // Force hash update even if it is already the same
+        if (window.location.hash === newHash) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+
+        window.location.hash = newHash;
+        na.comments.scrollToHash();
     },
 
     onclick_btnAddComment : function (event) {
@@ -300,6 +372,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
     },
 
     onclick_btnPostComment : function (event) {          // replace / extend the existing one
+        debugger;
         var editorEl = $('#siteCommentsEditor')[0];
         var isEdit   = !!editorEl.editID;
         var url      = isEdit
@@ -311,19 +384,25 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments'] 
         var tz = dt.getTimezoneOffset();
 
         var data = {
-            rec : JSON.stringify({
+            rec : {
                 id               : isEdit ? editorEl.editID : undefined,
                 parentID         : isEdit ? undefined : (editorEl.latestParentID || '#'),
                                  rootItemJSON     : JSON.stringify({
                                      url : document.location.href.replace(document.location.search,'') + document.location.search
                                  }),
-                                 clientDatetime   : dt.getTime(),
-                                 clientTZoffset   : tz,
                                  clientIP         : na.site.globals.clientIP,
                                  clientUsername   : na.site.globals.clientUsername,
                                  msgHTML          : c
-            })
+            }
         };
+        if (isEdit) {
+            data.rec.editedDatetime = dt.getTime();
+            data.rec.editedTZoffset = tz;
+        } else {
+            data.rec.clientDatetime = dt.getTime();
+            data.rec.clientTZoffset = tz;
+        }
+        data.rec = JSON.stringify(data.rec);
 
         var ac = {
             type : 'POST',

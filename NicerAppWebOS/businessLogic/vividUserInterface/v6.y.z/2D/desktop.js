@@ -65,6 +65,7 @@ na.desktop = na.d = {
                 '#siteComments' : {
                     top : $('#siteDateTime').height()+20,
                     left : $(window).width()+100,
+                    width : $(window).width()/2,
                     height : $(window).height()-120,
                     opacity : 0.0001
                 },

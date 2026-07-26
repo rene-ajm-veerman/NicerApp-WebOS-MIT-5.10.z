@@ -2945,7 +2945,7 @@ na.site = {
             padding : '',
             margin : ''
         });
-        debugger;
+        //debugger;
 
         return s;
     },
@@ -3688,7 +3688,7 @@ na.site = {
                 na.site.ajaxFail(fncn, url, xhr, textStatus, errorThrown);
             }
         };
-        debugger;
+        //debugger;
         $.ajax(ac2);
     },
 

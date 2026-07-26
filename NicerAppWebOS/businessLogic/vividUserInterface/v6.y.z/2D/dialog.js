@@ -113,7 +113,7 @@ class vividUserInterface_2D_dialog {
 
                                 t.el.id+'__btnMadeBy_Grok', 'vividButton_icon_50x50 btnMadeBy_Grok grouped', '_50x50', 'grouped',
                                 '',
-                                'window.location.href="https://grok.com"',
+                                'window.open(\'https://grok.com\', \'_blank\', \'width=1200,height=800,noopener,noreferrer\');',
                                 '',
                                 '',
 

@@ -365,6 +365,7 @@ NicerApp WebOS from Nicer Enterprises
         break;
     }
 
+    /*
     $dbg = null;
     $dbg = [
         '$_SERVER' => $_SERVER,
@@ -372,6 +373,7 @@ NicerApp WebOS from Nicer Enterprises
         '$_POST' => $_POST,
         '$naWebOS->view' => $naWebOS->view
     ];
+    */
     //echo '<pre style="color:skyblue;background:navy;">'; var_dump ($dbg); echo '</pre>';
     //$msg = 'NEW REQUEST :<br/>'.hmJSON($dbg,'$dbg');
 
@@ -641,13 +643,14 @@ NicerApp WebOS from Nicer Enterprises
         //trigger_error ($msg, E_USER_NOTICE);
         //echo '<pre>'; var_dump ($_SERVER); die();
 
-        ini_set ('error_log', $na_error_log_filepath_txt);
+        // TODO : re-enable ini_set('error_log') at some point perhaps?
+        //ini_set ('error_log', $na_error_log_filepath_txt);
     }
     // at the *bottom* of this file (that's for good reasons),
     // you will find : require_once(dirname(__FILE__).'/apps/nicer.app/api.paymentSystems/boot.php');
     
     ini_set('memory_limit','5000M'); // hacker deterrence by keeping it at 5G (of 64G).
-    set_time_limit(60*60); // 70 seconds; also for hacker deterrence. can be overridden by individual ajax scripts though!
+    set_time_limit(70); // 70 seconds; also for hacker deterrence. can be overridden by individual ajax scripts though!
 
     //echo '<pre>'; var_dump ($_SERVER); exit();
     

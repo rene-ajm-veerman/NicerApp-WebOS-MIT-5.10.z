@@ -23,7 +23,7 @@ class class_NicerAppWebOS_database_API {
 
 
         if ($username!=='admin' && $username!=='Guest') {
-            $cRec = json_decode('{"host" : "127.0.0.1","port" : "5984","useSSL" : false,"httpAdapter" : "HTTP_CURL","dbName" : "analytics","username" : "'.$naWebOS->domainFolderForDB.'___'.$username.'"}', true);
+            $cRec = json_decode('{"host" : "127.0.0.1","port" : "5984","useSSL" : false,"httpAdapter" : "HTTP_CURL","dbName" : "analytics","username" : "'.$naWebOS->domainFolderForDB.'___'.str_replace(' ','__',$username).'"}', true);
 
             $ret[] = [
                 'ct' => 'couchdb',

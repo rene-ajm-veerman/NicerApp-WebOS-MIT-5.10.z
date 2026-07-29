@@ -684,10 +684,20 @@ function cdb_login($db, $cdb, $cRec, $username) {
 
     //echo '<pre style="color:white;background:navy;">'; var_dump ($username); var_dump($cRec); echo '</pre>';
 
-    if (is_array($cRec)) {
+    if (
+        is_array($cRec)
+        && array_key_exists('password', $cRec)
+        && is_string ($cRec['password'])
+    ) {
         try {
-            //echo '<pre>';var_dump($cRec);die();
-            $cdb->login ($cRec['username'], $cRec['password']);
+            global $naLAN;
+
+            if ($cRec['username']=='admin') {
+                $cdb->login ($cRec['username'], 'texass.t33');
+            } else {
+                //if ($naLAN) {echo '<pre>';debug_print_backtrace(); var_dump($cRec);echo '</pre>';}//exit;}
+                $cdb->login ($db->translate_plainUserName_to_couchdbUserName($cRec['username']), $cRec['password']);
+            }
             $cdb_session = $cdb->getSession();
             if (
                 is_object($cdb_session)
@@ -716,7 +726,7 @@ function cdb_login($db, $cdb, $cRec, $username) {
         && $_COOKIE['cdb_authSession_cookie']!==''
     ) {
         try {
-        $r = $cdb->loginByCookie ($_COOKIE['cdb_authSession_cookie']);
+            $r = $cdb->loginByCookie ($_COOKIE['cdb_authSession_cookie']);
         } catch (Throwable $e) {
               try {
                 //echo '<pre>';var_dump($cRec);die();
@@ -742,29 +752,40 @@ function cdb_login($db, $cdb, $cRec, $username) {
             $cdb_session = $cdb->getSession();
             //var_dump($cdb_session);
         } catch (Throwable $e) {
-            $_SESSION['cdb_loginName'] = $cRec['username'];
-            $cdb->login ($cRec['username'], $cRec['password'], Sag::$AUTH_COOKIE);
-            $cdb_session = $cdb->getSession();
             if (
-                is_object($cdb_session)
-                && $cdb_session->body->ok
-                && !is_null($cdb_session->body->userCtx->name)
+                is_array($cRec)
+                && array_key_exists('password', $cRec)
+                && is_string ($cRec['password'])
             ) {
-                $done = true;
+                $_SESSION['cdb_loginName'] = $cRec['username'];
+                $cdb->login ($cRec['username'], $cRec['password'], Sag::$AUTH_COOKIE);
+                $cdb_session = $cdb->getSession();
+                if (
+                    is_object($cdb_session)
+                    && $cdb_session->body->ok
+                    && !is_null($cdb_session->body->userCtx->name)
+                ) {
+                    $done = true;
+                }
             }
         }
         if (
-            is_object($cdb_session)
+            isset($cdb_session)
+            && is_object($cdb_session)
             && $cdb_session->body->ok
             && !is_null($cdb_session->body->userCtx->name)
         ) {
             $done = true;
         } else {
-            if (!is_null($cRec))
+            if (
+                is_array($cRec)
+                && array_key_exists('password', $cRec)
+                && is_string ($cRec['password'])
+            )
                 $cdb->login ($cRec['username'], $cRec['password'], Sag::$AUTH_COOKIE);
             else
                 $cdb->login ($db->translate_plainUserName_to_couchdbUserName('Guest'), 'Guest', Sag::$AUTH_COOKIE);
-            //if ($cRec['username']!=='Guest') trigger_error ('Session cookie expired. You have been logged in as \''.$cRec['username'].'\'', E_USER_WARNING);
+            if ($cRec['username']!=='Guest') trigger_error ('Session cookie expired. You have been logged in as \''.$cRec['username'].'\'', E_USER_WARNING);
             //echo '<pre>'; var_dump ($cdb->getSession()); exit();
             if (
                 is_object($cdb_session)
@@ -791,8 +812,9 @@ function cdb_login($db, $cdb, $cRec, $username) {
         $cdb_session = $cdb->getSession();
         //echo '<pre>'; var_dump($cdb_session); echo '</pre>';// exit;
 
-        global $naLAN; // BUG TODO not initialized properly at this point yet....
-        if ($naLAN) {
+        global $naLAN;
+        if (false) {
+        //if ($naLAN) {
             $dbName = '_users';
             try {
                 $cdb->setDatabase($dbName, true);
@@ -810,9 +832,9 @@ function cdb_login($db, $cdb, $cRec, $username) {
             try {
                 $call = $cdb->find($findCommand);
             } catch (Exception $e) {
-                echo '<pre>'; echo $e->getMessage(); echo '</pre>'; exit;
+                echo '<pre>'; var_dump ($findCommand); echo PHP_EOL.'<br/>'.PHP_EOL.$e->getMessage(); echo '</pre>'; exit;
             }
-            echo '<pre>'; echo json_encode ($call, JSON_PRETTY_PRINT); echo '</pre>'; exit;
+            //echo '<pre>'; var_dump ($findCommand); echo PHP_EOL.'<br/>'.PHP_EOL.json_encode ($call, JSON_PRETTY_PRINT); echo '</pre>';
         }
 
         return [

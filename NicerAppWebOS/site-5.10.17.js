@@ -243,6 +243,7 @@ na.site = {
         na.d.s.visibleDivs.push ('#siteTaskbar');
         na.d.s.visibleDivs.push ('#siteStatusbar');
         $('#siteContent .vividDialogContent').css({display:'none'});
+        debugger;
 
         na.desktop.initialize(desktopDefinition);
 

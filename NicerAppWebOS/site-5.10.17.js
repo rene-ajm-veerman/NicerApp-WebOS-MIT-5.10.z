@@ -2491,15 +2491,47 @@ na.site = {
             debugger;
             var
             dt = parseInt($('.naComment_clientDatetime',el).html()),
-            tz = parseInt($('.naComment_clientTZoffset',el).html());
+            tz = parseInt($('.naComment_clientTZoffset',el).html()),
+            d1 = new Date(dt),
+            r1 =
+            d1.getFullYear() + '-' + na.m.padNumber((d1.getMonth()+1),2,'0') + '-' + na.m.padNumber(d1.getDate(), 2, '0')
+            + '(' + Date.locale.en.day_names_short[d1.getDay()] + ')'
+            + ' ' + na.m.padNumber(d1.getHours(), 2, '0') + ':' + na.m.padNumber(d.getMinutes(), 2, '0')
+            + ':' + na.m.padNumber(d1.getSeconds(), 2, '0'), // + '+' + na.m.padNumber(d.getMilliseconds(), 3, 0);
+            html1 =
+            'title="'+na.m.padNumber(d1.getHours(), 2, '0')
+            + ':' + na.m.padNumber(d1.getMinutes(), 2, '0')
+            + ':' + na.m.padNumber(d1.getSeconds(), 2, '0')
+            + ' '
+            + d1.getFullYear()
+            + '-' + na.m.padNumber((d1.getMonth()+1),2,'0')
+            + '-' + na.m.padNumber(d1.getDate(), 2, '0')
+            + '(' + Date.locale.en.day_names_short[d1.getDay()] + ')'
+            +'"';
+
             if (!dt || !tz) debugger;
-            $('.naComment_datetime',el).html (na.m.dateTimeHeader(dt,tz));
+            $('.naComment_datetime',el).html (na.m.dateTimeHeader(dt,tz)).attr('title',html1);
 
             var
             edt = parseInt($('.naComment_editedDatetime',el).html()),
             etz = parseInt($('.naComment_editedTZoffset',el).html());
             if (!edt || !etz) debugger;
-            $('.naComment_edited',el).html (' (edited '+na.m.dateTimeHeader(edt,etz)+')');
+            d2 = new Date(edt),
+            r2 = d2.getFullYear() + '-' + na.m.padNumber((d2.getMonth()+1),2,'0') + '-' + na.m.padNumber(d2.getDate(), 2, '0')
+            + '(' + Date.locale.en.day_names_short[d2.getDay()] + ')'
+            + ' ' + na.m.padNumber(d2.getHours(), 2, '0') + ':' + na.m.padNumber(d2.getMinutes(), 2, '0')
+            + ':' + na.m.padNumber(d2.getSeconds(), 2, '0'), // + '+' + na.m.padNumber(d2.getMilliseconds(), 3, 0),
+            html1 =
+            'title="'+na.m.padNumber(d2.getHours(), 2, '0')
+            + ':' + na.m.padNumber(d2.getMinutes(), 2, '0')
+            + ':' + na.m.padNumber(d2.getSeconds(), 2, '0')
+            + ' '
+            + d2.getFullYear()
+            + '-' + na.m.padNumber((d2.getMonth()+1),2,'0')
+            + '-' + na.m.padNumber(d2.getDate(), 2, '0')
+            + '(' + Date.locale.en.day_names_short[d2.getDay()] + ')'
+            +'"';
+            $('.naComment_edited',el).html (' (edited '+na.m.dateTimeHeader(edt,etz)+')').attr('title',html2);
         });
     },
 

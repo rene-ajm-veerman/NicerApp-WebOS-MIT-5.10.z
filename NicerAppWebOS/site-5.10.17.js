@@ -2532,7 +2532,7 @@ na.site = {
             + '-' + na.m.padNumber(d2.getDate(), 2, '0')
             + '(' + Date.locale.en.day_names_short[d2.getDay()] + ')'
             +'"';
-            $('.naComment_edited',el).html (' (edited '+na.m.dateTimeHeader(edt,etz)+')').attr('title',html2);
+            $('.naComment_edited',el).html (' (edited '+na.m.dateTimeHeader(edt,etz)+')').attr('title',html1);
         });
     },
 

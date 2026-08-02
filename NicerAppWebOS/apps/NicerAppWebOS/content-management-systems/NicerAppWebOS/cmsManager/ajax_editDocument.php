@@ -35,7 +35,7 @@ if (
         || strpos ($html, '<link') !== false
         || strpos ($html, 'javascript:') !== false
         || strpos ($html, '<?') !== false
-        || strpos ($html, '<iframe') !== false
+        //|| strpos ($html, '<iframe') !== false
         //|| !$pm
     )
 ) exit ('HTTPS ERROR 403 Forbidden - Illegal content.');

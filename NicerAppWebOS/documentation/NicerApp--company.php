@@ -41,7 +41,7 @@ p {
 are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:rene.veerman.netherlands@gmail.com" target="_new" class="nomod noPushState">Rene A.J.M. Veerman &lt;rene.veerman.netherlands@gmail.com&gt;</a>.
 <br/>
 
-<a class="nomod noPushState" target="rvX" href="https://said.by/Rene-AJM-Veerman/in/hisDiary">https://said.by/Rene-AJM-Veerman/in/hisDiary</a>, <a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
+<a class="nomod noPushState" target="rvX" href="https://said.by/Rene-AJM-Veerman/in/hisDiary">https://said.by/Rene-AJM-Veerman/in/hisDiary</a>, <br/><a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <br/><a class="nomod noPushState" target="rvFB" href="https://facebook.com/rene.veerman.90">https://facebook.com/rene.veerman.90</a>, <br/><a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
 </p>
 
 <h2>Going commercial</h2>
@@ -60,12 +60,14 @@ For at least 2027 as well i will keep NicerApp WebOS (https://nicer.app) MIT-lic
 <h2>Executives</h2>
 
 <div class="backdropped naComments_onTheSide">
+    <img src="/NicerAppWebOS/documentation/IMG_20260120_133439_1_800.jpg" style="width:400px;"/>
     <div class="backdropped naComments_onTheSide">
-        Owner, Founder, Senior Coder : <a href="https://www.youtube.com/watch?v=nO5KNu-Qwcs" target="naReneMemoires" class="nomod noPushState">Rene A.J.M. Veerman</a><br/>[ rene.veerman.netherlands@gmail.com ]<br/>
+        Owner, Founder, CTO, Senior Coder, CFO :<br/>
+        <a href="https://www.youtube.com/watch?v=nO5KNu-Qwcs" target="naReneMemoires" class="nomod noPushState">Rene A.J.M. Veerman</a><br/>[ rene.veerman.netherlands@gmail.com ]<br/>
     </div>
 
     <p class="backdropped naComments_onTheSide">
-    Should I unexpectedly die for some strange reason, for instance by long standing "dissident" disputes (In addition to a software and graphics developer, i'm also an assertive peace activist who is not without the ability to look at his own ranks with criticism) suddenly becoming lethal in some way, I want my belongings donated to my parents initially, and to the Amsterdam.NL stedelijk museum after their eventual death, who may all do with it all as they please, on condition of keeping copies of https://nicer.app plus https://said.by up and running.<br/>
+    Should I unexpectedly die for some strange reason, for instance by long standing "dissident" disputes (In addition to a software and graphics developer, i'm also an assertive peace activist who is not without the ability to look at his own ranks with criticism) suddenly becoming lethal in some way, I want my belongings donated to my parents initially, and to the Amsterdam.NL stedelijk museum after their eventual death, who may all do with it all as they please, on condition of keeping copies of https://zoned.at, https://nicer.app and https://said.by up and running.<br/>
     </p>
 
     <h2>Political views</h2>

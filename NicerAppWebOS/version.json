@@ -1,6 +1,6 @@
 {
-    "whatsThis" : "NicerApp WebOS v5.10.17",
-    "version" : "5.10.17",
+    "whatsThis" : "NicerApp WebOS v5.10.18",
+    "version" : "v5.10.18",
     "copyright" : [
         "Copyright (C) 2002-2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com]",
         "Copyright (C) 2026 \"Rene A.J.M. Veerman\" [rene.veerman.netherlands@gmail.com] + grok.com + claude.ai/chat"
@@ -8,7 +8,7 @@
     "license" : "https://opensource.org/license/mit",
     "history" : {
         "firstCreated" : "2002 around January if i'm not mistaken.",
-        "lastModified" : "2026-07(July)-16(Thursday) 09:38:33"
+        "lastModified" : "2026-08(August)-02(Sunday) 10:20:57"
     },
     "supportedBrowsers" : [
         {

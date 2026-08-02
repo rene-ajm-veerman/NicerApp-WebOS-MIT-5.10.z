@@ -424,7 +424,7 @@ require('fs').writeFileSync('full_unicode_js.base64', base64);
         // tz in minutes (posititive or negative) relative to GMT.
         var dt = new Date(t);
         if (dt.getFullYear()==1970) t = t * 1000;
-        if (dt.getFullYear()>=3000) t = Math.round(t/1000); // LOL Y3K BUG
+        if (dt.getFullYear()>=5000) t = Math.round(t/1000); // LOL Y5K BUG
         var tza = tz*60*1000;
         if (tza<=-12*60*1000-1000) tza = tza / 1000;
         if (tza>=12*60*1000-1000) tza = tza / 1000;
@@ -436,7 +436,7 @@ require('fs').writeFileSync('full_unicode_js.base64', base64);
         var now = new Date().getTime();
         var dt = new Date(t);
         if (dt.getFullYear()==1970) t = t * 1000;
-        if (dt.getFullYear()>=3000) t = Math.round(t/1000); // LOL Y3K BUG
+        if (dt.getFullYear()>=5000) t = Math.round(t/1000); // LOL Y5K BUG
         var tza = tz*60*1000;
         if (tza<=-12*60*1000-1000) tza = tza / 1000;
         if (tza>=12*60*1000-1000) tza = tza / 1000;

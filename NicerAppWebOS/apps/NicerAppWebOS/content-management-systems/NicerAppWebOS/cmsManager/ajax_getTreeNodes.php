@@ -87,6 +87,11 @@ foreach ($tables as $idx=>$dbName) {
 
         //var_dump ($data);
         foreach ($data as $idx2=>$recordSummary) {
+
+            // TODO BUG FIX dirty hack:
+            $recordSummary->text = preg_replace('/.*?___/','',$recordSummary->text);
+            $recordSummary->text = str_replace('__',' ',$recordSummary->text);
+
             $ret = array_merge ($ret, array(json_decode(json_encode($recordSummary),true)));
         }
 

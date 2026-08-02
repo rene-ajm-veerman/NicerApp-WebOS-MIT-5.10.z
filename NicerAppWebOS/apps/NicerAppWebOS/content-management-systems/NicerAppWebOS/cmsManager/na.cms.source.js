@@ -231,7 +231,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                 }).on('changed.jstree', function (e, data) {
 
                     na.cms.settings.current.refresh = (new Date()).getTime();
-
+debugger;
                     if (
                         //data.action!=='ready'
                         //&&
@@ -457,6 +457,8 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                 if (p.type == 'naUserRootFolder') url0 = p.text;
                 if (p.type == 'naGroupRootFolder') url0 = p.text;
             }
+            url0 = url0.replace(/.*?___/, '').replace(/__/g,' ');
+            debugger;
 
 
             if (rec
@@ -812,6 +814,7 @@ na.apps.loaded['/NicerAppWebOS/apps/NicerAppWebOS/content-management-systems/Nic
                 jt = $('#jsTree').jstree(true),
                 dat = JSON.parse(data),
                 jfu = $('.jQueryFileUpload')[0];
+                debugger;
                 
                 na.cms.settings.current.db = dat;
                 jt.settings.core.data = dat;

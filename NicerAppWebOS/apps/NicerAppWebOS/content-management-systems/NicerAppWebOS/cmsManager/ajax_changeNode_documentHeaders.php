@@ -50,12 +50,9 @@ $go = (
     )
 );
 if (!$go) {
-    echo 'Document with URL /'.$_POST['user'].'/'.$_POST['url1'].'/'.$_POST['seoValue'].' already exists.';
+    echo 'There are '.count($call0->body->docs).' documents with URL /'.$_POST['user'].'/'.$_POST['url1'].'/'.$_POST['seoValue'].': '.json_encode($call0->body->docs);
     exit();
 }
-
-
-
 
 
 

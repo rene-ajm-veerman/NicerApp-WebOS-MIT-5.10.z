@@ -2488,11 +2488,18 @@ na.site = {
 
 
         $('.naComment_entry').each(function(idx,el){
+            debugger;
             var
             dt = parseInt($('.naComment_clientDatetime',el).html()),
             tz = parseInt($('.naComment_clientTZoffset',el).html());
             if (!dt || !tz) debugger;
-            $('.naDateTimeHeader',el).html (na.m.dateTimeHeader(dt,tz));
+            $('.naComment_datetime',el).html (na.m.dateTimeHeader(dt,tz));
+
+            var
+            edt = parseInt($('.naComment_editedDatetime',el).html()),
+            etz = parseInt($('.naComment_editedTZoffset',el).html());
+            if (!edt || !etz) debugger;
+            $('.naComment_edited',el).html (' (edited '+na.m.dateTimeHeader(edt,etz)+')');
         });
     },
 

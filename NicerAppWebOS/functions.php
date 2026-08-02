@@ -57,7 +57,7 @@ function naDateTimeHeader ($s, $tz) {
     if ($tza>=12*60*1000+1000) $tza = $tza / 1000;
     $ago = $now - $sa;
     $agoHTML = secondsToTimeString($ago).' ago.';
-    $originalDatetime = date ('Y-m(F)-d(l) H:i:s', $sa+$tza).' GMT'.($tz===0?'':($tz>0?'+':'').$tz.'m');
+    $originalDatetime = date ('Y-m(F)-d(l) H:i:s', $sa+$tza).' GMT'.($tz===0?'':($tz>0?'+':'-').$tz.'m');
     $html =
         '<span class="naDateTimeHeader" title="'.$originalDatetime.'">'.$agoHTML.'</span>';
     return $html;

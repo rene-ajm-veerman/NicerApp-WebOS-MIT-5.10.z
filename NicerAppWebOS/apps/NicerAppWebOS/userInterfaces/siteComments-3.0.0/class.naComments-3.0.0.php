@@ -33,6 +33,7 @@ class class_naComments {
             global $naWebOS;
             $u = 'https://'.$naWebOS->domain.$_SERVER['REQUEST_URI'];
             $json = '{"url":"'.$u.'"}';
+            //echo $json; exit;
             if (is_null($rootItemJSON)) $rootItemJSON = $json;//str_replace('\/','/',substr($json,1  ,strlen($json)-2));
         };
         $rootItemJSON = str_replace('\\/', '/', $rootItemJSON);
@@ -42,10 +43,10 @@ class class_naComments {
         $cdb = $db->cdb;
         $in = &$_GET;
         $fields = [
-            '_id', 'parentID',
-            'datetimeStr', 'clientDatetime', 'clientTZoffset',
+            '_id', 'parentID', 'datetimeStr',
+            'clientDatetime', 'clientTZoffset', 'clientIP', 'clientUsername',
             'editedDatetime', 'editedDatetimeStr', 'editedTZoffset',
-            'clientIP', 'clientUsername', 'msgHTML'
+            'msgHTML'
         ];
 
         $dbName = $db->dataSetName ('cms_comments');
@@ -357,19 +358,25 @@ class class_naComments {
                 . '</span>'.PHP_EOL;
             }
 
-            $html .= "\t".'<span class="naComment_datetime" '
+            $html .=
+            '<span class="naComment_clientDatetime" style="display:none;">'.$it['clientDatetime'].'</span>'
+            .'<span class="naComment_clientTZoffset" style="display:none;">'.$it['clientTZoffset'].'</span>'
+            .'<span class="naComment_datetime" '
             . 'onclick="na.c.onclick_datetime(event)" '
             . 'style="cursor:pointer;" '
             . 'title="Click to link to this comment">'
             . naDateTimeHeader($it['clientDatetime'], $it['clientTZoffset']);
+            $html .= '</span>'.PHP_EOL;
 
             if (!empty($it['editedDatetime'])) {
-                $html .= ' <span class="naComment_edited" title="Last edited">'
-                . '(edited ' . naDateTimeHeader($it['editedDatetime'], $it['editedTZoffset'] ?? 0) . ')'
-                . '</span>';
+                $html .=
+                    '<span class="naComment_editedDatetime" style="display:none;">'.$it['editedDatetime'].'</span>'
+                    .'<span class="naComment_editedTZoffset" style="display:none;">'.$it['editedTZoffset'].'</span>'
+                    .'<span class="naComment_edited" title="Last edited">'
+                    . ' (edited ' . naDateTimeHeader($it['editedDatetime'], $it['editedTZoffset'] ?? 0) . ')'
+                    .'</span>';
             }
 
-            $html .= '</span>'.PHP_EOL;
 
 
             $html .= "\t".'</div>'.PHP_EOL;

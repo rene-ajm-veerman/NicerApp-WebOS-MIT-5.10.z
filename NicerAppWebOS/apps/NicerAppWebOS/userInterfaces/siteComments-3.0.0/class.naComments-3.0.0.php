@@ -19,6 +19,178 @@ class class_naComments {
     ];
     public $theme = 'simple';//'DutchCulture';
 
+
+
+
+
+
+    /**
+     * Scan the entire comments database and enqueue screenshots
+     * for every unique URL found in rootItemJSON + inside msgHTML.
+     *
+     * @param array $options {
+     *     @var int  $retain     Seconds to keep existing screenshots
+     *     @var bool $force      Force re-capture
+     *     @var int  $limit      Max unique URLs to process (0 = no limit)
+     *     @var bool $dryRun     Only return the list, don't enqueue
+     *     @var bool $includeMsg Also scan URLs inside comment text (default true)
+     * }
+     */
+    public function enqueueScreenshotsFromAllComments(array $options = []): array
+    {
+        $retain     = (int)($options['retain']     ?? 86400 * 7); // 7 days default
+        $force      = (bool)($options['force']      ?? false);
+        $limit      = (int)($options['limit']      ?? 0);
+        $dryRun     = (bool)($options['dryRun']     ?? false);
+        $includeMsg = (bool)($options['includeMsg'] ?? true);
+
+        require_once dirname(__FILE__, 5) . '/businessLogic/class.screenshots.php';
+
+        global $naWebOS;
+        $screenshots = new naScreenshots();   // uses the auto-detect constructor
+
+        // -------------------------------------------------
+        // 1. Collect unique URLs from the comments database
+        // -------------------------------------------------
+        $uniqueUrls = [];
+
+        $db  = $naWebOS->dbs->findConnection('couchdb');
+        $cdb = $db->cdb;
+        $dbName = $db->dataSetName('cms_comments');
+        $cdb->setDatabase($dbName, true);
+
+        $bookmark = null;
+        $pageSize = 200;
+
+        do {
+            $query = [
+                'selector' => new stdClass(),
+                'fields'   => ['rootItemJSON', 'msgHTML'],
+                'limit'    => $pageSize,
+            ];
+            if ($bookmark) $query['bookmark'] = $bookmark;
+
+            $result = $cdb->find($query);
+            $docs   = $result->body->docs ?? [];
+
+            foreach ($docs as $doc) {
+                // From rootItemJSON (the page the comment belongs to)
+                if (!empty($doc->rootItemJSON)) {
+                    $root = json_decode($doc->rootItemJSON, true);
+                    if (is_array($root) && !empty($root['url'])) {
+                        $uniqueUrls[trim($root['url'])] = true;
+                    }
+                }
+
+                // From links inside the comment text itself
+                if ($includeMsg && !empty($doc->msgHTML)) {
+                    $found = $this->extractUrlsFromHtml($doc->msgHTML);
+                    foreach ($found as $u) {
+                        $uniqueUrls[$u] = true;
+                    }
+                }
+            }
+
+            $bookmark = $result->body->bookmark ?? null;
+
+            if ($limit > 0 && count($uniqueUrls) >= $limit) {
+                break;
+            }
+
+        } while ($bookmark && $bookmark !== 'nil' && count($docs) > 0);
+
+        $urls = array_keys($uniqueUrls);
+        if ($limit > 0) {
+            $urls = array_slice($urls, 0, $limit);
+        }
+
+        // -------------------------------------------------
+        // 2. Enqueue them
+        // -------------------------------------------------
+        $summary = [
+            'totalUniqueUrls' => count($urls),
+            'enqueued'        => 0,
+            'skipped'         => 0,
+            'errors'          => [],
+            'urls'            => []
+        ];
+
+        foreach ($urls as $url) {
+            try {
+                if ($dryRun) {
+                    $summary['urls'][] = $url;
+                    $summary['enqueued']++;
+                    continue;
+                }
+
+                $job = $screenshots->enqueue($url, [
+                    'retain'   => $retain,
+                    'force'    => $force,
+                    'priority' => 5,
+                    'meta'     => [
+                        'source'    => 'comments-full-scan',
+                        'scannedAt' => date('c')
+                    ]
+                ]);
+
+                $status = $job['status'] ?? 'unknown';
+
+                $summary['urls'][] = [
+                    'url'    => $url,
+                    'status' => $status
+                ];
+
+                if ($status === 'pending') {
+                    $summary['enqueued']++;
+                } else {
+                    $summary['skipped']++;
+                }
+
+            } catch (Throwable $e) {
+                $summary['errors'][] = [
+                    'url'   => $url,
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Extract unique http/https URLs from HTML
+     */
+    public function extractUrlsFromHtml(string $html): array
+    {
+        $urls = [];
+
+        // 1. URLs inside href="..."
+        if (preg_match_all('/href\s*=\s*["\'](https?:\/\/[^"\']+)["\']/i', $html, $m)) {
+            foreach ($m[1] as $url) {
+                $urls[$this->cleanUrl($url)] = true;
+            }
+        }
+
+        // 2. Plain URLs in the text (most important for your case)
+        // This catches https://cnn.com even when it is just typed
+        if (preg_match_all('/https?:\/\/[^\s<>"\'\)\]]+/i', $html, $m)) {
+            foreach ($m[0] as $url) {
+                $urls[$this->cleanUrl($url)] = true;
+            }
+        }
+
+        return array_keys($urls);
+    }
+
+    private function cleanUrl(string $url): string
+    {
+        // Remove trailing punctuation that is often accidentally included
+        return rtrim($url, '.,;:!?)]}');
+    }
+
+
+
+
     public function getHTMLandCSS ($post = null, $rootItemJSON=null) {
 
         //return 'The comments feature is experiencing problems right now; sorry.';
@@ -37,6 +209,68 @@ class class_naComments {
             if (is_null($rootItemJSON)) $rootItemJSON = $json;//str_replace('\/','/',substr($json,1  ,strlen($json)-2));
         };
         $rootItemJSON = str_replace('\\/', '/', $rootItemJSON);
+
+
+
+        // -------------------------------------------------
+        // 1. Extract the main page URL
+        // -------------------------------------------------
+        $pageUrl = '';
+        if ($rootItemJSON) {
+            $root = is_string($rootItemJSON) ? json_decode($rootItemJSON, true) : $rootItemJSON;
+            $pageUrl = is_array($root) ? ($root['url'] ?? '') : '';
+        }
+
+        // -------------------------------------------------
+        // 2. Prepare screenshots manager
+        // -------------------------------------------------
+        require_once dirname(__FILE__, 5) . '/boot.php';
+        require_once dirname(__FILE__, 5) . '/businessLogic/class.screenshots.php';
+        global $naWebOS;
+        $uDB2 = $naWebOS->dbsAdmin->findConnection('couchdb');
+        $screenshots = new naScreenshots($uDB2);
+
+        // Enqueue the main page
+        if ($pageUrl) {
+            $screenshots->enqueue($pageUrl, [
+                'retain'   => 86400 * 7,
+                'priority' => 10
+            ]);
+        }
+
+        // -------------------------------------------------
+        // 3. Ensure we have a screenshot for the main page
+        // -------------------------------------------------
+        $retainSeconds = 86400 * 7; // keep screenshots for 7 days (adjust as you like)
+
+        if ($pageUrl) {
+            // This will return the existing ready one if still fresh,
+            // otherwise it enqueues a new job
+            $screenshots->enqueue($pageUrl, [
+                'retain'   => $retainSeconds,
+                'priority' => 10,          // high priority for the current page
+                'meta'     => ['source' => 'comments-header']
+            ]);
+        }
+
+        // -------------------------------------------------
+        // 4. Optionally process a few jobs right now
+        //    (so the user often sees the new screenshot after a refresh)
+        // -------------------------------------------------
+        // Keep this number low so the page stays fast
+        $screenshots->processQueue([
+            'maxJobs'      => 2,           // process max 2 jobs in this request
+            'sleepSeconds' => 0,
+            'verbose'      => false,
+            'releaseStale' => true
+        ]);
+
+        // -------------------------------------------------
+        // 5. Continue with the normal comments rendering
+        // -------------------------------------------------
+        // ... your existing CouchDB query code for comments stays the same ...
+
+
 
         global $naWebOS;
         $db = $naWebOS->dbs->findConnection('couchdb');
@@ -95,13 +329,33 @@ class class_naComments {
         }
         //exit();
 
+        // Also scan the comments that were just loaded for any mentioned URLs
+        foreach ($results as $comment) {
+            if (!empty($comment['msgHTML'])) {
+                $foundUrls = $this->extractUrlsFromHtml($comment['msgHTML']);
+                foreach ($foundUrls as $u) {
+                    $screenshots->enqueue($u, [
+                        'retain'   => 86400 * 7,
+                        'priority' => 5,
+                        'meta'     => ['source' => 'comment-text']
+                    ]);
+                }
+            }
+        }
+
+        // Process a couple of jobs right away
+        $screenshots->processQueue([
+            'maxJobs' => 3,
+            'verbose' => false
+        ]);
+
         return
-            '<link type="text/css" rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/na.comments.css">'
-            .$this->formatHeader()
-            .'<div class="naComment_results">'
-            .$this->formatResults ($results, $post)
-            .'</div>'
-            .$this->formatFooter();
+        '<link type="text/css" rel="StyleSheet" href="/NicerAppWebOS/apps/NicerAppWebOS/userInterfaces/siteComments-3.0.0/na.comments.css">'
+        . $this->formatHeader($rootItemJSON)          // ← still pass rootItemJSON
+        . '<div class="naComment_results">'
+        . $this->formatResults($results, $post)
+        . '</div>'
+        . $this->formatFooter();
     }
 
     public function transformResults_findCommand ($call) {
@@ -120,11 +374,21 @@ class class_naComments {
         return json_decode(json_encode($call->body->docs),true);
     }
 
-   public function formatHeader() {
+   public function formatHeader($rootItemJSON = null) {
         global $naWebOS;
+
+        // Extract the page URL
+        $pageUrl = '';
+        if ($rootItemJSON) {
+            $root = is_string($rootItemJSON) ? json_decode($rootItemJSON, true) : $rootItemJSON;
+            $pageUrl = is_array($root) ? ($root['url'] ?? '') : '';
+        }
+        $screenshotHtml = $this->getPageScreenshotHtml($pageUrl);
+
         $html =
-            '<div class="naComment_header_div" style="">'.PHP_EOL
-            .'<h2 class="naComments_header">Comments</h2>'.PHP_EOL
+        '<div class="naComment_header_div">' . PHP_EOL
+            . '<h2 class="naComments_header">Comments</h2>' . PHP_EOL
+            . $screenshotHtml
             .$naWebOS->html_vividButton (
                 1000, 'float:right',
 
@@ -383,7 +647,11 @@ class class_naComments {
 
 
 
-                $html .= "\t".'<div class="naComment_msgHTML">'.$it['msgHTML'].'</div>'.PHP_EOL;
+            $html .= "\t".'<div class="naComment_msgHTML">'.$it['msgHTML'].'</div>'.PHP_EOL;
+
+            // Show small screenshots for any URLs mentioned in this comment
+            $mentionedUrls = $t->extractUrlsFromHtml($it['msgHTML'] ?? '');
+            $html .= $t->getLinkedScreenshotsHtml($mentionedUrls);
                 $html .= "\t".'<div class="naComment_subComments">';
                 $html .= "\t".'</div>'.PHP_EOL;
                 $html .=
@@ -570,5 +838,196 @@ class class_naComments {
             if ($debug) { echo '<pre style="color:red">'; var_dump ($e); echo '</pre>'; exit(); }
         }
 
+    }
+
+    /**
+     * Explicitly process pending screenshot jobs from PHP.
+     *
+     * @param array $options {
+     *     @var int    $maxJobs       Maximum number of jobs to process in this run (default 10)
+     *     @var string $workerId      Identifier for this worker (default auto-generated)
+     *     @var int    $sleepSeconds  Pause between jobs (default 1)
+     *     @var bool   $verbose       Print progress to output (default true when CLI)
+     *     @var bool   $releaseStale  First release any stale locks (default true)
+     * }
+     *
+     * @return array  Summary of the run
+     */
+    public function processQueue(array $options = []): array
+    {
+        $maxJobs      = (int)($options['maxJobs']      ?? 10);
+        $workerId     = $options['workerId']           ?? ('php-' . gethostname() . '-' . getmypid());
+        $sleepSeconds = (int)($options['sleepSeconds'] ?? 1);
+        $verbose      = $options['verbose']            ?? (php_sapi_name() === 'cli');
+        $releaseStale = $options['releaseStale']       ?? true;
+
+        $summary = [
+            'workerId'    => $workerId,
+            'startedAt'   => date('c'),
+            'processed'   => 0,
+            'succeeded'   => 0,
+            'failed'      => 0,
+            'skipped'     => 0,
+            'jobs'        => [],
+            'errors'      => []
+        ];
+
+        if ($releaseStale) {
+            $released = $this->releaseStaleLocks();
+            if ($verbose && $released > 0) {
+                echo "[" . date('H:i:s') . "] Released {$released} stale lock(s)\n";
+            }
+        }
+
+        $processed = 0;
+
+        while ($processed < $maxJobs) {
+            $job = $this->claimNextJob($workerId);
+
+            if (!$job) {
+                if ($verbose) {
+                    echo "[" . date('H:i:s') . "] No more pending jobs.\n";
+                }
+                break;
+            }
+
+            $url = $job['url'] ?? '(unknown)';
+
+            if ($verbose) {
+                echo "[" . date('H:i:s') . "] Processing: {$url}\n";
+            }
+
+            try {
+                $result = $this->processJob($job);
+
+                $status = $result['status'] ?? 'unknown';
+
+                $summary['jobs'][] = [
+                    'url'    => $url,
+                    'status' => $status,
+                    '_id'    => $result['_id'] ?? null
+                ];
+
+                if ($status === 'ready') {
+                    $summary['succeeded']++;
+                } elseif ($status === 'failed') {
+                    $summary['failed']++;
+                } else {
+                    $summary['skipped']++;
+                }
+
+                if ($verbose) {
+                    echo "[" . date('H:i:s') . "] → {$status}\n";
+                }
+
+            } catch (Throwable $e) {
+                $summary['failed']++;
+                $summary['errors'][] = [
+                    'url'   => $url,
+                    'error' => $e->getMessage()
+                ];
+
+                if ($verbose) {
+                    echo "[" . date('H:i:s') . "] ERROR: " . $e->getMessage() . "\n";
+                }
+            }
+
+            $processed++;
+            $summary['processed'] = $processed;
+
+            if ($sleepSeconds > 0 && $processed < $maxJobs) {
+                sleep($sleepSeconds);
+            }
+        }
+
+        $summary['finishedAt'] = date('c');
+
+        return $summary;
+    }
+
+
+
+    /**
+     * Get the big screenshot HTML for the main page (used in the header)
+     */
+    public function getPageScreenshotHtml(string $url): string
+    {
+        if (empty($url)) return '';
+
+        try {
+            require_once dirname(__FILE__, 5) . '/businessLogic/class.screenshots.php';
+
+            global $naWebOS;
+            // Adjust this line to however you normally obtain a uDB2 instance
+            $uDB2 = $naWebOS->dbs->findConnection('couchdb'); // or your actual method
+            // You may need to wrap it properly into a uDB2 object depending on your setup
+
+            $screenshots = new naScreenshots($uDB2);
+            $report = $screenshots->createDatabaseAndIndexes();
+            $record = $screenshots->findByUrl($url);
+
+            if (!$record || ($record['status'] ?? '') !== 'ready') {
+                return '';
+            }
+
+            $imgSrc = '/siteData/' . ltrim($record['relativePath'] ?? '', '/');
+
+            return
+            '<div class="naComment_pageScreenshot" style="margin:12px 0 18px 0;">' .
+            '<a href="' . htmlspecialchars($url) . '" target="_blank" class="nomod noPushState" title="Open original page">' .
+            '<img src="' . htmlspecialchars($imgSrc) . '" ' .
+            'alt="Screenshot of page" ' .
+            'style="max-width:100%; max-height:320px; border-radius:10px; box-shadow:0 3px 12px rgba(0,0,0,0.35);" />' .
+            '</a>' .
+            '</div>';
+        } catch (Throwable $e) {
+            return '';
+        }
+    }
+
+    /**
+     * Build small thumbnail screenshots for URLs mentioned inside a comment
+     */
+    public function getLinkedScreenshotsHtml(array $urls, int $max = 5): string
+    {
+        if (empty($urls)) return '';
+
+        try {
+            require_once dirname(__FILE__, 5) . '/businessLogic/class.screenshots.php';
+
+            global $naWebOS;
+            $uDB2 = $naWebOS->dbs->findConnection('couchdb'); // adjust as needed
+            $screenshots = new naScreenshots($uDB2);
+
+            $html = '<div class="naComment_linkedScreenshots" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:10px;">';
+            $count = 0;
+
+            foreach ($urls as $url) {
+                if ($count >= $max) break;
+
+                $record = $screenshots->findByUrl($url);
+                if (!$record || ($record['status'] ?? '') !== 'ready') continue;
+
+                $imgSrc = '/siteData/' . ltrim($record['relativePath'] ?? '', '/');
+
+                $html .=
+                '<a href="' . htmlspecialchars($url) . '" target="_blank" class="nomod noPushState" ' .
+                'style="display:inline-block; line-height:0;" title="' . htmlspecialchars($url) . '">' .
+                '<img src="' . htmlspecialchars($imgSrc) . '" ' .
+                'alt="Linked page screenshot" ' .
+                'style="height:90px; width:auto; border-radius:7px; box-shadow:0 2px 6px rgba(0,0,0,0.3); transition:transform 0.15s;" ' .
+                'onmouseover="this.style.transform=\'scale(1.05)\'" ' .
+                'onmouseout="this.style.transform=\'scale(1)\'" />' .
+                '</a>';
+
+            $count++;
+            }
+
+            $html .= '</div>';
+            return $count > 0 ? $html : '';
+
+        } catch (Throwable $e) {
+            return '';
+        }
     }
 }

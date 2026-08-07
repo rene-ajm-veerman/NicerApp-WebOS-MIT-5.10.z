@@ -44,16 +44,18 @@ are ENTIRELY Copyrighted (C) 2002-2026 and are 100% Owned by <a href="mailto:ren
 <a class="nomod noPushState" target="rvX" href="https://said.by/Rene-AJM-Veerman/in/hisDiary">https://said.by/Rene-AJM-Veerman/in/hisDiary</a>, <br/><a class="nomod noPushState" target="rvX" href="https://x.com/ReneAjmVeerman">https://x.com/ReneAjmVeerman</a>, <br/><a class="nomod noPushState" target="rvFB" href="https://facebook.com/rene.veerman.90">https://facebook.com/rene.veerman.90</a>, <br/><a class="nomod noPushState" target="rvCKF" href="https://youtube.com/@CheetahKungFu">https://youtube.com/@CheetahKungFu</a>.
 </p>
 
+<!--
 <h2>Going commercial</h2>
 
 <p class="backdropped naComments_onTheSide">
 The entire Copyright (C) and All Rights Reserved (R) status of this Software and the domain-names and -content at said.by, zoned.at and nicer.app is for sale at around 49.95 million Euro.<br/>
 </p>
+-->
 
 <h2>Business plan</h2>
 
 <p class="backdropped naComments_onTheSide">
-For at least 2027 as well i will keep NicerApp WebOS (https://nicer.app) MIT-licensed open source that can even be used commercially for free, but without warranty and you'll need your own full stack http://kubuntu.com web-development team to work with it.
+i will keep NicerApp WebOS (https://nicer.app) MIT-licensed open source that can even be used commercially for free, but without warranty and you'll need your own full stack <a class="nomod noPushState" target="kb" href="https://kubuntu.com">https://kubuntu.com</a> web-development team to work with it.
 </p>
 
 

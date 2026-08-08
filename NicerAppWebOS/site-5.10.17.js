@@ -243,7 +243,6 @@ na.site = {
         na.d.s.visibleDivs.push ('#siteTaskbar');
         na.d.s.visibleDivs.push ('#siteStatusbar');
         $('#siteContent .vividDialogContent').css({display:'none'});
-        debugger;
 
         na.desktop.initialize(desktopDefinition);
 
@@ -560,6 +559,9 @@ na.site = {
 
         t.s.c = { booted : true };
         na.site.initialized = true;
+        // At the end of the fully-booted success path
+        window._screenshotReady = true;
+        window.dispatchEvent(new Event('na-screenshot-ready'));
 
         //console.log (this);
         return this;
@@ -634,6 +636,9 @@ na.site = {
             if (!settings) settings = {};
             if (!settings.finalized) {
                 settings.finalized = true;
+                setTimeout (function() {
+                    window._screenshotReady = true;
+                }, 2000);
 
                 na.site.settings.current.siteInitialized = true;
 
@@ -2425,6 +2430,9 @@ na.site = {
                     settings.finalized = true;
 
                     na.site.settings.siteInitialized = true;
+                    setTimeout (function() {
+                        window._screenshotReady = true;
+                    }, 2000);
 
                     //na.site.reloadMenu();
 
@@ -2489,7 +2497,6 @@ na.site = {
 
 
         $('.naComment_entry').each(function(idx,el){
-            debugger;
             var
             dt = parseInt($('.naComment_clientDatetime',el).html()),
             tz = parseInt($('.naComment_clientTZoffset',el).html()),
@@ -2510,13 +2517,13 @@ na.site = {
             + '(' + Date.locale.en.day_names_short[d1.getDay()] + ')'
             +'"';
 
-            if (!dt || !tz) debugger;
+            //if (!dt || !tz) debugger;
             $('.naComment_datetime',el).html (na.m.dateTimeHeader(dt,tz)).attr('title',html1);
 
             var
             edt = parseInt($('.naComment_editedDatetime',el).html()),
             etz = parseInt($('.naComment_editedTZoffset',el).html());
-            if (!edt || !etz) debugger;
+            //if (!edt || !etz) debugger;
             d2 = new Date(edt),
             r2 = d2.getFullYear() + '-' + na.m.padNumber((d2.getMonth()+1),2,'0') + '-' + na.m.padNumber(d2.getDate(), 2, '0')
             + '(' + Date.locale.en.day_names_short[d2.getDay()] + ')'
@@ -3185,7 +3192,7 @@ na.site = {
                 delete acData.app;
                 delete acData.url;
             }
-        } else debugger;
+        } //else debugger;
 
         var
         url = '/NicerAppWebOS/businessLogic/ajax/ajax_database_loadTheme.php',
@@ -3254,7 +3261,7 @@ na.site = {
                 //na.te.onload('siteContent');
             },
             error : function (xhr, textStatus, errorThrown) {
-                debugger;
+                //debugger;
                 //only significantly slows down startup for new viewers :
                 //na.ajaxFail(fncn, url, xhr, textStatus, errorThrown);
             }
@@ -3265,13 +3272,13 @@ na.site = {
     loadTheme_applySettings : function (dat, callback, loadBackground, saveTheme, changeInterval) {
         if (!dat) {
             na.m.log (1510, 'Error : loadTheme_applySettings() called with dat=undefined/false', false);
-            debugger;
+            //debugger;
             return false;
         };
         if (typeof loadBackground=='undefined') loadBackground = true;
         if (typeof saveTheme=='undefined') saveTheme = true;
         if (typeof changeInterval=='undefined') changeInterval = true;
-        debugger;
+        //debugger;
 
         //if (dat.specificityName) {
             $('.na_themes_dropdown__specificity > .vividDropDownBox_selector > div')

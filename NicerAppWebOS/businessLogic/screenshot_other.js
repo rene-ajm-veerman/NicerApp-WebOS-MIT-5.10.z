@@ -2,51 +2,54 @@
 // npm install puppeteer-extra puppeteer-extra-plugin-stealth
 // npx puppeteer browsers install chrome
 // node screenshot_other.js https://cnn.com output_cnn.png
+// Add this right at the top of your script
+const GLOBAL_TIMEOUT_MS = 20000; // 60-second limit per screenshot job
+setTimeout(() => {
+  console.error("CRITICAL ERROR: Script execution timed out globally. Force exiting.");
+  process.exit(1);
+}, GLOBAL_TIMEOUT_MS).unref(); // .unref() prevents this timeout from keeping the script alive if it finishes normally
 
 
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+const puppeteer = require('puppeteer'); // or playwright
 
-const url = process.argv[2];
-const png = process.argv[3] || 'output.png';
+async function capture() {
+  let browser = null;
+  const url = process.argv[2];
+  const outputPath = process.argv[3];
 
-async function takeScreenshot(url) {
-  // Start headless Chrome
-  const browser = await puppeteer.launch({
-    headless: 'new',
-    executablePath: '/usr/local/sbin/chrome-devel-sandbox',
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    env: {
-      ...process.env,
-      GLIBC_TUNABLES: 'glibc.cpu.hwcaps=-SHSTK,-IBT'
+  if (!url || !outputPath) {
+    console.error("Usage: node script.js <url> <outputPath>");
+    process.exit(1);
+  }
+
+  try {
+    browser = await puppeteer.launch({
+      headless: true,
+      //executablePath: '/usr/local/sbin/chrome-devel-sandbox',
+      executablePath: '/opt/google/chrome/chrome',
+      args: ['--no-sandbox', '--disable-setuid-sandbox'] // Critical flags for Apache / www-data users
+    });
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 3840, height: 2160 }); // 4K default config matches your PHP properties
+
+    // Set waitUntil to 'networkidle2' so it doesn't hang infinitely on trailing tracking scripts
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+
+    await page.screenshot({ path: outputPath, fullPage: true });
+    console.log("SUCCESS: Screenshot written to " + outputPath);
+    process.exit(0);
+
+  } catch (err) {
+    console.error("SCREENSHOT FAILURE:", err.message);
+    process.exit(1);
+  } finally {
+    if (browser !== null) {
+      await browser.close();
     }
-  });
-
-  const page = await browser.newPage();
-
-  // OG preview card size
-  await page.setViewport({ width: 3840, height: 2160 });
-await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-await page.setExtraHTTPHeaders({
-	 'X-Forwarded-For': '8.8.8.8' // pretend to be in the US
-});
-
-// rest of your script unchanged
-// Instead of networkidle2, use domcontentloaded + a fixed wait
-await page.goto(url, { waitUntil: 'domcontentloaded' });
-
-// Just wait a fixed 3 seconds for the visuals to settle
-await new Promise(r => setTimeout(r, 3000));
-
-await page.screenshot({ path: png });
-
-
-  await browser.close();
-  console.log('Done! Screenshot saved to '+png);
+  }
 }
 
-takeScreenshot(url).catch(err => {
-  console.error('Screenshot failed:', err);
-  process.exit(1);
-});
+capture();
+
+

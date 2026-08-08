@@ -15,7 +15,12 @@ async function takeScreenshot(url) {
   // Start headless Chrome
   const browser = await puppeteer.launch({
     headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    executablePath: '/usr/local/sbin/chrome-devel-sandbox',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    env: {
+      ...process.env,
+      GLIBC_TUNABLES: 'glibc.cpu.hwcaps=-SHSTK,-IBT'
+    }
   });
 
   const page = await browser.newPage();

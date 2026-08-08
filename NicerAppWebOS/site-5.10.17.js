@@ -518,7 +518,7 @@ na.site = {
                     }
                     setTimeout (function() {
                         window._screenshotReady = true;
-                    }, 6000);
+                    }, 2000);
 
                     var numRand = Math.floor(Math. random() * 101);
                     if (numRand === 1 || numRand === 2) {

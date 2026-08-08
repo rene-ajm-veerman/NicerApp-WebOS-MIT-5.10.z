@@ -11,7 +11,7 @@ $comments = new class_naComments();
 $report = $comments->enqueueScreenshotsFromAllComments([
     'retain' => 86400 * 14,   // 14 days
     'force'  => false,
-    'limit'  => 0             // no limit
+    'limit'  => 3             // no limit
 ]);
 
 print_r($report);

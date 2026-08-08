@@ -9,7 +9,12 @@ async function takeScreenshot(url) {
   // Start headless Chrome
   const browser = await puppeteer.launch({
     headless: 'new',
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    executablePath: '/opt/google/chrome/chrome',
+    env: {
+      ...process.env,
+      GLIBC_TUNABLES: 'glibc.cpu.hwcaps=-SHSTK,-IBT'
+    }
   });
 
   const page = await browser.newPage();
@@ -24,7 +29,7 @@ async function takeScreenshot(url) {
   // Timeout after 10 seconds just in case something goes wrong
   await page.waitForFunction(
     'window._screenshotReady === true',
-    { timeout: 10000 }
+    { timeout: 30000 }
   );
 
   // Snap it!

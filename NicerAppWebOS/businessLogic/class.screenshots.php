@@ -21,12 +21,12 @@ class naScreenshots
     public function __construct($db = null)
     {
         global $naWebOS;
+        //return false;
 
-        $this->table = ($naWebOS->domainFolder ?? 'default') . '___screenshots';
+        $this->table = (str_replace('.','_',$naWebOS->domainFolder) ?? 'default') . '___screenshots';
         //echo 'Table : '.$this->table.PHP_EOL;
 
-        $this->siteDataRoot = realpath(dirname(__FILE__) . '/../siteData')
-        ?: (isset($naWebOS) ? str_replace('/domainConfig', '', $naWebOS->domainPath) . '/siteData' : '');
+        $this->siteDataRoot = (isset($naWebOS) ? str_replace('/domainConfig', '', $naWebOS->domainPath) . '/siteData' : '');
 
         $this->nodeScript = realpath(dirname(__FILE__) . '/screenshot_other.js')
         ?: realpath(dirname(__FILE__) . '/../businessLogic/screenshot_other.js');
@@ -55,6 +55,8 @@ class naScreenshots
 
     public function enqueue(string $url, array $options = []): array
     {
+        return [];
+
         $url = trim($url);
         if ($url === '') {
             throw new InvalidArgumentException('URL is required');
@@ -64,6 +66,7 @@ class naScreenshots
         $retain = (int)($options['retain'] ?? 0);
 
         $existing = $this->findByUrl($url);
+        //var_dump ($url); var_dump ($existing); echo PHP_EOL;
 
         if ($existing && !$force) {
             $status = $existing['status'] ?? '';
@@ -88,8 +91,8 @@ class naScreenshots
             'urlHash'      => $paths['filename'],
             'filePath'     => $paths['absolute'],
             'relativePath' => $paths['relative'],
-            'width'        => (int)($options['width']  ?? 1280),
-            'height'       => (int)($options['height'] ?? 630),
+            'width'        => (int)($options['width']  ?? 3840),
+            'height'       => (int)($options['height'] ?? 2160),
             'status'       => 'pending',
             'priority'     => (int)($options['priority'] ?? 0),
             'attempts'     => 0,
@@ -103,14 +106,18 @@ class naScreenshots
             'retain'       => $retain,
         ];
 
+        var_dump ($this->table); var_dump ($existing); echo PHP_EOL;
+        $this->db->cdb->setDatabase ($this->table);
         if ($existing) {
             $this->db->updateMany(['url' => $url], ['$set' => $job]);
             $job['_id'] = $existing['_id'] ?? null;
         } else {
             $res = $this->db->insertOne($job);
+            var_dump ($res); echo PHP_EOL;
             $job['_id'] = $res['_id'] ?? null;
         }
 
+        //var_dump ($job); echo PHP_EOL;
         return $job;
     }
 
@@ -232,6 +239,7 @@ class naScreenshots
 
         // Use the same naming convention as the rest of NicerApp
         $dbName = $db->dataSetName('screenshots');   // → something like "nicerapp_screenshots" or similar
+        var_dump ($dbName); echo PHP_EOL;
 
         // 1. Create the database if it does not exist
         try {
@@ -315,8 +323,8 @@ class naScreenshots
             `urlHash`       VARCHAR(512)    NOT NULL,
             `filePath`      VARCHAR(1024)   NULL,
             `relativePath`  VARCHAR(1024)   NULL,
-            `width`         INT             DEFAULT 1280,
-            `height`        INT             DEFAULT 630,
+            `width`         INT             DEFAULT 3840,
+            `height`        INT             DEFAULT 2160,
             `status`        VARCHAR(32)     NOT NULL DEFAULT 'pending',
             `priority`      INT             NOT NULL DEFAULT 0,
             `attempts`      INT             NOT NULL DEFAULT 0,
@@ -384,10 +392,13 @@ class naScreenshots
 
     public function claimNextJob(string $workerId = 'default'): ?array
     {
+        var_dump ($this->db);
         $jobs = $this->db->find(
             ['status' => 'pending'],
-            ['sort' => ['priority' => -1, 'created' => 1], 'limit' => 1]
+            ['sort' => [['priority' => 'asc'], ['created' => 'asc']], 'limit' => 1]
         );
+        //echo 't77:'; var_dump ($jobs); echo PHP_EOL;
+        return $jobs[0];
 
         if (empty($jobs)) return null;
 
@@ -422,16 +433,32 @@ class naScreenshots
         $paths = $this->buildFilePath($url);
         $this->ensureDirectory($paths['dir']);
 
+        if (
+            strpos($url,'https://said.by')!==false
+            || strpos($url,'https://nicer.app')!==false
+        ) {
+            $s = realpath(dirname(__FILE__) . '/screenshot_nicerAppServers.js')
+            ?: realpath(dirname(__FILE__) . '/../businessLogic/screenshot_nicerAppServers.js');
+        } else {
+            $s = $this->nodeScript;
+        }
+
         $cmd = sprintf(
             'node %s %s %s 2>&1',
-            escapeshellarg($this->nodeScript),
-                       escapeshellarg($url),
-                       escapeshellarg($paths['absolute'])
+            escapeshellarg($s),
+            escapeshellarg($url),
+            escapeshellarg($paths['absolute'])
         );
 
         $output = [];
         $returnCode = 0;
         exec($cmd, $output, $returnCode);
+        $dbg = [
+            '$cmd' => $cmd,
+            '$output' => $output,
+            '$rc' => $returnCode
+        ];
+        var_dump($dbg);
 
         $success = ($returnCode === 0 && file_exists($paths['absolute']));
         $now = date('Y-m-d H:i:s');
@@ -561,10 +588,23 @@ class naScreenshots
 
             public function __construct(object $old)
             {
-                $this->table = ($naWebOS->domainFolder ?? 'default') . '___screenshots';
+                $this->table = $y = ($naWebOS->domainFolder ?? 'default') . '___screenshots';
                 $this->cdb = (property_exists($old, 'cdb') && is_object($old->cdb))
                 ? $old->cdb
                 : $old;
+                //echo '<pre>';
+                $x = $this->cdb->connections[0];
+                //  echo 't333:'; var_dump ($x); echo PHP_EOL;
+                //echo 't334:'; var_dump ($x['conn']); echo PHP_EOL;
+                //echo 't337:'; var_dump ($this->cdb); echo PHP_EOL;
+                //debug_print_backtrace();
+                //echo '</pre>';
+                if ($this->cdb instanceof class_NicerAppWebOS_database_API) {
+                    $this->cdb->connections[0]['conn']->cdb->setDatabase ($y);
+                } else {
+                    $this->cdb->setDatabase ($y);
+                }
+                //$this->cdb->connections[0]['conn']->cdb->setDatabase ($y);
             }
 
             public function setTable(string $table): self
@@ -588,7 +628,13 @@ class naScreenshots
                 if (!empty($options['sort'])) $mango['sort'] = $options['sort'];
 
                 try {
-                    $result = $this->cdb->find($mango);
+                    echo (json_encode($mango,JSON_PRETTY_PRINT));
+                    if ($this->cdb instanceof class_NicerAppWebOS_database_API) {
+                        $result = $this->cdb->connections[0]['conn']->cdb->find ($mango);
+                    } else {
+                        $result = $this->cdb->find ($mango);
+                    }
+
                     $docs = $result->body->docs ?? [];
                     return json_decode(json_encode($docs), true) ?: [];
                 } catch (Throwable $e) {

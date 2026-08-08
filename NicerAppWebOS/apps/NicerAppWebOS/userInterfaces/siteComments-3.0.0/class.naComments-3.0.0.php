@@ -117,6 +117,7 @@ class class_naComments {
 
         foreach ($urls as $url) {
             try {
+                //var_dump ($dryRun);
                 if ($dryRun) {
                     $summary['urls'][] = $url;
                     $summary['enqueued']++;

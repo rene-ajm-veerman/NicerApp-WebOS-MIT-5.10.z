@@ -50,16 +50,16 @@ process.on('unhandledRejection', (reason) => {
     let browser = null;
     try {
         // Launch configurations tailored heavily for standard Linux servers running Apache
-        browser = await puppeteer.launch({
-            headless: 'new', // Suppresses deprecation logs on newer Puppeteer instances
-            executablePath :  '/root/.cache/puppeteer/chrome/linux-151.0.7922.71/chrome-linux64/chrome',
+        const browser = await puppeteer.launch({
+            // Forces Puppeteer to bypass root user security execution checks
             args: [
-                '--no-sandbox', 
+                '--no-sandbox',
                 '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage', // Prevents crashes if /dev/shm memory allocation is small
-                '--disable-gpu',
-                '--window-size=3840,2160' // Match the 4K properties configured in your PHP model
-            ]
+                '--disable-dev-shm-usage'
+            ],
+            // Explicitly bypasses path searching errors by letting Puppeteer
+            // resolve its internal binary directly from its active installation folder
+            ignoreDefaultArgs: ['--disable-extensions']
         });
 
         const page = await browser.newPage();

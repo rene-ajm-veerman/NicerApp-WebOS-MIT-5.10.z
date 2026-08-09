@@ -33,9 +33,9 @@ NicerApp WebOS from Nicer Enterprises
             $dcFolderName = basename($_SERVER['DOCUMENT_ROOT']);
             $settingsFilePath = $_SERVER['DOCUMENT_ROOT'].'/domainConfig/settings.json';
         } else {
-            $dcFolderName = explode('/',$_SERVER['PHP_SELF'])[5];
+            $dcFolderName = explode('/',$_SERVER['PWD'])[5];
             $dir = realpath(pathinfo($_SERVER['PATH_TRANSLATED'])['dirname']);
-            $bn = array_key_exists('PHP_SELF', $_SERVER)?$dcFolderName:explode('/',$dir)[5];
+            $bn = array_key_exists('PWD', $_SERVER)?$dcFolderName:explode('/',$dir)[5];
             //echo '<pre>'; var_dump ($_SERVER); var_dump ($dcFolderName); echo '</pre>'; die();
 
             //ugly hack:

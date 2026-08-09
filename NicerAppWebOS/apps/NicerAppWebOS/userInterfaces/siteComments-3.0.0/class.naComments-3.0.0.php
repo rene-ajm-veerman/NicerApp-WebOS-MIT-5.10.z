@@ -232,18 +232,20 @@ class class_naComments {
         $screenshots = new naScreenshots($uDB2);
 
         // Enqueue the main page
+        /*
         if ($pageUrl) {
             $screenshots->enqueue($pageUrl, [
                 'retain'   => 86400 * 7,
                 'priority' => 10
             ]);
-        }
+        }*/
 
         // -------------------------------------------------
         // 3. Ensure we have a screenshot for the main page
         // -------------------------------------------------
         $retainSeconds = 86400 * 7; // keep screenshots for 7 days (adjust as you like)
 
+        /*
         if ($pageUrl) {
             // This will return the existing ready one if still fresh,
             // otherwise it enqueues a new job
@@ -252,19 +254,21 @@ class class_naComments {
                 'priority' => 10,          // high priority for the current page
                 'meta'     => ['source' => 'comments-header']
             ]);
-        }
+        }*/
 
         // -------------------------------------------------
         // 4. Optionally process a few jobs right now
         //    (so the user often sees the new screenshot after a refresh)
         // -------------------------------------------------
         // Keep this number low so the page stays fast
+        /*
         $screenshots->processQueue([
             'maxJobs'      => 2,           // process max 2 jobs in this request
             'sleepSeconds' => 0,
             'verbose'      => false,
             'releaseStale' => true
         ]);
+        */
 
         // -------------------------------------------------
         // 5. Continue with the normal comments rendering
@@ -331,10 +335,14 @@ class class_naComments {
         //exit();
 
         // Also scan the comments that were just loaded for any mentioned URLs
-        foreach ($results as $comment) {
+        foreach ($results as &$comment) {
             if (!empty($comment['msgHTML'])) {
                 $foundUrls = $this->extractUrlsFromHtml($comment['msgHTML']);
+                echo json_encode($foundUrls,JSON_PRETTY_PRINT);
                 foreach ($foundUrls as $u) {
+                    $img = $screenshots->buildFilePath($u);
+                    global $naWebOS;
+                    $comment['msgHTML'] = str_replace ($u, $u.'<img src="'.str_replace($naWebOS->domainPath,'',$img['absolute']).'_thumb.png"/>', $comment['msgHTML']);
                     $screenshots->enqueue($u, [
                         'retain'   => 86400 * 7,
                         'priority' => 5,

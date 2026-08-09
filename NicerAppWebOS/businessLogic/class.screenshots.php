@@ -371,10 +371,7 @@ class naScreenshots
 
     public function processJob(array $job): array
     {
-        echo "=== processJob() START ===\n";
-
         $url = trim($job['url'] ?? '');
-        echo "URL: " . ($url ?? '?') . "\n";
 
         // Fast-fail obviously unusable URLs
         /*
@@ -397,19 +394,13 @@ class naScreenshots
     }*/
 
         $s = $this->nodeScript;   // currently forced to screenshot_other2.js
-        echo "s: " . ($s ?? '?') . "\n";
 
         $paths = $this->buildFilePath($url);
-        echo "paths: "; var_dump ($paths);
         try {
             $this->ensureDirectory($paths['dir']);
         } catch (Exception $e) {
             echo 'Could not ensureDirectory() : '.$e->getMessage();
         }
-        echo 't2'.PHP_EOL;
-
-
-
 
 
         $cmd = sprintf(
@@ -431,6 +422,12 @@ class naScreenshots
         $attempts    = (int)($job['attempts'] ?? 1);
         $maxAttempts = (int)($job['maxAttempts'] ?? 3);
         $now         = date('Y-m-d H:i:s');
+
+        $exec = 'convert "'.$job['filePath'].'" -resize 250 "'.$job['filePath'].'_thumb.png"';
+        $output = array(); $result = -1;
+        exec ($exec, $output, $result);
+        $dbg = [ '$exec' => $exec, '$output' => $output, '$result' => $result ];
+        if ($debug) { echo 'convert : $dbg='; var_dump ($dbg); echo PHP_EOL.PHP_EOL; }
 
         if ($success) {
             $update = [
@@ -504,7 +501,7 @@ class naScreenshots
      * Builds standard filesystem paths based on a unique URL token.
      * Uses MD5 to completely prevent ENAMETOOLONG exceptions.
      */
-    private function buildFilePath(string $url): array
+    public function buildFilePath(string $url): array
     {
         // Enforce safe 32-character hashes for system filenames
         $filename = md5($url) . '.png';

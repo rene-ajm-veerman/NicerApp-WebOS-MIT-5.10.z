@@ -867,7 +867,7 @@ class class_naComments {
         $maxJobs      = (int)($options['maxJobs']      ?? 10);
         $workerId     = $options['workerId']           ?? ('php-' . gethostname() . '-' . getmypid());
         $sleepSeconds = (int)($options['sleepSeconds'] ?? 1);
-        $verbose      = $options['verbose']            ?? (php_sapi_name() === 'cli');
+        $verbose      = $options['verbose']            ?? false;
         $releaseStale = $options['releaseStale']       ?? true;
 
         $summary = [

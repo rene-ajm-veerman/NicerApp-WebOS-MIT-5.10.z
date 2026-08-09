@@ -593,6 +593,7 @@ class naScreenshots
 
         return array_merge($job, $update);
     }
+
     public function releaseStaleLocks(): int
     {
         $cutoff = date('Y-m-d H:i:s', time() - $this->lockTimeoutSeconds);

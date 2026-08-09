@@ -294,7 +294,198 @@ class naScreenshots
         return $count;
     }
 
-    public function debugState(): void
+    // ------------------------------------------------------------------
+    // Internal helpers
+    // ------------------------------------------------------------------
+
+    /**
+     * Create the screenshots database/table and all recommended indexes.
+     * Safe to call multiple times (it checks if things already exist).
+     *
+     * @return array  Summary of what was created / already existed
+     */
+    public function createDatabaseAndIndexes(): array
+    {
+        $result = [
+            'database' => null,
+            'indexes'  => [],
+            'errors'   => []
+        ];
+
+        try {
+            $isCouch = false;
+
+            if (property_exists($this->db, 'isCouchDB') && $this->db->isCouchDB) {
+                $isCouch = true;
+            } elseif (method_exists($this->db, 'isCouch') && $this->db->isCouch()) {
+                $isCouch = true;
+            } elseif (isset($this->db->driver) && stripos($this->db->driver, 'couch') !== false) {
+                $isCouch = true;
+            }
+
+            if ($isCouch) {
+                $result = array_merge($result, $this->createCouchDatabaseAndIndexes());
+            } else {
+                $result = array_merge($result, $this->createSqlDatabaseAndIndexes());
+            }
+        } catch (Throwable $e) {
+            $result['errors'][] = $e->getMessage();
+        }
+
+        return $result;
+    }
+
+    /**
+     * CouchDB version
+     */
+    private function createCouchDatabaseAndIndexes(): array
+    {
+        $result = [
+            'database' => null,
+            'indexes'  => [],
+            'errors'   => []
+        ];
+
+        global $naWebOS;
+
+        $db  = $naWebOS->dbs->findConnection('couchdb');
+        $cdb = $db->cdb;
+
+        $dbName = $db->dataSetName('screenshots');
+
+        try {
+            $cdb->setDatabase($dbName, true);   // true = create if missing
+            $result['database'] = "Created or already exists: {$dbName}";
+        } catch (Throwable $e) {
+            $result['errors'][] = "Database creation failed: " . $e->getMessage();
+            return $result;
+        }
+
+        $indexes = [
+            [
+                'index' => ['fields' => ['url']],
+                'name'  => 'idx-url',
+                'type'  => 'json',
+                'ddoc'  => 'screenshots-indexes'
+            ],
+            [
+                'index' => ['fields' => ['status', 'created']],
+                'name'  => 'idx-status-created',
+                'type'  => 'json',
+                'ddoc'  => 'screenshots-indexes'
+            ],
+            [
+                'index' => ['fields' => ['status', 'priority', 'created']],
+                'name'  => 'idx-queue',
+                'type'  => 'json',
+                'ddoc'  => 'screenshots-indexes'
+            ],
+            [
+                'index' => ['fields' => ['status', 'updated']],
+                'name'  => 'idx-status-updated',
+                'type'  => 'json',
+                'ddoc'  => 'screenshots-indexes'
+            ],
+            [
+                'index' => ['fields' => ['urlHash']],
+                'name'  => 'idx-urlHash',
+                'type'  => 'json',
+                'ddoc'  => 'screenshots-indexes'
+            ]
+        ];
+
+        foreach ($indexes as $def) {
+            try {
+                $cdb->setIndex($def);
+                $result['indexes'][] = "Created index: {$def['name']}";
+            } catch (Throwable $e) {
+                if (stripos($e->getMessage(), 'exists') !== false || stripos($e->getMessage(), 'already') !== false) {
+                    $result['indexes'][] = "Already exists: {$def['name']}";
+                } else {
+                    $result['errors'][] = "Index {$def['name']}: " . $e->getMessage();
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * SQL (MySQL / MariaDB) version
+     */
+    private function createSqlDatabaseAndIndexes(): array
+    {
+        $result = [
+            'database' => null,
+            'indexes'  => [],
+            'errors'   => []
+        ];
+
+        $table = $this->table;
+
+        $createTableSql = "
+        CREATE TABLE IF NOT EXISTS `{$table}` (
+            `id`            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `_id`           VARCHAR(64)     NULL,
+            `url`           VARCHAR(2048)   NOT NULL,
+            `urlHash`       VARCHAR(512)    NOT NULL,
+            `filePath`      VARCHAR(1024)   NULL,
+            `relativePath`  VARCHAR(1024)   NULL,
+            `width`         INT             DEFAULT 3840,
+            `height`        INT             DEFAULT 2160,
+            `status`        VARCHAR(32)     NOT NULL DEFAULT 'pending',
+            `priority`      INT             NOT NULL DEFAULT 0,
+            `attempts`      INT             NOT NULL DEFAULT 0,
+            `maxAttempts`   INT             NOT NULL DEFAULT 3,
+            `lockedAt`      DATETIME        NULL,
+            `lockedBy`      VARCHAR(128)    NULL,
+            `created`       DATETIME        NOT NULL,
+            `updated`       DATETIME        NOT NULL,
+            `error`         TEXT            NULL,
+            `meta`          JSON            NULL,
+            `retain`        INT             DEFAULT 0,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `idx_url` (`url`(768)),
+            KEY `idx_urlHash` (`urlHash`(255)),
+            KEY `idx_status_created` (`status`, `created`),
+            KEY `idx_queue` (`status`, `priority`, `created`),
+            KEY `idx_status_updated` (`status`, `updated`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ";
+
+            try {
+                $this->db->query($createTableSql);
+                $result['database'] = "Table `{$table}` created or already exists";
+            } catch (Throwable $e) {
+                $result['errors'][] = "Table creation failed: " . $e->getMessage();
+                return $result;
+            }
+
+            $extraIndexes = [
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_url ON `{$table}` (url(768))",
+                "CREATE INDEX IF NOT EXISTS idx_urlHash ON `{$table}` (urlHash(255))",
+                "CREATE INDEX IF NOT EXISTS idx_status_created ON `{$table}` (status, created)",
+                "CREATE INDEX IF NOT EXISTS idx_queue ON `{$table}` (status, priority, created)",
+                "CREATE INDEX IF NOT EXISTS idx_status_updated ON `{$table}` (status, updated)",
+            ];
+
+            foreach ($extraIndexes as $sql) {
+                try {
+                    $this->db->query($sql);
+                    $result['indexes'][] = "OK: " . substr($sql, 0, 60) . "...";
+                } catch (Throwable $e) {
+                    if (stripos($e->getMessage(), 'Duplicate') !== false || stripos($e->getMessage(), 'exists') !== false) {
+                        $result['indexes'][] = "Already exists";
+                    } else {
+                        $result['errors'][] = $e->getMessage();
+                    }
+                }
+            }
+
+            return $result;
+    }
+
+        public function debugState(): void
     {
         echo "table = " . $this->table . "\n";
         echo "db is " . (is_object($this->db) ? get_class($this->db) : gettype($this->db)) . "\n";
@@ -423,7 +614,7 @@ class naScreenshots
         $maxAttempts = (int)($job['maxAttempts'] ?? 3);
         $now         = date('Y-m-d H:i:s');
 
-        $exec = 'convert "'.$job['filePath'].'" -resize 250 "'.$job['filePath'].'_thumb.png"';
+        $exec = 'convert "'.$job['filePath'].'" -resize 400 "'.$job['filePath'].'_thumb.png"';
         $output = array(); $result = -1;
         exec ($exec, $output, $result);
         $dbg = [ '$exec' => $exec, '$output' => $output, '$result' => $result ];

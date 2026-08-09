@@ -338,11 +338,11 @@ class class_naComments {
         foreach ($results as &$comment) {
             if (!empty($comment['msgHTML'])) {
                 $foundUrls = $this->extractUrlsFromHtml($comment['msgHTML']);
-                echo json_encode($foundUrls,JSON_PRETTY_PRINT);
+                //echo json_encode($foundUrls,JSON_PRETTY_PRINT);
                 foreach ($foundUrls as $u) {
                     $img = $screenshots->buildFilePath($u);
                     global $naWebOS;
-                    $comment['msgHTML'] = str_replace ($u, $u.'<img src="'.str_replace($naWebOS->domainPath,'',$img['absolute']).'_thumb.png"/>', $comment['msgHTML']);
+                    $comment['msgHTML'] = str_replace ($u, $u.'<img style="width:100%" src="'.str_replace($naWebOS->domainPath,'',$img['absolute']).'_thumb.png"/>', $comment['msgHTML']);
                     $screenshots->enqueue($u, [
                         'retain'   => 86400 * 7,
                         'priority' => 5,

@@ -52,7 +52,7 @@ process.on('unhandledRejection', (reason) => {
         // Launch configurations tailored heavily for standard Linux servers running Apache
         browser = await puppeteer.launch({
             headless: 'new', // Suppresses deprecation logs on newer Puppeteer instances
-            executablePath :  '/usr/bin/google-chrome',
+            executablePath :  '/root/.cache/puppeteer/chrome/linux-151.0.7922.71/chrome-linux64/chrome',
             args: [
                 '--no-sandbox', 
                 '--disable-setuid-sandbox',
@@ -89,7 +89,7 @@ process.on('unhandledRejection', (reason) => {
         // Generate the file output
         await page.screenshot({
             path: outputPath,
-            fullPage: true, // Auto-expand heights to capture entire vertical documents
+            //fullPage: true, // Auto-expand heights to capture entire vertical documents
             type: 'png'
         });
 

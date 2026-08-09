@@ -342,7 +342,7 @@ class class_naComments {
                 foreach ($foundUrls as $u) {
                     $img = $screenshots->buildFilePath($u);
                     global $naWebOS;
-                    $comment['msgHTML'] = str_replace ($u, $u.'<img style="width:100%" src="'.str_replace($naWebOS->domainPath,'',$img['absolute']).'_thumb.png"/>', $comment['msgHTML']);
+                    $comment['msgHTML'] = str_replace ($u, $u, $comment['msgHTML']).'<br/><a href="'.htmlspecialchars($u).'" target="_blank"><img style="width:100%" src="'.str_replace($naWebOS->domainPath,'',$img['absolute']).'_thumb.png"/></a>';
                     $screenshots->enqueue($u, [
                         'retain'   => 86400 * 7,
                         'priority' => 5,

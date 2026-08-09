@@ -614,7 +614,7 @@ class naScreenshots
         $maxAttempts = (int)($job['maxAttempts'] ?? 3);
         $now         = date('Y-m-d H:i:s');
 
-        $exec = 'convert "'.$job['filePath'].'" -resize 400 "'.$job['filePath'].'_thumb.png"';
+        $exec = 'convert "'.$job['filePath'].'" -resize 1400 "'.$job['filePath'].'_thumb.png"';
         $output = array(); $result = -1;
         exec ($exec, $output, $result);
         $dbg = [ '$exec' => $exec, '$output' => $output, '$result' => $result ];

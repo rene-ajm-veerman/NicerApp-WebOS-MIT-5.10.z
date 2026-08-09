@@ -52,6 +52,7 @@ process.on('unhandledRejection', (reason) => {
         // Launch configurations tailored heavily for standard Linux servers running Apache
         browser = await puppeteer.launch({
             headless: 'new', // Suppresses deprecation logs on newer Puppeteer instances
+            executablePath :  '/usr/bin/google-chrome',
             args: [
                 '--no-sandbox', 
                 '--disable-setuid-sandbox',
